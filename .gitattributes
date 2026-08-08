@@ -1,0 +1,15 @@
+# Normalize to LF in the repository, matching .editorconfig.
+* text=auto eol=lf
+
+# Lockfiles and generated output should never be diffed by hand.
+pnpm-lock.yaml linguist-generated=true -diff
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
