@@ -1,0 +1,146 @@
+---
+title: "The 9 KB I blamed on React for three months"
+summary: "A bundle grew by 9.4 KB and I attributed it to React's client runtime. Three probe builds later it turned out to be one import of a class-merging helper."
+publishedAt: 2026-06-18
+tags: [performance, react, nextjs]
+---
+
+For three milestones this project's documentation carried a confident sentence:
+React's client runtime is a one-time tax of about 9.8 KB gzipped, paid the
+instant a route has any interactivity at all, and it cannot be deferred or
+lazy-loaded away.
+
+It was wrong. Not the part about React having a runtime — that is true, and it is
+about that size. The wrong part was the attribution, and the attribution is the
+only bit that mattered, because it made a 9.4 KB line item look like physics.
+
+## The measurement that did not add up
+
+The home page measured 118.51 KB of gzipped JavaScript. The blog index measured
+108.72 KB. That is a ten-kilobyte gap, and the interesting detail is which
+direction it ran: the blog index had **more** client components on it than the
+home page did.
+
+If the cost were React's runtime, both routes would carry it — and both would
+carry it exactly once, because it is shared. A page with three client components
+cannot pay less runtime than a page with one.
+
+So either the number was wrong or the story was. I built the same route three
+times, each time with one thing added, and let the byte budget answer.
+
+| Home additionally contains | JS gz | Delta |
+| --- | --- | --- |
+| Hero only, no page-level client component | 108.72 KB | — |
+| plus a client component with `useState` and no `cn` | 108.99 KB | **+0.27 KB** |
+| plus a client component importing `cn` | 118.09 KB | **+9.37 KB** |
+
+A client component costs 0.27 KB. A client component that imports one helper
+costs 9.37 KB. The helper was `cn`.
+
+## What `cn` actually is
+
+Every Tailwind codebase has one. Mine looked like this:
+
+```ts
+import { type ClassValue, clsx } from 'clsx'
+import { extendTailwindMerge } from 'tailwind-merge'
+
+const twMerge = extendTailwindMerge({ /* the project's own class groups */ })
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+```
+
+`clsx` is about half a kilobyte and does the obvious thing. `tailwind-merge` is
+**8.7 KB gzipped**, and it is that size for a good reason: it carries a table of
+every conflicting Tailwind utility group, so that `cn('px-2', 'px-4')` knows the
+second wins and the first should be dropped. That table is the product.
+
+None of which is a problem in a Server Component, where the function runs during
+the build and ships nothing. It is entirely a problem the moment one file in a
+`'use client'` module graph imports it, because then the table is in the shared
+chunk of every route that renders that component.
+
+## The part that stings
+
+The import that cost 9.37 KB was this:
+
+```tsx
+'use client'
+
+export function Reveal({ className, children, ...rest }) {
+  const ref = useReveal()
+  return (
+    <div ref={ref} data-reveal="" className={cn(className)} {...rest}>
+      {children}
+    </div>
+  )
+}
+```
+
+`cn(className)`. One argument. A merge function called with a single value has
+nothing to merge — the output differs from the input in exactly one case, which
+is that `cn(undefined)` renders `class=""` instead of omitting the attribute.
+
+I had paid 8.7 KB for an empty string.
+
+It was not carelessness so much as habit. `cn` is what you write in this
+codebase; it is in every component; reaching for it is automatic. And in every
+Server Component that instinct is free, which is precisely what makes it
+dangerous in the one place it is not.
+
+## Why nobody caught it
+
+The byte budget was working the whole time. It reported the home page at
+118.51 KB against a 120 KB limit, and it was correct. What a budget reports is a
+**total**, and a total does not have a cause attached to it — so the first
+plausible explanation offered for the number became the recorded one, and after
+that nobody re-derived it. It went into a document, then into a second document
+citing the first, then into a planning decision that budgeted around it.
+
+The failure was not the measurement. It was that the explanation was never
+measured, only asserted, and an assertion in a document looks identical to a
+finding.
+
+## What changed
+
+Two components stopped importing `cn` and started building their class strings
+directly:
+
+```tsx
+className={className ? `${base} ${className}` : base}
+```
+
+That is uglier and it is 9.79 KB cheaper. The home page went from 118.51 KB to
+**108.72 KB** in a commit that also added a page.
+
+The rule it left behind is short enough to remember: **`cn` is free in a Server
+Component and expensive in a Client Component.** Where a client leaf genuinely
+needs conditional classes, a ternary over two complete strings does the job and
+costs nothing.
+
+And because a rule that has already been broken twice by people who knew it is a
+rule that needs a gate, it is now a unit test that walks every file whose first
+statement is `'use client'` and fails if any of them imports `cn`. The test also
+asserts that it found more than ten client components at all — a
+convention-scanning test that silently stops matching passes by checking
+nothing, which is the failure mode of every test of this shape.
+
+## The generalisable bit
+
+Three things, in descending order of usefulness.
+
+**A budget tells you what, never why.** If you have a byte budget and no habit of
+probing what is inside it, you will eventually build a plan around a number whose
+cause you invented.
+
+**Bundle costs are per import, not per component.** The mental model I had — a
+fixed tax paid by the first client component — predicted that the second and
+third would be nearly free. They were, at 0.14 KB. That the model made a correct
+prediction is exactly why it survived; it was right about everything except which
+9.4 KB it was describing.
+
+**The measurement is three builds and twenty minutes.** Add one thing, build,
+read the number. I had been reasoning about this for three months and could have
+settled it in an afternoon at any point.

@@ -10,12 +10,19 @@ code should not introduce any.
 
 ```
 apps/
-  web/                    Next.js 16 App Router site (the only app)
+  web/                    Next.js 16 App Router site, Postgres-backed, deploys to Vercel
+  web-v2/                 Next.js 15 statically exported site, moved here from the v1 repo
 packages/
   ui/                     @portfolio/ui — shared shadcn/ui component library
   eslint-config/          @portfolio/eslint-config — shared ESLint presets
   typescript-config/      @portfolio/typescript-config — shared tsconfig bases
 ```
+
+**The two apps are independent.** They share the repository, the lockfile, and Turborepo —
+nothing else. `web-v2` does not consume `@portfolio/ui`, the shared ESLint preset, or the
+shared tsconfig bases; it carries the toolchain it arrived with. Read
+[apps/web-v2/CLAUDE.md](./apps/web-v2/CLAUDE.md) before editing anything under `apps/web-v2`,
+and treat the conventions in *this* file as describing `apps/web` unless stated otherwise.
 
 ## Commands
 
@@ -26,11 +33,22 @@ pnpm install          # install everything (pnpm only -- do not use npm or yarn)
 pnpm dev              # start the dev server on http://localhost:3000
 pnpm build            # production build
 pnpm check-types      # tsc --noEmit across all workspaces
-pnpm lint             # eslint across all workspaces
-pnpm format           # prettier --write
+pnpm lint             # lint across all workspaces (ESLint in web, Biome in web-v2)
+pnpm test             # unit tests -- only web-v2 has any
+pnpm format           # prettier --write (skips apps/web-v2; Biome formats that one)
 ```
 
-To target one workspace: `pnpm --filter web <script>` or `pnpm --filter @portfolio/ui <script>`.
+To target one workspace: `pnpm --filter web <script>`, `pnpm --filter web-v2 <script>`, or
+`pnpm --filter @portfolio/ui <script>`.
+
+`pnpm dev` starts both apps: `web` on **3000**, `web-v2` on **3001**. The port split is the
+only reason `web-v2`'s `dev` and `start` scripts differ from the ones it had as a standalone
+repo — do not "restore" them to 3000.
+
+`apps/web-v2` also carries gates that are not wired into the Turborepo task graph, because
+each needs a completed export in `apps/web-v2/out/` first. Run them from that directory after
+`pnpm build`: `pnpm check:export`, `pnpm check:links`, `pnpm check:contrast`, `pnpm size`,
+`pnpm test:e2e`, `pnpm lh`.
 
 ## Conventions
 
@@ -71,6 +89,11 @@ warnings.
 
 ## Deployment
 
+Two apps, two deployment models. Keep them straight — the configs are not interchangeable,
+and they now sit in the same repository where they can be copied between by accident.
+
+### apps/web — Vercel
+
 **This deploys to Vercel, not GitHub Pages** — despite the `rahul-rocket-v2.github.io`
 repository name. The repo is the source of truth; GitHub Pages is not enabled on it.
 
@@ -79,13 +102,33 @@ are route handlers, `/blog` is `force-dynamic` and reads from Postgres, and rate
 writes to the database on every request. Setting `output: 'export'` would drop the API routes
 at build time and the contact form would go back to silently discarding messages.
 
-The sibling repo `rahul-rocket.github.io` (v1) *is* a static export on GitHub Pages. Do not
-carry its `next.config.js` patterns — `output: 'export'`, `trailingSlash`, `images.unoptimized`
-— into this one. They solve a problem this repo does not have.
+`apps/web-v2` *is* a static export, and its `next.config.mjs` sets `output: 'export'`,
+`trailingSlash: true` and `images.unoptimized`. Those settings are correct there and wrong
+here. Do not copy them into `apps/web`: this app needs a server — `/api/contact` and
+`/api/posts` are route handlers, `/blog` is `force-dynamic`, and rate limiting writes to the
+database on every request. Under `output: 'export'` the API routes are dropped at build time
+and the contact form goes back to silently discarding messages.
 
 On Vercel, set **Root Directory** to `apps/web`; the build then runs inside the workspace and
 Turborepo resolves `@portfolio/*` from the repo root. `DATABASE_URL` and `IP_HASH_SALT` must
 be set as project environment variables.
+
+### apps/web-v2 — static export
+
+`pnpm --filter web-v2 build` runs `next build`, then generates OG cards and the RSS/Atom/JSON
+feeds, all into `apps/web-v2/out/`. That directory is the entire deployable artifact; there is
+no server and no database.
+
+**No deployment is wired up for it in this repository.** The v1 repo published it to GitHub
+Pages from a workflow, and that workflow was deliberately *not* copied here — pointing a Pages
+deployment at this repo would publish `web-v2` at a URL this repo does not own, and
+`apps/web-v2/src/config/site.ts` still declares `url: 'https://rahul-rocket.github.io'`.
+Choosing where this app lives now is an open decision, not an oversight; the original repo
+keeps serving it in the meantime. Whoever makes that call must update `site.url` in the same
+change, because canonicals, feeds, sitemap and OG tags are all built from it.
+
+Note that `site.indexable` is `false`, which is what keeps `noindex` on every route. It is an
+editorial switch, not a build flag — see the comment on it before touching it.
 
 ## Notes and gotchas
 
@@ -120,5 +163,43 @@ be set as project environment variables.
 - **ESLint is held at 8.** `eslint-config-next` is therefore pinned to `^15`, because v16
   requires ESLint >= 9. Moving to ESLint 9/10 means converting `packages/eslint-config` from
   `.eslintrc` objects to flat config; do the two together or not at all.
-- `tests/` currently holds only an empty Python `__init__.py`. There is no test runner wired
-  up; do not assume `pnpm test` exists.
+- The root `tests/` directory holds only an empty Python `__init__.py`. `apps/web` has no test
+  runner wired up — `pnpm test` runs `apps/web-v2`'s Vitest suite and nothing else.
+
+## apps/web-v2 gotchas
+
+The full guide for that app is [apps/web-v2/CLAUDE.md](./apps/web-v2/CLAUDE.md), carried over
+from the v1 repository. What follows is only what changed by moving it into this monorepo.
+
+- **Both apps must pin the same `@types/react` and `@types/react-dom` version.** This is not a
+  style preference, it is a build constraint. pnpm hoists one copy of each type package into
+  `node_modules/.pnpm/node_modules/@types`, and Next's own `.d.ts` files resolve `react` from
+  there rather than from the workspace that imported them. With two versions installed, one
+  program ends up with two `React.Ref` / `VoidOrUndefinedOnly` types of the same name and every
+  prop spread onto an intrinsic element fails to typecheck — nine errors in components that are
+  correct. `web-v2` arrived pinned to 19.0.7/19.0.3 and was moved onto `web`'s 19.2.18/19.2.4
+  for exactly this reason. Bump them together or not at all.
+- **Biome formats and lints `apps/web-v2`; Prettier and ESLint do not touch it.** Tabs, single
+  quotes, 80 columns, semicolons as needed. `apps/web-v2` is listed in `.prettierignore` — the
+  two formatters disagree on every one of those settings, so running both would rewrite the
+  whole app on each `pnpm format`. Its four `noDescendingSpecificity` CSS warnings are
+  pre-existing and identical to what the v1 repo reports; `biome check` still exits 0.
+- **It does not use the shared packages.** No `@portfolio/ui`, no `@portfolio/eslint-config`,
+  no `@portfolio/typescript-config`. Its `@/*` alias points at `apps/web-v2/src` (not the app
+  root, as in `web`), and it has a second alias `@content/*` for the typed content records.
+  Its tsconfig is stricter than the shared base in places — `verbatimModuleSyntax` and
+  `noImplicitOverride` are on.
+- **Repo-level tooling from v1 was left behind on purpose:** its `.npmrc`, `.nvmrc`,
+  `pnpm-lock.yaml`, `.husky/`, `commitlint.config.mjs`, the `lint-staged` block, and
+  `.github/workflows/`. Those are the monorepo root's concern, and this root does not use
+  husky or commitlint. Note that v1's `.npmrc` set `strict-peer-dependencies=true` and
+  `node-linker=isolated` while this root sets the opposite, so `web-v2` now installs under
+  looser peer resolution than it was developed with.
+- **CI is not wired up for it.** v1's `ci.yml` and `deploy-pages.yml` were not copied. Nothing
+  runs its E2E suite, Lighthouse budgets, or export gates automatically — run them by hand
+  (see Commands) until a workflow exists.
+- **Its E2E suite needs a matching browser build.** `@playwright/test` is pinned to 1.49.1 and
+  expects Chromium 1148. A container with a different build fails at launch with
+  `Executable doesn't exist`, which is an environment mismatch, not a broken suite. The
+  `command palette › the theme action…` spec is timing-sensitive and flakes roughly one run in
+  three; it is not a regression from the move.

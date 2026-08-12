@@ -1,0 +1,323 @@
+/*
+ * UTILITY CLASSES — the values Tailwind has no namespace for.
+ *
+ * The bar for a class here is narrow and worth stating, because a utilities
+ * file is otherwise where a design system goes to die:
+ *
+ *   1. It expresses a TOKEN, and Tailwind v4 has no theme namespace to bridge
+ *      that token into — gradients, blur, grid track functions. Without a class
+ *      the alternative is an arbitrary value in the markup
+ *      (`bg-[image:var(--ui-hairline-gradient)]`), which UI_GUIDELINES §1 rules
+ *      out.
+ *   2. It is used by more than one component, or it is the enforcement point
+ *      for a rule stated in docs/.
+ *
+ * Anything failing both belongs in the component that needs it.
+ *
+ * The interaction primitives — `.u-press`, `.u-hairline`, `.u-spotlight`,
+ * `.u-backdrop`, `.u-grid` — are NOT here. They live in `motion.css` beside the
+ * reveal system whose ordering guarantees they share, and moving them would
+ * separate them from the comment that explains why they are CSS and not JS.
+ *
+ * These are unlayered, like motion.css's, so they win over a Tailwind utility
+ * in the `utilities` layer regardless of source order. That is what lets
+ * `.u-glass`'s `@supports` fallback override the `bg-glass` utility on a browser
+ * without `backdrop-filter`.
+ */
+
+/* ==============================================================
+ * Glass — docs/redesign/DESIGN_SYSTEM.md §2.1
+ *
+ * The blur, and nothing else: the fill and the border are `bg-glass` and
+ * `border-glass-border`, which are bridged tokens and therefore theme-aware
+ * through the normal path.
+ *
+ * NEVER ANIMATE ANY OF THIS. Not the radius, not the opacity of the blurring
+ * layer — either re-triggers the sample of everything behind it. There is no
+ * transition in this block and there must not be one.
+ * ============================================================== */
+
+.u-glass {
+	backdrop-filter: blur(var(--ui-glass-blur)) saturate(var(--ui-glass-saturate));
+	-webkit-backdrop-filter: blur(var(--ui-glass-blur))
+		saturate(var(--ui-glass-saturate));
+}
+
+/* The fallback is a complete design, not a degradation: an opaque raised
+   surface, whose text pairs are already in the contrast contract. */
+@supports not (
+		(backdrop-filter: blur(1px)) or
+		(-webkit-backdrop-filter: blur(1px))
+	) {
+	.u-glass {
+		background-color: var(--ui-surface-raised);
+	}
+}
+
+/* ==============================================================
+ * Hairline fade — the gradient rule used by `Divider`.
+ * A background, not a border, so no border utility can express it.
+ * ============================================================== */
+
+.u-hairline-fade {
+	background-image: var(--ui-hairline-gradient);
+}
+
+/* ==============================================================
+ * Auto-fitting grid tracks — src/components/ui/grid.tsx `AutoGrid`.
+ *
+ * `min(…, 100%)` is load-bearing: a bare `minmax(18rem, 1fr)` overflows any
+ * container narrower than 18rem, which is a 320px viewport once the gutter is
+ * applied — the horizontal scroll UI_GUIDELINES §5 bans. With `min()` the track
+ * collapses to the container instead.
+ *
+ * Three steps rather than a free `--min-item` custom property, because a free
+ * value is an arbitrary value wearing a variable's clothes.
+ * ============================================================== */
+
+.u-autofit-sm {
+	grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
+}
+.u-autofit-md {
+	grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+}
+.u-autofit-lg {
+	grid-template-columns: repeat(auto-fit, minmax(min(24rem, 100%), 1fr));
+}
+
+/* ==============================================================
+ * Motion durations — DESIGN_SYSTEM §7.
+ *
+ * Tailwind v4 owns `--ease-*` (bridged in globals.css) but has NO `--duration-*`
+ * theme namespace: `duration-150` is a bare number, and a token can only reach
+ * it as `duration-[var(--duration-fast)]`. That arbitrary form is already in the
+ * header, and it is the shape that lets someone write `duration-[137ms]` next to
+ * it without anything complaining.
+ *
+ * So the four tokens get four classes. `transition-duration` only — the
+ * `transition-property` still comes from Tailwind's `transition-colors` or
+ * `transition-opacity`, because WHICH property animates is a per-component
+ * decision and law 3 (transform and opacity only) is enforced by review, not by
+ * this file.
+ *
+ * Nothing exceeds 400ms (§7). There is no `duration-slower`, and adding one
+ * requires editing §7 first.
+ * ============================================================== */
+
+.duration-instant {
+	transition-duration: var(--duration-instant);
+}
+.duration-fast {
+	transition-duration: var(--duration-fast);
+}
+.duration-base {
+	transition-duration: var(--duration-base);
+}
+.duration-slow {
+	transition-duration: var(--duration-slow);
+}
+
+/* ==============================================================
+ * Gradient type — DS-14.
+ *
+ * FOUR THINGS HAVE TO BE TRUE BEFORE A HEADING MAY BE PAINTED WITH A GRADIENT,
+ * and all four are enforced here rather than remembered:
+ *
+ *   1. It degrades to readable text. The technique sets `color: transparent`,
+ *      which is a blank heading anywhere the clip does not apply. So the whole
+ *      rule sits behind `@supports`, and the un-supported state is the
+ *      inherited `--ui-text` the element already had.
+ *   2. It is readable if the gradient DOES apply. `--ui-gradient-text` starts
+ *      at `--ui-text` and holds it for the first third of the run, so the
+ *      opening words of a heading are at full body-text contrast and only the
+ *      tail carries spectrum. That is why the token is not a two-hue gradient:
+ *      a heading whose every pixel is decorative is a heading with no contrast
+ *      floor at all.
+ *   3. Forced-colors mode wins. A reader who has replaced the palette for
+ *      contrast reasons must not be handed a transparent glyph, and
+ *      `forced-colors` is the one query that tells us so.
+ *   4. It never applies below the display sizes. There is no size guard in CSS
+ *      here — the guard is that this class is only reachable through
+ *      `Heading size="mega|display"`, whose smaller steps do not pass it
+ *      through. Small gradient text is illegible and is the most common way
+ *      this effect is misused.
+ * ============================================================== */
+
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+	.u-gradient-text {
+		background-image: var(--ui-gradient-text);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+		/* Safari needs this as well as `color`, and without it the fill wins and
+		   the heading renders solid. */
+		-webkit-text-fill-color: transparent;
+	}
+}
+
+@media (forced-colors: active) {
+	.u-gradient-text {
+		background-image: none;
+		color: CanvasText;
+		-webkit-text-fill-color: CanvasText;
+	}
+}
+
+/* ==============================================================
+ * Panel glass — the lighter, cheaper glass for surfaces that float ON a
+ * section rather than over the document.
+ *
+ * Separate from `.u-glass` because the blur radius is the cost driver and
+ * these are large: the header is 1200×72 and the CTA panel can be
+ * 1200×400. Half the blur radius on four times the area is still more work
+ * than the header does, which is why this exists as its own token rather
+ * than as `.u-glass` reused, and why nothing scrolling ever gets either.
+ * ============================================================== */
+
+.u-glass-panel {
+	backdrop-filter: blur(var(--ui-glass-panel-blur))
+		saturate(var(--ui-glass-saturate));
+	-webkit-backdrop-filter: blur(var(--ui-glass-panel-blur))
+		saturate(var(--ui-glass-saturate));
+}
+
+@supports not (
+		(backdrop-filter: blur(1px)) or
+		(-webkit-backdrop-filter: blur(1px))
+	) {
+	.u-glass-panel {
+		background-color: var(--ui-surface);
+	}
+}
+
+/* ==============================================================
+ * The grid backdrop's second form: a fine dot field rather than lines.
+ *
+ * Used where a ruled grid would fight a dense layout — behind card indexes
+ * and the CTA panel. One radial-gradient tile, masked like `.u-grid`.
+ * ============================================================== */
+
+.u-dots {
+	position: absolute;
+	inset: 0;
+	background-image: radial-gradient(var(--ui-grid-line) 1px, transparent 1px);
+	background-size: var(--ui-grid-size) var(--ui-grid-size);
+	-webkit-mask-image: radial-gradient(
+		80% 60% at 50% 30%,
+		#000 0%,
+		transparent 100%
+	);
+	mask-image: radial-gradient(80% 60% at 50% 30%, #000 0%, transparent 100%);
+}
+
+/* ==============================================================
+ * The primary action's gradient fill.
+ *
+ * A class rather than `bg-[image:var(--ui-gradient-cta)]` in the component,
+ * for the reason stated at the top of this file: Tailwind v4 has no
+ * background-image theme namespace to bridge a gradient into, and the
+ * arbitrary-value form is the one UI_GUIDELINES §1 rules out — it is also the
+ * form that lets the next person write a literal `linear-gradient(...)` beside
+ * it without anything complaining.
+ *
+ * `background-color` is set as well as the image, and that is not redundant:
+ * `background-image` is one of the properties a printer or a forced-colors
+ * mode may drop, and without the flat fill underneath it the button would lose
+ * its background and keep `--ui-on-accent` as its text colour — white on white.
+ * The flat colour is `--ui-accent`, which is exactly the pair the contrast
+ * contract verifies, so the degraded button is the button the checker measured.
+ * ============================================================== */
+
+.u-cta-fill {
+	background-color: var(--ui-accent);
+	background-image: var(--ui-gradient-cta);
+}
+
+/* ==============================================================
+ * The card plane's lit fill — see `--ui-card-fill` in surfaces.css for what it
+ * is and why it is safe to apply to every card at once.
+ *
+ * A class for the same reason `.u-cta-fill` is one: Tailwind v4 has no
+ * background-image theme namespace, so the alternative is an arbitrary value in
+ * the markup, which UI_GUIDELINES §1 rules out. `Surface` keeps `bg-surface`
+ * alongside it, so anything that drops background-image — print, forced colors —
+ * lands on the flat colour the contrast contract measured.
+ * ============================================================== */
+
+.u-card-fill {
+	background-image: var(--ui-card-fill);
+}
+
+/* ==============================================================
+ * The header's scroll rule — L-04's "condenses on scroll", as one class.
+ *
+ * This was eleven chained arbitrary-value utilities in the markup
+ * (`before:bg-[image:var(--ui-edge-gradient)]` and nine friends), which is both
+ * the form UI_GUIDELINES §1 rules out and the form nobody can read in a diff.
+ * It is one selector because it is one behaviour.
+ *
+ * WHAT IT IS NOT: a height change. A `position: sticky` element occupies space
+ * in normal flow, so shrinking it reflows the document under it and moves the
+ * content the reader is looking at — a layout animation, above the fold, on
+ * every route, charged against a 0.02 CLS budget. The condensation is expressed
+ * in surface instead: a spectrum hairline fades in once the page has scrolled,
+ * and the only animated property is `opacity` on a one-pixel pseudo-element.
+ *
+ * `[data-scrolled]` is written by `HeaderScrollState`. Without JavaScript the
+ * attribute never arrives and the rule simply never appears — which is a header
+ * that looks exactly like the unscrolled one, not a broken header.
+ * ============================================================== */
+
+.u-header-rule::before {
+	content: "";
+	position: absolute;
+	inset-inline: 0;
+	bottom: 0;
+	height: 1px;
+	background-image: var(--ui-edge-gradient);
+	opacity: 0;
+	transition: opacity var(--duration-fast) var(--ui-ease-out-quint);
+	pointer-events: none;
+}
+
+.u-header-rule[data-scrolled]::before {
+	opacity: 1;
+}
+
+/* ==============================================================
+ * A vertical gradient rule — the eyebrow's device, turned on its side.
+ *
+ * `border-left` cannot carry a gradient, and `border-image` cannot fade to
+ * transparent and follow a radius at the same time. So it is a 1px absolutely
+ * positioned strip, which also means it can start at the accent and fade out
+ * partway down rather than stopping abruptly at the end of the item — the
+ * difference between a rule that frames the text and a rule that was applied
+ * to it.
+ * ============================================================== */
+
+.u-rule::before {
+	content: "";
+	position: absolute;
+	inset-block: 0;
+	left: 0;
+	width: 1px;
+	background-image: linear-gradient(
+		180deg,
+		var(--ui-accent) 0%,
+		var(--ui-border) 55%,
+		transparent 100%
+	);
+	pointer-events: none;
+}
+
+/* The /journey spine's drawn portion. A gradient, so a four-thousand-pixel
+   timeline is not one flat accent line — decorative only, which is what lets it
+   use the spectrum at all (DS-14). */
+.u-spine-fill {
+	background-image: linear-gradient(
+		180deg,
+		var(--ui-accent) 0%,
+		var(--ui-spectrum-2) 55%,
+		var(--ui-spectrum-3) 100%
+	);
+}

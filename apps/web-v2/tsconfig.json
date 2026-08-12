@@ -1,0 +1,57 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"lib": ["dom", "dom.iterable", "ES2022"],
+		"jsx": "preserve",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"resolveJsonModule": true,
+		"allowJs": false,
+		"esModuleInterop": true,
+		"isolatedModules": true,
+
+		// verbatimModuleSyntax forces `import type` to be written explicitly, so a
+		// type-only import can never accidentally survive into the emitted bundle
+		// and pull a module in at runtime. docs/TECH_STACK.md §2.
+		"verbatimModuleSyntax": true,
+
+		"strict": true,
+		// Indexing an array or record yields `T | undefined`. Content loaders read
+		// frontmatter by key constantly; without this, a missing field is a runtime
+		// crash on a built page instead of a compile error.
+		"noUncheckedIndexedAccess": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitOverride": true,
+		"forceConsistentCasingInFileNames": true,
+
+		"noEmit": true,
+		"incremental": true,
+		"skipLibCheck": true,
+
+		// `@content/*` is a second alias rather than a relative escape out of src/.
+		// docs/PROJECT_STRUCTURE.md §9 marks `../../content/...` as ❌, and
+		// docs/CONTENT_STRATEGY.md §2 puts the typed records at the repository
+		// root beside the MDX. One alias reconciles the two; the alternative was
+		// moving content under src/, which would separate the records from the
+		// prose they cross-reference.
+		"paths": { "@/*": ["./src/*"], "@content/*": ["./content/*"] },
+		"plugins": [{ "name": "next" }]
+	},
+	"include": [
+		"next-env.d.ts",
+		"src/**/*.ts",
+		"src/**/*.tsx",
+		// The typed content records. They are authored data, and a type error in
+		// them is a build failure either way — but only if they are in the
+		// program. Excluded, a bad `depth: 'expert'` would surface as a Zod throw
+		// during `next build` instead of as a red squiggle while it is typed.
+		"content/**/*.ts",
+		// The E2E suite is typechecked with everything else. Playwright only
+		// typechecks a spec when it runs it, so an unrun spec can carry a type
+		// error indefinitely — and an unrun spec is exactly the one that is wrong.
+		"e2e/**/*.ts",
+		"playwright.config.ts",
+		".next/types/**/*.ts"
+	],
+	"exclude": ["node_modules", "out", ".next"]
+}

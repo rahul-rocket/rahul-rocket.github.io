@@ -1,0 +1,282 @@
+---
+title: "Splitting a monolith at exactly one seam"
+summary: "Four teams queued behind one deploy pipeline. We extracted inventory, deliberately kept everything else together, and measured what the seam bought."
+role: "Principal engineer — architecture, migration design, first two extractions"
+period:
+  from: 2023-06
+  to: 2024-08
+order: 2
+featured: true
+needsReview: true
+problem: "Four teams shared one fulfilment deploy, so a rollback anywhere blocked everyone, and releases had become weekly by exhaustion."
+stack:
+  - typescript
+  - nodejs
+  - postgres
+  - redis
+  - event-driven
+  - aws
+  - docker
+  - migrations
+  - adrs
+  - observability
+  - system-design
+metrics:
+  - label: "Deploys per week, four owning teams"
+    before: "1"
+    after: "9 (median)"
+    method: "Count of production deploys per calendar week from the pipeline's own history, median over the six months after the extraction"
+  - label: "Duplicate-shipment incidents"
+    before: "~2/month"
+    after: "0"
+    method: "Incident tracker, severity 2 and above, tagged fulfilment, over the fourteen months since the outbox contract shipped"
+  - label: "p95 order-search latency"
+    before: "2.4s"
+    after: "380ms"
+    method: "Application performance monitoring, p95 over rolling 30 days, same query mix before and after"
+publishedAt: 2026-08-05
+---
+
+<Callout variant="warning" title="Drafted, pending the author's review">
+This case study is written to the site's documented standard but has not yet
+been checked against the author's own records. The numbers are illustrative
+until they are replaced with figures whose measurement method the author can
+reproduce. Nothing on this site is indexed while this notice is present.
+</Callout>
+
+## Overview
+
+A commerce platform's fulfilment system was a single deployable owned by four
+teams. Rather than decomposing it into services along domain lines, we extracted
+exactly one — inventory — because inventory was the only place the four teams
+actually blocked each other. Deploy frequency went from weekly to a median of
+nine per week, and the rest of the monolith was left intact on purpose.
+
+## The Problem
+
+Fulfilment took an order and turned it into a shipment: reserving stock, picking
+a warehouse, printing labels, notifying carriers, and handling every way that
+sequence fails. Four teams worked in it — orders, inventory, warehouse
+operations, and carrier integrations — and all four shipped through one
+pipeline.
+
+The pipeline was the problem, not the code. A carrier-integration change and an
+inventory change were bundled into the same release, so a rollback triggered by
+either reverted both. Because rollbacks were expensive and frequent, releases
+had been made less frequent to reduce the blast radius, which made each release
+larger, which made rollbacks more likely. By the time I arrived the team was
+deploying once a week, on a Tuesday, with a two-hour ceremony, and the honest
+description was that the deploy cadence had been set by exhaustion rather than by
+design.
+
+The second-order effects were worse than the delay. Because a deploy was
+expensive, changes were batched; because changes were batched, a failure was
+hard to attribute; because failures were hard to attribute, the team added
+process rather than isolation. There was a change-approval meeting.
+
+Underneath, one genuine coupling justified some of it. Stock reservation was
+read and written from three of the four teams' code paths, with no owner and no
+invariant stated anywhere. Two duplicate-shipment incidents a month came out of
+that: two paths could both believe they held the same reservation.
+
+## Constraints
+
+- **No feature freeze.** The platform was mid-peak-season planning and the
+  roadmap could not pause.
+- **A migration measured in quarters, not weeks**, executed by the teams that
+  owned the code rather than by a separate platform team.
+- **No new datastore technology.** The organisation ran Postgres well and
+  nothing else well.
+- **Correctness over availability for stock.** Overselling is a customer
+  incident and a finance problem; a brief inability to reserve is neither.
+- **The four teams had to keep shipping throughout**, which ruled out any plan
+  with a code freeze in the middle of it.
+
+## Options Considered
+
+**Full decomposition into four services.** The conventional answer, and the one
+the organisation expected. It would have given every team its own pipeline —
+and it would have converted every existing in-process call between the four
+domains into a network call, with the failure handling, tracing and latency
+budget that implies, across a surface nobody had mapped.
+
+**Modular monolith with enforced internal boundaries.** Keep one deployable,
+introduce module boundaries enforced by static analysis, and let teams own
+modules. Genuinely attractive, cheap, and it does not solve the stated problem:
+the teams would still have shared a deploy.
+
+**Extract only inventory.** One service, at the one boundary where the coupling
+was real and the contention was measurable. Everything else stays where it is.
+
+**Do nothing structural; fix the pipeline.** Faster builds, better test
+selection, and a change-approval process replaced by feature flags. Cheapest by
+far, and it was partially done anyway — but it does not remove the shared
+rollback, which was the actual constraint.
+
+## The Decision
+
+Extract inventory. Leave the rest.
+
+The question that decided it was not "is this a coherent domain" but "which
+people are blocked on each other today". Three of the four teams touched stock
+reservation; none of the other proposed boundaries had that property. Splitting
+the parts that were merely untidy would have bought architectural tidiness and
+cost every team a network hop on paths that were working.
+
+Inventory also had the one invariant worth protecting behind a hard boundary:
+stock is reserved exactly once. That invariant is unenforceable when three
+codebases write the same rows, and it becomes enforceable the moment one service
+owns them.
+
+**The cost of this was** an asymmetric architecture that is harder to explain
+than either extreme. New engineers ask why orders and warehouse operations are
+still one deployable, and the answer is a paragraph rather than a principle.
+We also accepted a genuine latency increase on the reservation path — about 18ms
+p95 for the network hop — and a period of eight months where inventory data
+existed authoritatively in the new service and read-only in the old one.
+
+The decision record for this is the one I point at when asked what an
+architecture decision record is for. Eleven months later a new director proposed
+full decomposition; the conversation took forty minutes instead of a quarter,
+because the reasoning and the rejected options were on a page.
+
+## Architecture
+
+<Diagram
+  title="Inventory extraction and the outbox contract"
+  description="Orders, warehouse operations and carrier integrations remain one deployable; inventory becomes a separate service owning stock rows, and the two communicate through a transactional outbox consumed idempotently."
+  viewBox="0 0 860 320"
+  equivalent={
+    <>
+      The fulfilment monolith keeps orders, warehouse operations and carrier
+      integrations in one deployable with one database. Inventory moves out into
+      its own service with its own database, and is the sole writer of stock and
+      reservation rows. Communication is one-way per direction and always
+      through a transactional outbox: the monolith writes a reservation-requested
+      event in the same transaction as its own state change, a relay publishes
+      it, and inventory consumes it idempotently keyed on the request id.
+      Inventory replies the same way. Because the event is written in the same
+      transaction as the state change, there is no window in which one exists
+      without the other — which is the failure that produced duplicate shipments
+      under the previous shared-table arrangement.
+    </>
+  }
+>
+  <g className="text-border-strong">
+    <rect x="30" y="40" width="230" height="180" rx="10" />
+    <rect x="55" y="70" width="180" height="34" rx="6" />
+    <rect x="55" y="118" width="180" height="34" rx="6" />
+    <rect x="55" y="166" width="180" height="34" rx="6" />
+    <rect x="360" y="100" width="140" height="60" rx="8" />
+    <rect x="600" y="70" width="220" height="120" rx="10" />
+    <rect x="625" y="110" width="170" height="34" rx="6" />
+  </g>
+  <g className="text-text-muted" strokeWidth="1.25">
+    <path d="M260 130 h95" markerEnd="url(#arrow3)" />
+    <path d="M500 130 h95" markerEnd="url(#arrow3)" />
+    <path d="M600 175 q-120 60 -240 60 h-70 q-30 0 -30 -30 v-20" markerEnd="url(#arrow3)" />
+  </g>
+  <defs>
+    <marker id="arrow3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" stroke="none" />
+    </marker>
+  </defs>
+  <g className="fill-current text-text" strokeWidth="0" fontSize="14" fontFamily="var(--ui-font-body)">
+    <text x="145" y="32" textAnchor="middle" className="text-text-muted">Fulfilment monolith — one deployable</text>
+    <text x="145" y="92" textAnchor="middle">Orders</text>
+    <text x="145" y="140" textAnchor="middle">Warehouse operations</text>
+    <text x="145" y="188" textAnchor="middle">Carrier integrations</text>
+    <text x="430" y="126" textAnchor="middle">Outbox</text>
+    <text x="430" y="144" textAnchor="middle" className="text-text-muted">same transaction</text>
+    <text x="710" y="62" textAnchor="middle" className="text-text-muted">Inventory service</text>
+    <text x="710" y="132" textAnchor="middle">Stock and reservations</text>
+    <text x="710" y="168" textAnchor="middle" className="text-text-muted">sole writer</text>
+    <text x="430" y="272" textAnchor="middle" className="text-text-muted">replies travel the same way — idempotent on request id</text>
+  </g>
+</Diagram>
+
+## Implementation Highlights
+
+**The outbox is written in the same transaction as the state change.** This is
+the single detail that removed the duplicate-shipment class of incident. The
+alternative — write the row, then publish — has a window in which the process
+dies between the two, and every incident we had was some version of that window.
+
+```ts
+await db.transaction(async (tx) => {
+  await tx.reservations.insert(reservation)
+  await tx.outbox.insert({
+    id: reservation.requestId,          // the consumer's idempotency key
+    type: 'reservation.requested',
+    payload: toEvent(reservation),
+  })
+})
+// A separate relay publishes and marks sent. At-least-once by design;
+// the consumer is idempotent, so at-least-once is sufficient.
+```
+
+**A projection for order search, after the indexes were not enough.** Search was
+the loudest complaint and everyone agreed it needed indexes. The indexes took
+p95 from 2.4s to 1.6s — real, and short of the target. The profile then said the
+remaining time was assembling a response across four joins, so the read path
+moved onto a projection maintained from the same event stream, and landed at
+380ms. The order of those two measurements is the lesson: without the first we
+would have shipped indexes and called it done, and without the second we would
+not have known which change carried the result.
+
+**Both writers live, then a measured switch.** For eight months inventory rows
+were written by the new service and mirrored read-only into the monolith's
+database, with a consistency check running hourly and alerting on any divergence.
+The switch was per-warehouse, and the check is what made turning it on a
+non-event.
+
+## Challenges & Solutions
+
+**The first extraction attempt was too big.** We initially scoped inventory to
+include stock *and* the allocation rules that decide which warehouse serves an
+order. Two months in, allocation was still entangled with carrier availability,
+which lives with carrier integrations. We cut the scope to stock and reservations
+only, and allocation stayed in the monolith. It is still there, and that is fine.
+
+**Nobody could state the invariant we were protecting.** Asked to write down what
+"stock is reserved exactly once" meant for oversell, backorder and partial
+allocation, the four teams produced four answers. That took three weeks to
+resolve and was the highest-value three weeks of the project: two of the four
+answers were wrong in ways that had been producing incidents nobody had
+attributed correctly.
+
+**Consumer lag became a new operational concern.** A projection that falls
+behind serves stale search results, and there was no existing alert for
+"correct, but old". We added a lag metric with a visible threshold on the
+operations dashboard and a documented decision about what to do when it is
+breached — which is a genuinely new burden this architecture created, and one
+the previous shared-table design did not have.
+
+## Outcome
+
+<Metrics>
+  <Metric label="Deploys per week, four owning teams" before="1" after="9 (median)"
+    method="Pipeline history, median over the six months after extraction" />
+  <Metric label="Duplicate-shipment incidents" before="~2/month" after="0"
+    method="Incident tracker, severity 2+, tagged fulfilment, fourteen months since the outbox contract shipped" />
+  <Metric label="p95 order-search latency" before="2.4s" after="380ms"
+    method="APM p95 over rolling 30 days, same query mix before and after" />
+</Metrics>
+
+The deploy figure is the one the business felt. The incident figure is the one
+that justified the boundary, because it is the only outcome the pipeline work
+alone could not have produced.
+
+## What I'd Do Differently
+
+I would write the invariant down before proposing the boundary, not after. Three
+weeks of the project were spent discovering that four teams held four
+incompatible definitions of the rule the extraction existed to protect — and
+that discovery would have been just as valuable, and much cheaper, as a
+one-week exercise before any code moved.
+
+I would also have built the consumer-lag alerting on day one instead of at
+month seven. We introduced eventual consistency into a system that had never had
+it, and then operated it for half a year without a way to see when it was
+lagging. Nothing broke, which is luck rather than design, and "nothing broke"
+is exactly the evidence that makes a team skip the alert next time.

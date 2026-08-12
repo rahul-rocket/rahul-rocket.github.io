@@ -1,0 +1,36 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# next.js
+/.next
+/out
+next-env.d.ts
+*.tsbuildinfo
+
+# testing
+/coverage
+/playwright-report
+/test-results
+/.lighthouseci
+
+# legacy create react app output — goes with src/ at the Phase 10 cutover
+/build
+
+# tool caches
+/.cache
+
+# misc
+.DS_Store
+Thumbs.db
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

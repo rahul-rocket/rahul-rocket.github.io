@@ -1,0 +1,332 @@
+---
+title: "A portfolio that gates its own claims"
+summary: "A personal site that argues for its author's engineering by being engineered: token layer, typed content, and merge gates that were each observed failing."
+role: "Sole engineer — architecture, design system, content pipeline, CI"
+period:
+  from: 2026-01
+order: 0
+featured: true
+needsReview: false
+problem: "A portfolio asserts craft in prose that nobody can check, on a page that usually contradicts it."
+stack:
+  - typescript
+  - nextjs
+  - react
+  - css
+  - tailwind
+  - mdx
+  - playwright
+  - vitest
+  - github-actions
+  - accessibility
+  - web-performance
+  - system-design
+metrics:
+  - label: "Home page JavaScript"
+    before: "118.5 KB gz"
+    after: "114.8 KB gz"
+    method: "size-limit over the exact scripts the built out/index.html references, gzipped, excluding the nomodule polyfill bundle"
+  - label: "Accessibility violations"
+    after: "0"
+    method: "axe-core via Playwright on every built route, in both themes, with the mobile sheet and command palette open"
+  - label: "Syntax highlighter shipped to the reader"
+    before: "~40 KB gz"
+    after: "0 KB"
+    method: "Shiki runs in rehype-pretty-code during next build; no highlighter appears in any route's chunk list"
+  - label: "Merge gates observed failing"
+    after: "5 of 5"
+    method: "A deliberately bad pull request carrying one contrast violation and one 200 KB dependency, run in CI and read job by job"
+links:
+  - label: "Repository"
+    href: "https://github.com/rahul-rocket/rahul-rocket.github.io"
+publishedAt: 2026-08-05
+---
+
+## Overview
+
+This site is a statically exported Next.js application that serves as both a
+professional record and the evidence for it. It has an OKLCH design-token layer
+with two fully designed themes, a typed and schema-validated content model, and
+a continuous-integration pipeline where accessibility violations, per-route byte
+budgets and Lighthouse regressions each block a merge. The backlog of what it
+has *not* done is published alongside it.
+
+## The Problem
+
+Every engineering portfolio makes the same claim — this person builds good
+software — and almost none of them offer a way to check it. The claim is made in
+prose, on a page that frequently loads three hundred kilobytes of JavaScript to
+render four hundred words, traps a keyboard user in a mobile menu, and fails a
+contrast check on its own accent colour. The medium contradicts the message, and
+the audience for the message is precisely the audience equipped to notice.
+
+That is not a design problem. It is a verification problem, and it has a
+specific shape: the qualities a portfolio most wants to demonstrate —
+performance, accessibility, judgment under constraint — are exactly the ones
+that decay silently. A site can be fast on the day it launches and slow six
+commits later, and nothing about the codebase will say so. The author will not
+notice, because the author is on a fast machine with a warm cache, and neither
+will a reviewer, because a bundle that grew by nine kilobytes looks identical to
+one that did not.
+
+The second half of the problem is honesty about scope. A portfolio is written
+once and then represents its author indefinitely, so the pressure to state
+intentions as accomplishments is constant and structural. "Fully accessible" is
+easy to write and expensive to be; "95+ Lighthouse" is a number from a run
+nobody can reproduce. Any solution that relies on the author remembering to be
+accurate is a solution that fails on the first busy week.
+
+Both halves point at the same answer: the claims have to be checked by
+something that is not the author, on every change, and the checks have to be
+observed failing before they are believed.
+
+## Constraints
+
+- **No server.** The site is published on GitHub Pages, so there are no API
+  routes, no middleware, no server actions, no incremental regeneration, no
+  runtime image optimisation and no custom response headers. Every dynamic route
+  must be enumerable at build time.
+- **One author.** No design partner, no content management system, and no budget
+  for a service that has to be paid for monthly.
+- **A hard byte budget per route**, enforced in CI, which cannot be raised to
+  make a feature fit.
+- **WCAG 2.2 AA as a floor**, AAA for body-text contrast, verified in both
+  themes.
+- **Everything must work with JavaScript disabled** — including navigation,
+  content, and every scroll-revealed section.
+
+## Options Considered
+
+**A hosted site builder or a portfolio template.** Fastest to a live page, and
+disqualified by the premise: a template makes the argument that its author can
+configure a template. It also puts the performance and accessibility of the
+result outside the author's control, which is the one thing that most needed to
+be inside it.
+
+**A single-page application with client-side routing.** The conventional choice,
+and genuinely better for a reader who visits several pages in a session. It was
+built — `next/link` on every navigation, focus management on route change, an
+announcer for screen readers — and then measured. Client routing cost **3.95 KB
+gzipped on every route**, which took the home page from 117.79 KB to 121.74 KB
+against a 120 KB gate.
+
+**A statically exported multi-page application.** Every route a real document
+load. Slower transitions in theory; on a static export a navigation is a cache
+hit and a paint, so the difference is close to nothing in practice.
+
+**A server-rendered application on a host with real headers.** The most
+capable option, and the one that would allow a content security policy worth
+having. It costs a running service to secure, patch and pay for, in exchange for
+capabilities the content of this site does not use.
+
+## The Decision
+
+Statically exported, multi-page, and no client router.
+
+The measurement decided it, but the reasoning survives the measurement: on a
+document load the browser already gives correct focus placement, a correct
+announcement, and a mobile menu that closes because the document was replaced.
+The client-routing version had to reimplement all three, and each reimplementation
+is a thing that can regress. Four moving parts were deleted and the behaviour was
+identical.
+
+**The cost of this was** a full document load on every internal navigation, and
+the loss of any page-transition animation more elaborate than a paint. Both were
+accepted knowingly, and the trade-off is now pinned by a test: `route-change.spec.ts`
+asserts that navigation *is* a document load, so reintroducing a client router
+fails the suite rather than silently removing three guarantees it was providing
+for free.
+
+Hosting on GitHub Pages carried a second, unavoidable cost: no security headers.
+There is no content security policy, because there is nowhere to set one. That
+is recorded as a known limitation rather than worked around, and the migration
+path — a host that serves headers — is written down against the day it matters.
+
+## Architecture
+
+<Diagram
+  title="Build and publish pipeline"
+  description="Content files and typed records are validated by Zod schemas, compiled by Next.js into a static export, gated by five checks in CI, and published to GitHub Pages."
+  viewBox="0 0 860 300"
+  equivalent={
+    <>
+      Content enters from two sources: MDX files with YAML frontmatter, and
+      TypeScript record files. Both pass through Zod schemas, so malformed
+      content fails the build rather than rendering a broken page. Next.js
+      compiles them — with Shiki highlighting code at build time — into a fully
+      static tree in <code>out/</code>. Five gates then run against that
+      directory rather than against the source: export assertions, an internal
+      link check, per-route gzip budgets, axe accessibility scans in both
+      themes, and Lighthouse. Only a build that clears all five is published,
+      and publishing is a separate deliberate act — merging to the mainline
+      branch deploys nothing.
+    </>
+  }
+>
+  <g className="text-border-strong">
+    <rect x="20" y="40" width="150" height="60" rx="8" />
+    <rect x="20" y="130" width="150" height="60" rx="8" />
+    <rect x="230" y="85" width="150" height="60" rx="8" />
+    <rect x="440" y="85" width="150" height="60" rx="8" />
+    <rect x="650" y="85" width="180" height="60" rx="8" />
+    <rect x="440" y="200" width="390" height="60" rx="8" />
+  </g>
+  <g className="text-text-muted" strokeWidth="1.25">
+    <path d="M170 70 h30 q15 0 15 15 v20 q0 10 10 10 h5" />
+    <path d="M170 160 h30 q15 0 15 -15 v-20 q0 -10 10 -10 h5" />
+    <path d="M380 115 h55" markerEnd="url(#arrow)" />
+    <path d="M590 115 h55" markerEnd="url(#arrow)" />
+    <path d="M515 145 v50" markerEnd="url(#arrow)" />
+  </g>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" stroke="none" />
+    </marker>
+  </defs>
+  <g className="fill-current text-text" strokeWidth="0" fontSize="14" fontFamily="var(--ui-font-body)">
+    <text x="95" y="66" textAnchor="middle">MDX + frontmatter</text>
+    <text x="95" y="84" textAnchor="middle" className="text-text-muted">posts, case studies</text>
+    <text x="95" y="156" textAnchor="middle">TypeScript records</text>
+    <text x="95" y="174" textAnchor="middle" className="text-text-muted">skills, experience</text>
+    <text x="305" y="112" textAnchor="middle">Zod schemas</text>
+    <text x="305" y="130" textAnchor="middle" className="text-text-muted">fail the build</text>
+    <text x="515" y="112" textAnchor="middle">next build</text>
+    <text x="515" y="130" textAnchor="middle" className="text-text-muted">static export</text>
+    <text x="740" y="112" textAnchor="middle">GitHub Pages</text>
+    <text x="740" y="130" textAnchor="middle" className="text-text-muted">deliberate promotion</text>
+    <text x="635" y="226" textAnchor="middle">five gates over out/</text>
+    <text x="635" y="244" textAnchor="middle" className="text-text-muted">export · links · budgets · axe · Lighthouse</text>
+  </g>
+</Diagram>
+
+The load-bearing detail is that every gate runs against `out/`, not against the
+source. A budget measured on source files is a budget measured on something no
+reader downloads.
+
+## Implementation Highlights
+
+**The byte budget is derived from the served HTML.** The obvious configuration —
+a glob over the chunk directory — reports 236 KB for this site, while the home
+page actually downloads about 111 KB. The difference is chunks no visitor of
+that route ever requests, including a set the Pages Router emits and the App
+Router never loads. A budget measured that way fails on bytes nobody pays for,
+and, worse, would pass a route that doubled its real payload as long as some
+unrelated chunk shrank. So each route's budget is generated by reading the
+scripts and stylesheets its own `index.html` references:
+
+```js
+function assetsOf(htmlPath, extension) {
+  const html = readFileSync(join(OUT, htmlPath), 'utf8')
+  const pattern = new RegExp(`(?:src|href)="(/_next/[^"]+\\.${extension})"`, 'g')
+  const paths = new Set()
+  for (const match of html.matchAll(pattern)) {
+    if (extension === 'js' && /\/polyfills-/.test(match[1])) continue
+    paths.add(`out${match[1]}`)
+  }
+  return [...paths]
+}
+```
+
+Adding a route adds a budget automatically. Nobody has to remember.
+
+**Scroll reveals ship no animation library and cannot strand content.** The
+conventional implementation makes a motion library a dependency of every page
+and pushes a client boundary high into the tree. Instead one shared
+`IntersectionObserver` toggles one attribute, and the animation is entirely in
+CSS — 0.14 KB measured. The guarantee that follows is the valuable part: the
+served HTML contains no `opacity: 0`. The attribute that hides an element is
+added *after* hydration, and only to elements that are off-screen at mount. A
+disabled script, a hydration failure, an observer that never fires, and a
+reduced-motion preference all land on "content visible", because there is no
+code path that hides anything before JavaScript has run.
+
+**Both overlays are native `<dialog>` elements.** `showModal()` supplies focus
+containment, Escape handling, focus restoration and an inert background — four
+behaviours that are otherwise hand-written, subtly wrong, and untested. The
+mobile menu's trigger is hidden until a boot script confirms JavaScript ran,
+because a button whose only behaviour is `showModal()` is a dead control
+without it, and the footer site map is the documented fallback.
+
+## Challenges & Solutions
+
+**A 9.4 KB cost that three milestones of documentation had misattributed.** The
+home page measured 118.51 KB while the blog index, with more client components
+on it, measured 108.72 KB. The recorded explanation was React's client runtime —
+"a one-time tax paid the instant a route has any interactivity". Three probe
+builds said otherwise. A client component with state and no class-merging helper
+costs **0.27 KB**; the same component importing the project's `cn` utility costs
+**9.37 KB**, because `cn` wraps `tailwind-merge`, which carries a table of every
+conflicting utility group. React's runtime is real and had been in the shared
+layout chunk for two milestones, already paid by every route. The actual cost
+was one import in one file, and it was being paid for a call with a single
+argument — a merge of nothing.
+
+The fix returned 9.79 KB and the finding became a rule: `cn` is free in a Server
+Component and expensive in a Client Component.
+
+**A keyboard trap only Safari had.** The command palette focuses its search
+field on open. Safari gives a focused text field first refusal on Escape — its
+native "revert the value" behaviour — so the key never reached the dialog's
+cancel step, and the palette could not be closed from the keyboard at all.
+Chromium and Firefox handle Escape in `showModal()` and were both green. It was
+caught by the WebKit project in CI, on a Linux runner, and the corroborating
+detail is that a second, independently written palette on another branch failed
+the identical assertion for the identical reason.
+
+**A gate that was only ever observed passing.** The bundle-size comment on pull
+requests had never posted, and the verification run explained why twice over:
+the package manager printed its run banner ahead of the JSON, so the redirected
+file never parsed, and `size-limit` exits non-zero when over budget, so the pull
+request most in need of a size comment was the one guaranteed not to get one.
+A gate only ever observed passing is not known to work — and neither is one only
+ever observed failing in the way you expected.
+
+## Outcome
+
+<Metrics>
+  <Metric
+    label="Home page JavaScript"
+    before="118.5 KB gz"
+    after="114.8 KB gz"
+    method="size-limit over the exact scripts out/index.html references, gzipped"
+  />
+  <Metric
+    label="Accessibility violations across every route, both themes"
+    after="0"
+    method="axe-core via Playwright, including both overlays while open"
+  />
+  <Metric
+    label="Syntax highlighter shipped to the reader"
+    before="~40 KB gz"
+    after="0 KB"
+    method="Shiki runs at build time; no highlighter appears in any route's chunk list"
+  />
+  <Metric
+    label="Merge gates observed failing on a deliberately bad change"
+    after="5 of 5"
+    method="One contrast violation plus one 200 KB dependency, run in CI and read job by job"
+  />
+</Metrics>
+
+The number that matters least is the byte count and the one that matters most is
+the last row. Every gate on this project has been watched failing on a change
+designed to break it, which is the only evidence that it would catch a change
+that was not.
+
+## What I'd Do Differently
+
+I built the design-token layer, then the component layer, then the first page —
+and the first page immediately produced a measurement that changed how three of
+those components should have been written. Building the hero *first*, against
+raw tokens, would have surfaced the client-boundary cost a milestone earlier and
+saved a rewrite of two components. The instinct to complete a layer before
+consuming it is tidy and, here, was wrong.
+
+I would also have written the contrast contract to enumerate surfaces rather
+than pairs. The checker verifies every declared text-and-background combination
+and passes cleanly — while one surface role has no text pair declared at all, so
+text placed on it is unverified by construction. An accessibility audit found a
+real failure there that the checker could not see. A tool that checks only the
+pairs somebody thought to declare has a hole shaped exactly like the thing
+nobody thought of, and enumerating from the token set rather than from a
+hand-written list would have closed it before it cost anything.

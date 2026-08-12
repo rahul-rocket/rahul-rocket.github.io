@@ -1,0 +1,296 @@
+/*
+ * DESIGN TOKENS — primitive layer
+ * docs/DESIGN_SYSTEM.md §2
+ *
+ * Plain `:root` custom properties, deliberately NOT a Tailwind `@theme` block.
+ * Reason: this file must be readable by three consumers — Tailwind utilities,
+ * raw CSS/JS (GSAP, canvas, the contrast script), and standalone HTML mockups
+ * opened over file://. `@theme` only exists inside Tailwind's compilation
+ * context, so a mockup would render unstyled. globals.css bridges the two with
+ * `@theme inline`, which maps Tailwind's namespace onto these vars without
+ * duplicating a single value.
+ *
+ * NAMING (F0-04, DESIGN_SYSTEM §2). One rule: a variable that Tailwind v4 would
+ * own is prefixed `--ui-`. The owned namespaces are --color-* --font-* --text-*
+ * --leading-* --tracking-* --radius-* --ease-* --shadow-*. Without the prefix a
+ * bridge entry reads `--radius-md: var(--radius-md)` — both sides land on
+ * `:root`, the variable resolves to itself, and the utility emits nothing.
+ * Variables Tailwind does not own (--ink-*, --space-*, --duration-*, --width-*)
+ * keep their plain names, because nothing forces them to change.
+ *
+ * The type scale is `--ui-font-size-*` rather than `--ui-text-*` so that a size
+ * token is never mistaken for the `--ui-text*` text COLORS in themes.css.
+ *
+ * Nothing here is semantic. Roles are assigned in themes.css.
+ */
+
+:root {
+	/* ---------------------------------------------------------------
+   * Color primitives — OKLCH
+   *
+   * OKLCH because lightness is perceptually uniform: L=0.60 looks equally
+   * bright at every hue, so a hue change cannot silently break a contrast
+   * ratio the way it does in HSL.
+   *
+   * Ink: a near-neutral with a slight cool cast (chroma 0.008–0.016 at hue
+   * 264). Pure gray reads as cheap on a dark background; a trace of chroma
+   * reads as considered. Warm variant used by the Editorial direction.
+   * --------------------------------------------------------------- */
+
+	--ink-50: oklch(97.5% 0.004 264);
+	--ink-100: oklch(94% 0.005 264);
+	--ink-200: oklch(87% 0.007 264);
+	/* 300 and 400 are two steps lighter than they were, and 500 is unused by any
+	   semantic role now. The reason is the aurora: `--ui-text-muted` and
+	   `--ui-text-subtle` are asserted against the COMPOSITED backdrop, not
+	   against --ui-bg, so a wash strong enough to see is a wash that eats their
+	   headroom. Lightening the ink is the correct half of that trade — it raises
+	   contrast for every reader, on every surface, including the ones with no
+	   wash at all. Darkening the wash instead would have been paying for the
+	   text with the design. */
+	--ink-300: oklch(82% 0.01 264);
+	--ink-400: oklch(72% 0.012 264);
+	--ink-500: oklch(55% 0.013 264);
+	--ink-600: oklch(45% 0.014 264);
+	--ink-700: oklch(35% 0.014 264);
+	--ink-800: oklch(27% 0.017 264);
+	--ink-850: oklch(22% 0.017 264);
+	--ink-900: oklch(18% 0.016 264);
+	--ink-950: oklch(14% 0.015 264);
+	/* The darkest step carries MORE chroma than the lightest, not less, and that
+	   inversion is deliberate. A near-black at chroma 0.004 is the colour of a
+	   switched-off display; the same lightness at 0.016 reads as a deep blue-ink
+	   that the eye accepts as a surface. It is the cheapest single change in this
+	   file — no extra bytes, no extra layer — and it is most of the difference
+	   between "dark theme" and "the lights are off". */
+	--ink-1000: oklch(10.5% 0.016 264);
+
+	/* Accent — teal-cyan. Direction B, "Instrument", is locked (DS-11); the
+     Editorial ochre and Signal violet candidates and their sand neutrals were
+     deleted with it, per DS-11's acceptance criterion.
+
+     Tuned so the -500 step clears 4.5:1 on its own dark surface and the -700
+     step clears 4.5:1 on light — one hue, usable as a link color in both
+     themes without a second. */
+	--teal-300: oklch(90% 0.08 195);
+	--teal-500: oklch(84% 0.125 195);
+	--teal-600: oklch(70% 0.115 197);
+	/* The light theme's accent, and the tightest number in this file. It is
+	   asserted at 4.5:1 against the light aurora's composited peak — a
+	   near-white tinted surface — so every 1% of lightness here is contrast the
+	   design cannot get back. It sat at 52.5% and failed at 4.27:1 the moment
+	   the wash became visible enough to be worth having. */
+	--teal-700: oklch(45% 0.076 205);
+	--teal-800: oklch(39% 0.064 205);
+
+	/* ---------------------------------------------------------------
+   * THE DECORATIVE SPECTRUM — DS-14. Read this before using either hue.
+   *
+   * DESIGN_SYSTEM §3 says "exactly one accent ships", and that rule is intact:
+   * teal is still the ONLY hue that carries meaning. Links, focus, filled
+   * buttons, the current-page marker, every stateful affordance — all teal, on
+   * both themes, verified by check:contrast.
+   *
+   * What these two add is a SPECTRUM FOR LIGHT, not a second and third accent.
+   * They appear only in gradients that sit behind content — the aurora mesh,
+   * the display-heading fill, the glow under a raised card. The distinction is
+   * enforceable and worth stating as a test a reviewer can apply:
+   *
+   *   Could a reader who sees this hue as grey miss information?
+   *     yes → it is an accent, and it must be teal
+   *     no  → it is spectrum, and it may be indigo or violet
+   *
+   * Concretely: NEVER set `color` on a text node to one of these, never use
+   * one as a border on a control, never use one as the only difference between
+   * two states. `--ui-gradient-text` is the one exception and it is not an
+   * exception at all — it fills a display heading whose contrast is asserted
+   * against its darkest stop, so the heading is readable if the gradient never
+   * paints at all.
+   *
+   * The hues are ~70° apart in OKLCH (195 → 265 → 305). Closer and the mesh
+   * reads as a smudge of one color; further and it reads as two designs
+   * fighting. Chroma is held near the teal's so no stop dominates.
+   * --------------------------------------------------------------- */
+	--indigo-300: oklch(86% 0.07 265);
+	--indigo-500: oklch(72% 0.135 265);
+	--indigo-600: oklch(62% 0.15 265);
+	--indigo-700: oklch(50% 0.14 265);
+
+	--violet-300: oklch(87% 0.065 305);
+	--violet-500: oklch(74% 0.125 305);
+	--violet-600: oklch(64% 0.14 305);
+	--violet-700: oklch(52% 0.13 305);
+
+	/* Status. Never the accent — status must not be confusable with brand. */
+	/* The -500 steps are lighter than they were, and the -700 steps darker, for
+	   the same reason the ink moved: both are asserted against the COMPOSITED
+	   backdrop rather than against a flat --ui-bg, and a status colour that
+	   fails on the one page carrying a strong wash is a status colour that
+	   fails. */
+	--success-500: oklch(84% 0.16 152);
+	--success-700: oklch(44% 0.11 152);
+	--warning-500: oklch(87% 0.13 86);
+	--warning-700: oklch(45% 0.1 62);
+	--danger-500: oklch(78% 0.12 25);
+	--danger-700: oklch(45% 0.17 25);
+
+	/* ---------------------------------------------------------------
+   * Typography
+   * --------------------------------------------------------------- */
+
+	/* Stacks are placeholders pending the DS-04 licensing decision. Each names
+     the intended face first, then the metric-matched fallback declared in
+     globals.css, then a system stack — so proportions are honest before a
+     woff2 file exists and the eventual swap costs zero layout shift (DS-05).
+
+     The Editorial serif display stack was deleted with direction A. */
+	--ui-font-grotesque:
+		"Neue Haas Grotesk Display", "Instrument Fallback", "Inter Tight", "Inter",
+		ui-sans-serif, system-ui, sans-serif;
+	--ui-font-text:
+		"Inter", "Instrument Fallback", ui-sans-serif, system-ui, -apple-system,
+		sans-serif;
+	--ui-font-mono:
+		"Berkeley Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
+		monospace;
+
+	/* Fluid scale. Ratio ~1.25 at 360px widening to ~1.333 at 1280px.
+     clamp() preferred term is in vw so it tracks the viewport continuously —
+     no breakpoint jumps in type size. */
+	/* `mega` is the hero headline and nothing else. `display` tops out at 5.5rem,
+     which does not read as large at 1920px and above — large type is real
+     premium vocabulary, not decoration, and the hero is the one place the site
+     can afford it. Optical tracking must tighten as size grows (below) or big
+     type reads loose. */
+	--ui-font-size-mega: clamp(3.25rem, 1.2rem + 9vw, 8rem);
+	--ui-font-size-display: clamp(2.75rem, 1.6rem + 5.1vw, 5.5rem);
+	--ui-font-size-h1: clamp(2rem, 1.45rem + 2.45vw, 3.25rem);
+	--ui-font-size-h2: clamp(1.5rem, 1.24rem + 1.16vw, 2.125rem);
+	--ui-font-size-h3: clamp(1.25rem, 1.14rem + 0.49vw, 1.5rem);
+	/* The lede is its own step, between h3 and body, and it exists because the
+	   alternative kept losing. A one-line purpose statement set at body size
+	   under a 5rem headline is not a hierarchy, it is a caption — the reader's
+	   eye skips from the headline to the buttons and the sentence that explains
+	   the site goes unread. One step up and 12% tighter leading than body is
+	   enough to make it the second thing read rather than the fifth. */
+	--ui-font-size-lede: clamp(1.125rem, 1.02rem + 0.46vw, 1.375rem);
+	--ui-font-size-body: clamp(1rem, 0.96rem + 0.18vw, 1.125rem);
+	--ui-font-size-sm: 0.875rem;
+	--ui-font-size-xs: 0.8125rem; /* floor — DESIGN_SYSTEM §4 */
+
+	--ui-leading-mega: 0.92;
+	--ui-leading-display: 1.02;
+	--ui-leading-heading: 1.12;
+	--ui-leading-lede: 1.5;
+	--ui-leading-body: 1.7;
+
+	--ui-tracking-mega: -0.045em;
+	--ui-tracking-display: -0.034em;
+	--ui-tracking-heading: -0.02em;
+	--ui-tracking-lede: -0.011em;
+	--ui-tracking-body: 0em;
+	--ui-tracking-caps: 0.1em;
+
+	/* ---------------------------------------------------------------
+   * Space — 4px base, constrained scale
+   * --------------------------------------------------------------- */
+
+	--space-0_5: 0.125rem;
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-6: 1.5rem;
+	--space-8: 2rem;
+	--space-12: 3rem;
+	--space-16: 4rem;
+	--space-24: 6rem;
+
+	--space-section: clamp(4rem, 10vw, 9rem);
+	--space-gutter: clamp(1.25rem, 5vw, 2.5rem);
+
+	--width-prose: 72ch;
+
+	/* The layout container — 1440px, RAISED FROM 1200px, and the raise is safe
+	   for exactly one reason: this token constrains LAYOUT, never MEASURE.
+	   `--width-prose` below is untouched, and every route that renders continuous
+	   copy passes `width="reading"` to `PageContainer`, so no paragraph on the
+	   site got 240px longer. What did get wider is the header bar, the footer
+	   site map, and the card grids — the three places where a 1200px cap on a
+	   1600px display reads as a page that has not noticed the window.
+
+	   Changing it here changes all three at once, which is the whole argument for
+	   the token: `max-w-page` is bridged from this in globals.css and is the only
+	   spelling of the container width in the codebase. */
+	--width-container: 1440px;
+
+	/* Two measures that are not the prose measure, and must not be confused with
+	   it. `--width-prose` is the reading column: the width at which continuous
+	   body copy is comfortable. These two are display measures, where the
+	   constraint is the opposite — the text is short and the risk is a single
+	   line running the full 1200px container.
+
+	   `--width-headline` caps the mega hero heading at roughly two lines, which
+	   is what makes `text-wrap: balance` produce a deliberate shape rather than
+	   whatever the viewport happens to allow. `--width-lede` is tighter than
+	   prose because a lede is scanned, not read. Both are `ch`, so they track
+	   the type size rather than fighting it. DESIGN_SYSTEM §5. */
+	--width-headline: 16ch;
+	--width-lede: 56ch;
+
+	/* The hero frame — WEBSITE_STRUCTURE.md §4.1: "Hero ≈ 85vh, never 100vh — a
+	   visible content edge tells the reader to scroll." That rule is the reason
+	   this is a token and not a number in the component: 100vh is the value
+	   somebody reaches for by default, and the difference between the two is
+	   invisible in a diff unless the intent has a name.
+
+	   `svh`, not `vh`: on mobile browsers `vh` is the viewport with the URL bar
+	   retracted, so an 85vh hero is taller than the visible screen on first
+	   paint — which removes the content edge the rule exists to guarantee. */
+	--hero-min-height: 85svh;
+
+	/* The sticky header's block size. A token rather than a number in the
+	   component because three unrelated places must agree with it: the header
+	   itself, `scroll-margin-top` on every anchor target (or a skip link lands
+	   the reader underneath the header — ACCESSIBILITY.md §"Never scroll focus
+	   off-screen"), and the mobile sheet's top offset. Two of those three are
+	   invisible when wrong, which is what makes a shared name worth having.
+
+	   It does NOT change on scroll. See the note in site-header.tsx: condensing
+	   by height would animate layout and put the CLS budget at risk, so the
+	   condensed state is expressed in surface, not in size. */
+	--header-height: 4.5rem;
+
+	/* ---------------------------------------------------------------
+   * Radius / borders
+   * --------------------------------------------------------------- */
+
+	--ui-radius-sm: 6px;
+	--ui-radius-md: 10px;
+	--ui-radius-lg: 18px;
+	/* Two large steps, for the panels that hold a whole section rather than a
+	   card: the hero frame, the CTA panel, the proof strip. A radius that reads
+	   as generous at 320px reads as timid at 1200px, so the panel scale is
+	   larger than the card scale rather than the same number reused. Anything
+	   above `xl` is a pill, and the pill is `full`. */
+	--ui-radius-xl: 24px;
+	--ui-radius-2xl: 32px;
+	--ui-radius-full: 9999px;
+	--border-hairline: 1px;
+
+	/* Inline links are underlined, always — DESIGN_SYSTEM §3 "never color alone".
+	   em-relative so the offset tracks the type size rather than fighting it. */
+	--underline-offset: 0.15em;
+
+	/* ---------------------------------------------------------------
+   * Motion — DESIGN_SYSTEM §7
+   * --------------------------------------------------------------- */
+
+	--duration-instant: 100ms;
+	--duration-fast: 150ms;
+	--duration-base: 250ms;
+	--duration-slow: 400ms;
+
+	--ui-ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+	--ui-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}

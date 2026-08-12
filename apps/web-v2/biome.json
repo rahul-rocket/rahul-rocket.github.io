@@ -1,0 +1,146 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.5.6/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"files": {
+		"includes": [
+			"**",
+			"!out",
+			"!.next",
+			"!node_modules",
+			"!next-env.d.ts",
+			"!pnpm-lock.yaml",
+			"!yarn.lock",
+			"!public/manifest.json",
+			"!design"
+		]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"lineWidth": 80,
+		"lineEnding": "lf"
+	},
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "single",
+			"semicolons": "asNeeded",
+			"trailingCommas": "all",
+			"jsxQuoteStyle": "double"
+		}
+	},
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"preset": "recommended",
+			"suspicious": {
+				"noExplicitAny": "error"
+			},
+			"style": {
+				"noNonNullAssertion": "error",
+				"useImportType": "error"
+			}
+		}
+	},
+	"overrides": [
+		{
+			"includes": ["src/features/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": ["@/app/**"],
+										"message": "F0-07: features/ must not import from app/. Dependencies point downward only — docs/ARCHITECTURE.md §5."
+									},
+									{
+										"group": ["@/features/*/**"],
+										"message": "F0-07: a feature is reachable only through its barrel — `@/features/projects`, never `@/features/projects/components/...`. Inside your own feature, use a relative import. docs/ARCHITECTURE.md §5."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/components/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": ["@/features/**", "@/app/**"],
+										"message": "F0-07: components/ is cross-domain and must not know about a feature or a route. docs/ARCHITECTURE.md §5."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/lib/**", "src/config/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": ["@/features/**", "@/components/**", "@/app/**"],
+										"message": "F0-07: lib/ and config/ are the bottom layer — they may import each other and nothing above. docs/ARCHITECTURE.md §5."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["src/styles/themes.css", "src/styles/print.css"],
+			"linter": {
+				"rules": {
+					"complexity": {
+						"noImportantStyles": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["scripts/**", "*.mjs", "*.config.mjs"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noConsole": "off"
+					}
+				}
+			}
+		}
+	]
+}

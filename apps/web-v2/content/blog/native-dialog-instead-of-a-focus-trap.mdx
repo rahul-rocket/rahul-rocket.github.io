@@ -1,0 +1,112 @@
+---
+title: "Deleting the focus trap I wrote twice"
+summary: "Two modals, two hand-rolled focus traps, and both got the same edge cases wrong. The native dialog element supplies all five behaviours and cannot regress."
+publishedAt: 2026-04-11
+tags: [accessibility, react, typescript]
+---
+
+A modal has to do five things beyond appearing. Focus has to move into it. Focus
+has to stay inside it while it is open. Escape has to close it. Focus has to
+return to whatever opened it. And the rest of the page has to become inert, so a
+screen reader's virtual cursor does not wander behind the overlay.
+
+I have written that five times in my career. It is roughly ninety lines, it
+involves a `querySelectorAll` for a list of focusable-element selectors that
+everyone copies from the same blog post, and it has never once been completely
+correct.
+
+This time I deleted it and used `<dialog>`.
+
+## What the ninety lines actually get wrong
+
+The hand-rolled trap is a `keydown` handler on the dialog that watches for Tab,
+finds the first and last focusable descendants, and wraps. It works for a
+keyboard user pressing Tab. It does not work for:
+
+- **A screen reader's virtual cursor.** VoiceOver and NVDA can move through a
+  document without moving DOM focus at all. Nothing about a Tab handler stops
+  that, so the reader browses the page behind the modal, hears content that is
+  visually hidden from everyone else, and has no idea where they are.
+- **Find-in-page.** Ctrl+F scrolls the document behind the overlay.
+- **The focusable-selector list.** It is a fixed string, so it is wrong the day
+  something gains `contenteditable`, or a `<summary>`, or a custom element with
+  a delegated tab index. It also matches elements that are focusable but hidden
+  by CSS, which produces an invisible stop in the tab cycle — the classic
+  "pressing Tab does nothing" bug.
+- **`inert`.** Very few hand-rolled traps set it, because it did not exist when
+  the pattern was written and nobody went back.
+
+Every one of those is a real defect that a test asserting "Tab wraps from the
+last element to the first" reports as green.
+
+## What `showModal()` gives you
+
+```ts
+dialogRef.current?.showModal()
+```
+
+That is the whole implementation of all five behaviours. The browser moves focus
+in, contains it, handles Escape via the `cancel` event, restores focus to the
+previously focused element on close, and makes everything outside the dialog
+inert — not "aria-hidden", genuinely inert, which is a stronger guarantee that
+the virtual cursor also respects. The dialog is rendered in the top layer, so it
+is above every stacking context by definition and a `position: sticky` ancestor
+cannot trap it.
+
+On this site both overlays use it: the mobile navigation sheet and the ⌘K command
+palette. Neither carries a focus trap, and there is no library involved — the
+Radix dialog I had budgeted about 4.5 KB for was never installed.
+
+The parts that remain yours are the parts that should be: the backdrop click,
+the open state, and whether the trigger is rendered at all.
+
+## The one thing it does not give you, and how I found out
+
+The command palette focuses its search input when it opens. In Safari, that
+turned out to disable the one behaviour I was relying on most.
+
+**WebKit gives a focused text field first refusal on Escape.** It is native
+behaviour — Escape in a text input reverts the value — and it consumes the key,
+so it never reached the dialog's cancel step. Chromium and Firefox both handle
+Escape at the dialog level regardless of what is focused inside it, and both were
+green.
+
+The result was a keyboard trap in the strictest sense: a Safari user could open
+the palette and could not close it from the keyboard at all. On a component whose
+entire purpose is keyboard navigation.
+
+It was caught by the WebKit project in CI, on a Linux runner, and the
+corroborating detail is the one that convinced me it was real rather than flaky:
+a second, independently written palette on another branch failed the identical
+assertion for the identical reason. Two implementations, one bug, one cause.
+
+The fix is three lines in the dialog's existing key handler:
+
+```tsx
+onKeyDown={(event) => {
+  if (event.key === 'Escape') {
+    // Safari lets the focused text field consume Escape before the dialog's
+    // own cancel step ever runs, so close explicitly. No preventDefault: on
+    // every other engine the native handler is still the one we want, and
+    // suppressing it here would replace one engine's behaviour with ours
+    // everywhere.
+    dialogRef.current?.close()
+  }
+}}
+```
+
+## What I would tell myself five implementations ago
+
+**Reach for the platform first, and read what it actually guarantees.** I had
+half-remembered `<dialog>` as "the one with the polyfill problems", which was
+true in 2019 and has not been for years.
+
+**A test that passes on one engine is a test about that engine.** The Escape bug
+is invisible on Chromium — not flaky, not intermittent, simply absent. Running
+three engines in CI is what turned it from a bug a Safari user would have
+reported into a bug I fixed before anyone met it.
+
+**The hand-rolled version was not more flexible, it was more surface.** Every one
+of those ninety lines was a line that could regress under a refactor by someone
+who did not know which edge case it existed for. The browser's version cannot
+regress, because it is not in my repository.

@@ -3,3 +3,10 @@ node_modules
 .turbo
 dist
 pnpm-lock.yaml
+out
+
+# apps/web-v2 is formatted by Biome (tabs, single quotes, 80 cols -- see
+# apps/web-v2/biome.json). Prettier and Biome disagree on every one of those,
+# so running both over the same files would rewrite the whole app on each
+# `pnpm format`. Biome owns that workspace; Prettier owns the rest.
+apps/web-v2

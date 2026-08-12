@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Instrument — Home hero reference</title>
+    <link rel="stylesheet" href="../src/styles/tokens.css" />
+    <link rel="stylesheet" href="../src/styles/themes.css" />
+    <link rel="stylesheet" href="../src/styles/surfaces.css" />
+    <style>
+      /* ------------------------------------------------------------------
+       * Home hero reference — direction B, "Instrument". DS-11 is decided;
+       * this file replaces the three-way comparison it was decided from
+       * (design/hero-directions.html, deleted — see git history for A and C).
+       *
+       * It now serves a second purpose: it is the standalone proof of the
+       * SURFACE LAYER (docs/redesign/DESIGN_SYSTEM.md §2) — aurora, grain,
+       * glass, gradient hairline, glow — over file://, with no build step.
+       * That is precisely why those tokens are plain :root custom properties
+       * and not a Tailwind @theme block.
+       *
+       * Mockup-only scaffolding. Nothing here ships; M6 rebuilds it as
+       * components. Every color, size, space and duration is a token — a
+       * literal appearing below is a bug in the token set, not a shortcut.
+       * ------------------------------------------------------------------ */
+
+      *, *::before, *::after { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--ui-bg);
+        color: var(--ui-text);
+        font-family: var(--ui-font-body);
+        font-size: var(--ui-font-size-body);
+        line-height: var(--ui-leading-body);
+        -webkit-font-smoothing: antialiased;
+      }
+      a { color: inherit; }
+      :focus-visible { outline: 2px solid var(--ui-focus); outline-offset: 2px; }
+
+      /* --- harness -------------------------------------------------------- */
+      .harness {
+        position: fixed; inset: auto var(--space-4) var(--space-4) auto; z-index: 20;
+        display: flex; gap: var(--space-2);
+        font-family: var(--ui-font-mono); font-size: var(--ui-font-size-xs);
+      }
+      .harness button {
+        font: inherit; color: var(--ui-text);
+        background: var(--ui-glass-bg);
+        -webkit-backdrop-filter: blur(var(--ui-glass-blur));
+        backdrop-filter: blur(var(--ui-glass-blur));
+        border: var(--border-hairline) solid var(--ui-glass-border);
+        border-radius: var(--ui-radius-full);
+        padding: var(--space-2) var(--space-4);
+        cursor: pointer;
+      }
+
+      /* ==================================================================
+       * The aria-hidden backdrop: aurora + grid + grain, in one element.
+       *
+       * Static. Nothing here animates, ever — a looping blob field is the one
+       * thing on a static site that costs CPU forever, on every device
+       * (ANIMATION_GUIDELINES §10). The movement comes from the reader's
+       * scroll carrying content across it, which is already happening.
+       * ================================================================== */
+      .backdrop {
+        position: absolute; inset: 0; z-index: 0;
+        overflow: hidden;
+        pointer-events: none;
+      }
+      .backdrop::before {
+        content: ''; position: absolute; inset: 0;
+        background-image: var(--ui-aurora);
+      }
+      .backdrop::after {
+        content: ''; position: absolute; inset: 0;
+        background-image: var(--ui-grain);
+        opacity: var(--ui-grain-opacity);
+      }
+      .grid {
+        position: absolute; inset: 0;
+        background-image:
+          repeating-linear-gradient(to right,  var(--ui-grid-line) 0 1px, transparent 1px var(--ui-grid-size)),
+          repeating-linear-gradient(to bottom, var(--ui-grid-line) 0 1px, transparent 1px var(--ui-grid-size));
+        -webkit-mask-image: radial-gradient(70% 55% at 50% 0%, #000 0%, transparent 100%);
+        mask-image: radial-gradient(70% 55% at 50% 0%, #000 0%, transparent 100%);
+      }
+
+      /* --- layout --------------------------------------------------------- */
+      .hero {
+        position: relative;
+        min-height: 85svh; /* never 100 — a visible content edge says "scroll" */
+        display: flex; align-items: center;
+        padding: var(--space-24) var(--space-gutter) var(--space-16);
+        overflow: hidden;
+      }
+      .wrap {
+        position: relative; z-index: 1;
+        width: 100%; max-width: var(--width-container); margin-inline: auto;
+      }
+
+      .eyebrow {
+        display: inline-flex; align-items: center; gap: var(--space-3);
+        font-family: var(--ui-font-mono); font-size: var(--ui-font-size-xs);
+        letter-spacing: var(--ui-tracking-caps); text-transform: uppercase;
+        color: var(--ui-accent);
+        margin: 0 0 var(--space-6);
+      }
+      .eyebrow::before {
+        content: ''; width: var(--space-8); height: 1px; background: var(--ui-accent);
+      }
+
+      /* The LCP element. Not animated, not typed, not revealed — it is simply
+         here, at full opacity, in the served HTML (PERFORMANCE.md §4). */
+      h1 {
+        margin: 0 0 var(--space-8);
+        font-family: var(--ui-font-grotesque);
+        font-size: var(--ui-font-size-mega);
+        line-height: var(--ui-leading-mega);
+        letter-spacing: var(--ui-tracking-mega);
+        font-weight: 600;
+        max-width: 16ch;
+        text-wrap: balance;
+      }
+      h1 .dim { color: var(--ui-text-muted); }
+
+      .lede {
+        max-width: 56ch; margin: 0 0 var(--space-8);
+        color: var(--ui-text-muted);
+      }
+
+      .actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+      .btn {
+        display: inline-flex; align-items: center; gap: var(--space-2);
+        min-height: 44px; /* touch target — UI_GUIDELINES §6 */
+        padding: var(--space-3) var(--space-6);
+        text-decoration: none; font-weight: 500;
+        border-radius: var(--ui-radius-md);
+        transition:
+          background var(--duration-fast) var(--ui-ease-in-out),
+          border-color var(--duration-fast) var(--ui-ease-in-out),
+          box-shadow var(--duration-fast) var(--ui-ease-in-out),
+          transform var(--duration-fast) var(--ui-ease-out-quint);
+      }
+      .btn.primary {
+        background: var(--ui-accent); color: var(--ui-on-accent);
+        border: var(--border-hairline) solid var(--ui-accent);
+      }
+      .btn.primary:hover { background: var(--ui-accent-hover); border-color: var(--ui-accent-hover); box-shadow: var(--ui-glow-accent); }
+      .btn.ghost {
+        background: var(--ui-surface); color: var(--ui-text);
+        border: var(--border-hairline) solid var(--ui-border-strong);
+      }
+      .btn.ghost:hover { background: var(--ui-surface-hover); }
+      .btn:active { transform: translateY(1px); }
+
+      /* --- metrics: hairline grid, tabular figures ------------------------ */
+      .metrics {
+        display: grid; grid-template-columns: repeat(2, 1fr); gap: 0;
+        margin: var(--space-16) 0 0;
+        border-top: var(--border-hairline) solid var(--ui-border);
+      }
+      @media (min-width: 48rem) { .metrics { grid-template-columns: repeat(4, 1fr); } }
+      .metric {
+        padding: var(--space-6) var(--space-4) var(--space-4) 0;
+        border-right: var(--border-hairline) solid var(--ui-border);
+      }
+      .metric:last-child { border-right: none; }
+      .metric dt {
+        font-family: var(--ui-font-mono); font-size: var(--ui-font-size-xs);
+        letter-spacing: var(--ui-tracking-caps); text-transform: uppercase;
+        color: var(--ui-text-subtle); margin-bottom: var(--space-2);
+      }
+      .metric dd {
+        margin: 0; font-family: var(--ui-font-grotesque);
+        font-size: var(--ui-font-size-h2); font-weight: 600;
+        letter-spacing: var(--ui-tracking-heading);
+        /* Reserves width so a counting animation cannot shift layout — the CLS
+           trap in docs/redesign/ANIMATION_GUIDE.md §3, entry 18. */
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* --- a card, to show elevation 1 + gradient hairline + spotlight ----- */
+      .panel {
+        position: relative; z-index: 1;
+        max-width: var(--width-container); margin: var(--space-24) auto;
+        padding: var(--space-8);
+        background: var(--ui-surface);
+        border: var(--border-hairline) solid var(--ui-border);
+        border-radius: var(--ui-radius-lg);
+        box-shadow: var(--ui-glow-soft);
+      }
+      /* Gradient hairline: a ::before behind a padding-box background. NOT
+         border-image (cannot round correctly) and NOT an animated conic
+         gradient (repaints every frame). Hover moves OPACITY only. */
+      .panel::before {
+        content: ''; position: absolute; inset: 0;
+        border-radius: inherit; padding: var(--border-hairline);
+        background: var(--ui-hairline-gradient);
+        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor; mask-composite: exclude;
+        opacity: 0.5;
+        transition: opacity var(--duration-fast) var(--ui-ease-in-out);
+        pointer-events: none;
+      }
+      .panel:hover::before { opacity: 1; }
+      .panel h2 {
+        margin: 0 0 var(--space-3);
+        font-family: var(--ui-font-grotesque);
+        font-size: var(--ui-font-size-h3);
+        letter-spacing: var(--ui-tracking-heading);
+      }
+      .panel p { margin: 0; color: var(--ui-text-muted); max-width: 62ch; }
+      .note {
+        max-width: var(--width-container); margin: 0 auto var(--space-24);
+        padding: 0 var(--space-gutter);
+        font-family: var(--ui-font-mono); font-size: var(--ui-font-size-xs);
+        color: var(--ui-text-subtle);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="harness">
+      <button type="button" id="theme">theme: dark</button>
+    </div>
+
+    <section class="hero">
+      <div class="backdrop" aria-hidden="true"><div class="grid"></div></div>
+      <div class="wrap">
+        <p class="eyebrow">Rahul Rocket</p>
+        <h1>Full Stack Engineer <span class="dim">&amp; Software Architect</span></h1>
+        <p class="lede">
+          I design and deliver production systems end to end — and I can walk you
+          through every decision inside them, including the ones I'd make
+          differently now.
+        </p>
+        <div class="actions">
+          <a class="btn primary" href="#">View projects</a>
+          <a class="btn ghost" href="#">Get in touch</a>
+        </div>
+        <dl class="metrics">
+          <div class="metric"><dt>Years shipping</dt><dd>11</dd></div>
+          <div class="metric"><dt>Systems in production</dt><dd>14</dd></div>
+          <div class="metric"><dt>Peak throughput</dt><dd>10k/s</dd></div>
+          <div class="metric"><dt>Case studies</dt><dd>3</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <div class="panel">
+      <h2>Elevation 1 — card, gradient hairline, soft shadow</h2>
+      <p>
+        A card is elevation 1: surface, hairline, and a gradient border that
+        brightens on hover. It is deliberately not glass. Glass is elevation 2
+        and is reserved for the header, the command palette, and the mobile
+        sheet — small, fixed-position surfaces where backdrop-filter costs
+        nothing. On a card grid it costs a re-sample per card per frame, and it
+        is also what makes a portfolio look like a template.
+      </p>
+    </div>
+
+    <p class="note">
+      Metrics above are placeholder values. Fonts render in the metric-matched
+      fallback until DS-04 unblocks.
+    </p>
+
+    <script>
+      // Theme switch only. There is deliberately no direction switch: DS-11 is
+      // decided and the losing directions were deleted from themes.css.
+      const button = document.getElementById('theme')
+      button.addEventListener('click', () => {
+        const next =
+          document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'
+        document.documentElement.dataset.theme = next
+        button.textContent = `theme: ${next}`
+      })
+    </script>
+  </body>
+</html>

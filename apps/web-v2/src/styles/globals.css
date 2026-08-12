@@ -1,0 +1,328 @@
+/*
+ * GLOBAL STYLESHEET — the single entry point the root layout imports.
+ *
+ * Order matters:
+ *   1. tailwindcss   preflight + the utility engine
+ *   2. tokens.css    primitives (:root)
+ *   3. themes.css    semantic layer, per theme
+ *   4. typography.css prose styles for MDX
+ *   5. @theme inline the bridge that turns tokens into Tailwind utilities
+ *
+ * F0-04 — why the tokens are named `--ui-*`.
+ *
+ *   Phase 2 declared the tokens in `:root` using Tailwind v4's own theme
+ *   namespaces — --color-* --font-* --text-* --radius-* --ease-* --leading-*
+ *   --tracking-* --shadow-*. A bridge entry would therefore have read
+ *   `--color-bg: var(--color-bg)`: both declarations land on `:root`, so the
+ *   variable resolves to itself and the utility emits nothing. `@theme inline`
+ *   only works when the source variable has a name Tailwind does not own.
+ *
+ *   Option 1 of DESIGN_SYSTEM §2 was taken: the token side was renamed to a
+ *   `--ui-` prefix — the convention shadcn/ui adopted for v4 — and the bridge
+ *   below maps Tailwind's namespace onto it. No value is duplicated: every
+ *   entry here is a `var()` reference.
+ *
+ *   `inline` is load-bearing. Without it Tailwind copies the value it resolves
+ *   at build time, which is the dark theme's — and every utility would then be
+ *   frozen in dark. With it, the utility emits `var(--ui-bg)`, so a
+ *   `[data-theme="light"]` swap still flows through at runtime.
+ */
+
+@import "tailwindcss";
+@import "./tokens.css";
+@import "./themes.css";
+@import "./surfaces.css";
+@import "./typography.css";
+@import "./motion.css";
+@import "./utilities.css";
+/* Last, so its @media print rules win over anything above them at equal
+   specificity — a print stylesheet that loses to a screen rule is a print
+   stylesheet nobody notices is broken until they have printed. */
+@import "./print.css";
+
+/*
+ * DS-05 — the metric-matched fallback, built before the face it matches.
+ *
+ * DS-04 (typeface licensing) is blocked, so every stack in tokens.css currently
+ * resolves to a system font. That is fine for proportions, but the day a real
+ * woff2 lands the swap would reflow every line of text on the site — and CLS
+ * from a font swap must be 0 for the 0.01 CLS target to be reachable at all
+ * (PERFORMANCE.md §3).
+ *
+ * Declaring the override now means the swap is already neutralised: the
+ * fallback occupies the same space as the intended face, so `font-display:
+ * swap` exchanges glyphs without moving a baseline. DS-05's acceptance is a
+ * MEASURED CLS of exactly 0, which this makes achievable rather than proves.
+ *
+ * THE PERCENTAGES ARE PLACEHOLDERS KEYED TO THE INTENDED FACE AND MUST BE
+ * RE-MEASURED THE DAY DS-04 UNBLOCKS. A size-adjust value that nobody
+ * re-measures is worse than none: it silently shifts type off its grid while
+ * looking deliberate. That is why this warning is here and not in a commit
+ * message nobody will read again.
+ */
+@font-face {
+	font-family: "Instrument Fallback";
+	src: local("Inter"), local("Helvetica Neue"), local("Arial");
+	size-adjust: 97.5%;
+	ascent-override: 92%;
+	descent-override: 24%;
+	line-gap-override: 0%;
+	font-display: swap;
+}
+
+@theme inline {
+	/* --- Color: the semantic layer only. Primitives are deliberately absent;
+	   `bg-ink-800` must not exist, or DESIGN_SYSTEM §1.3 is unenforceable. --- */
+	--color-bg: var(--ui-bg);
+	--color-bg-subtle: var(--ui-bg-subtle);
+	--color-surface: var(--ui-surface);
+	--color-surface-raised: var(--ui-surface-raised);
+	--color-surface-hover: var(--ui-surface-hover);
+
+	--color-text: var(--ui-text);
+	--color-text-muted: var(--ui-text-muted);
+	--color-text-subtle: var(--ui-text-subtle);
+	--color-text-inverse: var(--ui-text-inverse);
+
+	--color-border: var(--ui-border);
+	--color-border-strong: var(--ui-border-strong);
+
+	--color-accent: var(--ui-accent);
+	--color-accent-hover: var(--ui-accent-hover);
+	--color-accent-muted: var(--ui-accent-muted);
+	--color-on-accent: var(--ui-on-accent);
+
+	--color-focus: var(--ui-focus);
+
+	--color-success: var(--ui-success);
+	--color-warning: var(--ui-warning);
+	--color-danger: var(--ui-danger);
+
+	/* --- Type --- */
+	--font-heading: var(--ui-font-heading);
+	--font-body: var(--ui-font-body);
+	--font-mono: var(--ui-font-mono);
+
+	--text-mega: var(--ui-font-size-mega);
+	--text-display: var(--ui-font-size-display);
+	--text-h1: var(--ui-font-size-h1);
+	--text-h2: var(--ui-font-size-h2);
+	--text-h3: var(--ui-font-size-h3);
+	--text-lede: var(--ui-font-size-lede);
+	--text-body: var(--ui-font-size-body);
+	--text-sm: var(--ui-font-size-sm);
+	--text-xs: var(--ui-font-size-xs);
+
+	--leading-mega: var(--ui-leading-mega);
+	--leading-display: var(--ui-leading-display);
+	--leading-heading: var(--ui-leading-heading);
+	--leading-lede: var(--ui-leading-lede);
+	--leading-body: var(--ui-leading-body);
+
+	--tracking-mega: var(--ui-tracking-mega);
+	--tracking-display: var(--ui-tracking-display);
+	--tracking-heading: var(--ui-tracking-heading);
+	--tracking-lede: var(--ui-tracking-lede);
+	--tracking-body: var(--ui-tracking-body);
+	--tracking-caps: var(--ui-tracking-caps);
+
+	/* --- Radius, elevation, motion --- */
+	--radius-sm: var(--ui-radius-sm);
+	--radius-md: var(--ui-radius-md);
+	--radius-lg: var(--ui-radius-lg);
+	--radius-xl: var(--ui-radius-xl);
+	--radius-2xl: var(--ui-radius-2xl);
+	--radius-full: var(--ui-radius-full);
+
+	/* The elevation scale. Four steps, and `Surface` is the only component that
+	   is supposed to reach for them by name — everything else asks for a level.
+	   They are bridged anyway because the feature-level compositions (the CTA
+	   panel, the proof tiles) are genuine one-offs that would otherwise need an
+	   arbitrary value. */
+	--shadow-sm: var(--ui-shadow-sm);
+	--shadow-md: var(--ui-shadow-md);
+	--shadow-lg: var(--ui-shadow-lg);
+	--shadow-overlay: var(--ui-shadow-overlay);
+	--shadow-glow-accent: var(--ui-glow-accent);
+	--shadow-glow-brand: var(--ui-glow-brand);
+	--shadow-soft: var(--ui-glow-soft);
+	--shadow-glow-status: var(--ui-glow-status);
+
+	/* Surface layer — docs/redesign/DESIGN_SYSTEM.md §2. Only the flat colors
+	   are bridged; the gradient compositions (--ui-aurora, --ui-spotlight,
+	   --ui-grain, --ui-hairline-gradient) are consumed as var() in component CSS
+	   because Tailwind has no background-image namespace to bridge them into,
+	   and inventing arbitrary-value utilities for them would put literal
+	   gradients back in the markup. */
+	--color-glass: var(--ui-glass-bg);
+	--color-glass-border: var(--ui-glass-border);
+	--color-glass-panel: var(--ui-glass-panel-bg);
+
+	/* THE SPECTRUM IS NOT BRIDGED, AND ITS ABSENCE IS THE ENFORCEMENT.
+	 *
+	 * DS-14 permits indigo and violet in decorative gradients and nowhere else.
+	 * A bridge entry here would create `text-spectrum-2`, `bg-spectrum-3` and
+	 * `border-spectrum-1` — three utilities whose entire purpose would be to
+	 * break that rule, available to anyone who guesses the name. The gradients
+	 * that legitimately use these colors are composed in surfaces.css and reach
+	 * the markup as `.u-*` classes, so there is no case where a component needs
+	 * a spectrum utility and cannot have one.
+	 *
+	 * The same argument the primitives get in the color block above: the way to
+	 * make a rule unbreakable is to not compile the utility that breaks it. */
+
+	--ease-out-quint: var(--ui-ease-out-quint);
+	--ease-in-out: var(--ui-ease-in-out);
+
+	/* --- Layout. `--space-*` and `--width-*` are not Tailwind namespaces, so
+	   these tokens needed no rename; they are bridged under the names Tailwind
+	   does own so components never resort to `p-[var(--space-section)]`.
+	   The numeric --space-1…24 steps are NOT bridged: Tailwind's own `--spacing`
+	   scale already produces identical values, and shadowing it would give the
+	   codebase two spelling of the same number. --- */
+	--spacing-section: var(--space-section);
+	--spacing-gutter: var(--space-gutter);
+	/* Bridged into the spacing namespace so the header's own `h-header`, the
+	   skip target's `scroll-mt-header`, and the sheet's `top-header` are all
+	   spellings of one token rather than three numbers that drift apart. */
+	--spacing-header: var(--header-height);
+	/* Same treatment, same reason: `min-h-hero` is one spelling of one token
+	   rather than an `85svh` that reads as arbitrary wherever it appears. */
+	--spacing-hero: var(--hero-min-height);
+
+	--container-reading: var(--width-prose);
+	--container-page: var(--width-container);
+	--container-headline: var(--width-headline);
+	--container-lede: var(--width-lede);
+
+	/* --- Breakpoints. DESIGN_SYSTEM §5 names five: sm 640 · md 768 · lg 1024 ·
+	   xl 1280 · 2xl 1536. They are Tailwind's defaults too, so declaring them
+	   changes no output — which is exactly why it is worth doing: the documented
+	   set and the compiled set are now provably the same list rather than two
+	   lists that happen to agree. A sixth breakpoint added here without editing
+	   §5 is visible in review; one added by using an undeclared default is not. */
+	--breakpoint-sm: 40rem; /* 640px */
+	--breakpoint-md: 48rem; /* 768px */
+	--breakpoint-lg: 64rem; /* 1024px */
+	--breakpoint-xl: 80rem; /* 1280px */
+	--breakpoint-2xl: 96rem; /* 1536px */
+}
+
+/*
+ * STACKING ORDER — the whole contract, in one place.
+ *
+ * Deliberately not tokens. Tailwind v4 has no `--z-index` theme namespace, so a
+ * token here could only be consumed as `z-[var(--z-header)]` — an arbitrary
+ * value, which UI_GUIDELINES treats as a smell, in exchange for indirection over
+ * three numbers. The reason z-index tokens usually earn their keep is that the
+ * ordering is scattered; writing the ordering down once instead solves the same
+ * problem for free.
+ *
+ *   z-30  back-to-top button — over page content, under the header, so it
+ *         cannot cover the navigation when the two meet on a short viewport
+ *   z-40  sticky site header
+ *   z-50  skip link — must clear the header, since it is positioned over it
+ *   —     the mobile sheet and the command palette are both <dialog> elements
+ *         in the browser's top layer, which is above every z-index by
+ *         definition and is why neither needs a number
+ *
+ * The scroll progress rail is deliberately absent: it is a child of the header,
+ * so it inherits z-40 and needs no number of its own.
+ *
+ * Nothing else in the codebase may set a z-index without adding a line here.
+ */
+
+/*
+ * A wart, recorded rather than hidden. The color role is `text-muted`, and
+ * Tailwind's foreground-color utility prefix is also `text` — so the utility is
+ * `text-text-muted`, and `bg-bg` / `border-border` are the same shape. Renaming
+ * the roles to shadcn's `fg`/`background` vocabulary would read better but would
+ * put DESIGN_SYSTEM §3's role table out of step with the code, which is the more
+ * expensive kind of wrong. The stutter is the cheaper cost.
+ */
+
+/*
+ * Base layer. Deliberately tiny — anything belonging to a component belongs in
+ * that component. Only page-wide invariants live here.
+ *
+ * The focus ring and the reduced-motion backstop are NOT repeated here: both
+ * already live at the end of themes.css, and stating them twice means the day
+ * one is edited they disagree, with no signal about which one wins.
+ */
+@layer base {
+	html {
+		-webkit-text-size-adjust: 100%;
+		/* Smooth scrolling is a documented vestibular trigger; the reduced-motion
+		   override that makes this safe is in themes.css. */
+		scroll-behavior: smooth;
+	}
+
+	body {
+		background-color: var(--ui-bg);
+		color: var(--ui-text);
+		font-family: var(--ui-font-body);
+		font-size: var(--ui-font-size-body);
+		line-height: var(--ui-leading-body);
+		-webkit-font-smoothing: antialiased;
+	}
+
+	/* Underlined, not merely accent-colored. An inline link identified by color
+	   alone fails WCAG 1.4.1 for the ~8% of men with a color-vision deficiency,
+	   and Lighthouse's `link-in-text-block` audit caught exactly that here on the
+	   first run — which is the argument for adding the gate before the pages. */
+	a {
+		color: var(--ui-accent);
+		text-decoration: underline;
+		text-decoration-thickness: from-font;
+		text-underline-offset: var(--underline-offset);
+	}
+
+	a:hover {
+		color: var(--ui-accent-hover);
+	}
+
+	/*
+	 * Theme-toggle labels. Both are in the served markup and CSS picks one, so
+	 * the correct label is visible before React runs and — critically — nothing
+	 * about the button changes after hydration. A post-hydration text swap
+	 * registers a new LCP candidate; doing it that way cost ~1s of LCP on every
+	 * route and breached the 1.8s hard limit. See the note in theme-toggle.tsx.
+	 */
+	[data-theme-label="light"] {
+		display: none;
+	}
+
+	:root[data-theme="light"] [data-theme-label="light"] {
+		display: inline;
+	}
+
+	:root[data-theme="light"] [data-theme-label="dark"] {
+		display: none;
+	}
+
+	/*
+	 * Controls that only mean something once JavaScript has run — today, the
+	 * mobile sheet trigger, whose entire behaviour is `dialog.showModal()`.
+	 * Shipping it unconditionally would put a button in the tab order that does
+	 * nothing for a reader without JavaScript, which is worse than not offering
+	 * it: the site's guarantee is that everything works without JS, and the
+	 * honest form of that here is "the footer site map is the path", not "here
+	 * is a dead control".
+	 *
+	 * `visibility`, not `display`, for two reasons. It reserves the button's box,
+	 * so revealing it cannot shift the header (the CLS budget is 0.02, and the
+	 * header is above the fold on every route). And it removes the button from
+	 * both the tab order and the accessibility tree, which `opacity: 0` would
+	 * not — an invisible but focusable control is the classic keyboard trap.
+	 *
+	 * The attribute is set by a blocking script in <head> (lib/progressive.ts),
+	 * so there is no frame in which the control is missing and then appears.
+	 */
+	[data-js-only] {
+		visibility: hidden;
+	}
+
+	:root[data-js] [data-js-only] {
+		visibility: visible;
+	}
+}
