@@ -51,7 +51,13 @@
 		// error indefinitely — and an unrun spec is exactly the one that is wrong.
 		"e2e/**/*.ts",
 		"playwright.config.ts",
-		".next/types/**/*.ts"
+		".next/types/**/*.ts",
+		// Added by `next build` from 15.5 onward: the dev server writes its route
+		// types here instead of into .next/types. Next appends it to this file
+		// automatically if it is missing — and rewrites the whole file with spaces
+		// when it does, which Biome then fails. Keeping the line checked in is what
+		// stops that rewrite, so it is load-bearing rather than redundant.
+		".next/dev/types/**/*.ts"
 	],
 	"exclude": ["node_modules", "out", ".next"]
 }

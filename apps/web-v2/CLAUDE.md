@@ -25,7 +25,13 @@ The app itself is unchanged — same source, same content, same configs, same
 - **`@types/react` and `@types/react-dom` are pinned to 19.2.18/19.2.4**, up from
   19.0.7/19.0.3. Both apps must carry the same version or this one fails to
   typecheck against two copies of the React types — the reason is in the root
-  `AGENTS.md`. React itself is still 19.0.0 here.
+  `AGENTS.md`. **React itself is now 19.2.8**, matching `apps/web`, so the runtime
+  and its types are back in step.
+- **`@types/node` is pinned to 22.20.1 and stays on 22.x deliberately**, even
+  though `apps/web` is on 26.x. `engines` requires Node `>=22.11 <23`; typing the
+  Node 26 API surface here would let code compile that crashes on the runtime
+  this app actually declares. 22.20.1 is also the floor Vite 7 asks for
+  (`>=22.12.0`). This is the one place the two apps are pinned apart on purpose.
 - **Husky, commitlint, lint-staged, `.npmrc`, `.nvmrc` and the lockfile did not
   come along.** They were repo-root tooling; the monorepo root does not use
   husky or commitlint. Section 12's commit-message rules are therefore no longer
@@ -325,7 +331,7 @@ authority order is a fresh `pnpm build && pnpm size`, then
 
 ## 3. Stack
 
-Next.js 15 (App Router, `output: 'export'`) · React 19 · TypeScript strict ·
+Next.js 15.5 (App Router, `output: 'export'`) · React 19.2 · TypeScript 5.9 strict ·
 Tailwind v4 · Motion · Lenis · GSAP (2 sanctioned uses) · shadcn/ui (copied
 source) · MDX + Zod · Biome · Husky + lint-staged · Vitest + Playwright ·
 pnpm 9 · Node 22.
