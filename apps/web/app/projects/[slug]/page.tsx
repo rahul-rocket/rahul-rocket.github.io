@@ -4,7 +4,8 @@ import { getProjectBySlug, getAllProjectSlugs, getRelatedProjects } from "@/lib/
 import { ProjectDetailClient } from "./project-detail-client"
 
 interface ProjectPageProps {
-  params: { slug: string }
+  // Next 15 made route params async; they are awaited before use.
+  params: Promise<{ slug: string }>
 }
 
 // Generate static params for all projects
@@ -15,8 +16,9 @@ export async function generateStaticParams() {
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: ProjectPageProps): Promise<Metadata> {
-  const project = getProjectBySlug(params.slug)
-  
+  const { slug } = await params
+  const project = getProjectBySlug(slug)
+
   if (!project) {
     return {
       title: "Project Not Found",
@@ -42,9 +44,10 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
   }
 }
 
-export default function ProjectDetailPage({ params }: ProjectPageProps) {
-  const project = getProjectBySlug(params.slug)
-  
+export default async function ProjectDetailPage({ params }: ProjectPageProps) {
+  const { slug } = await params
+  const project = getProjectBySlug(slug)
+
   if (!project) {
     notFound()
   }

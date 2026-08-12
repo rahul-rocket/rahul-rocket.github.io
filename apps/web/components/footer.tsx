@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { Github, Linkedin, Mail, MapPin, Heart, Code2, ArrowUp } from "lucide-react"
+import { Mail, MapPin, Heart, Code2, ArrowUp } from "lucide-react"
+import { Github, Linkedin } from "@/components/brand-icons"
 import { Button } from "@portfolio/ui/button"
 
 export function Footer() {
@@ -33,7 +34,7 @@ export function Footer() {
           <div className="lg:col-span-2 space-y-4">
             <Link href="/" className="flex items-center gap-2 text-xl font-bold">
               <Code2 className="h-8 w-8 text-primary" />
-              <span className="bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-primary to-purple-500 bg-clip-text text-transparent">
                 Rahul
               </span>
             </Link>

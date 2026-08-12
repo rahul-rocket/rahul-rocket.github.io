@@ -1,21 +1,19 @@
 "use client"
 
 import { useState } from "react"
-import { 
-  Mail, 
-  MapPin, 
-  Phone, 
-  Send, 
-  Loader2, 
+import {
+  Mail,
+  MapPin,
+  Phone,
+  Send,
+  Loader2,
   CheckCircle2,
   AlertCircle,
-  Github,
-  Linkedin,
-  Twitter,
   MessageSquare,
   Clock,
-  Globe
+  Globe,
 } from "lucide-react"
+import { Github, Linkedin, Twitter } from "@/components/brand-icons"
 import { Card, CardContent, CardHeader, CardTitle } from "@portfolio/ui/card"
 import { Button } from "@portfolio/ui/button"
 import { Input } from "@portfolio/ui/input"
@@ -299,7 +297,7 @@ export function ContactSection() {
               </Card>
 
               {/* Availability Card */}
-              <Card className="bg-gradient-to-br from-primary/5 to-purple-500/5 border-primary/20">
+              <Card className="bg-linear-to-br from-primary/5 to-purple-500/5 border-primary/20">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-3">
                     <div className="relative">

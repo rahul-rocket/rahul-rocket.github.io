@@ -122,7 +122,7 @@ const SkillBar = ({
       </div>
       <div className="h-2 bg-secondary rounded-full overflow-hidden">
         <div 
-          className="h-full bg-gradient-to-r from-primary to-purple-500 rounded-full transition-all duration-1000 ease-out"
+          className="h-full bg-linear-to-r from-primary to-purple-500 rounded-full transition-all duration-1000 ease-out"
           style={{ width: `${width}%` }}
         />
       </div>
@@ -265,7 +265,7 @@ export function SkillsSection() {
 
           {/* Bottom CTA */}
           <div className={`mt-16 text-center transition-all duration-700 delay-500 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}>
-            <Card className="bg-gradient-to-br from-primary/5 via-background to-purple-500/5 border-primary/20 inline-block">
+            <Card className="bg-linear-to-br from-primary/5 via-background to-purple-500/5 border-primary/20 inline-block">
               <CardContent className="p-8">
                 <Rocket className="h-10 w-10 text-primary mx-auto mb-4" />
                 <h3 className="text-xl font-bold mb-2">Always Learning</h3>

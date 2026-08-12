@@ -2,10 +2,9 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { 
-  ArrowLeft, 
-  ExternalLink, 
-  Github, 
+import {
+  ArrowLeft,
+  ExternalLink,
   Calendar,
   User,
   Clock,
@@ -20,8 +19,9 @@ import {
   Layers,
   Server,
   Cloud,
-  Settings
+  Settings,
 } from "lucide-react"
+import { Github } from "@/components/brand-icons"
 import { Card, CardContent } from "@portfolio/ui/card"
 import { Badge } from "@portfolio/ui/badge"
 import { Button } from "@portfolio/ui/button"
@@ -239,7 +239,7 @@ export function ProjectDetailClient({ project, relatedProjects }: ProjectDetailC
             alt={project.title}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/90 to-background" />
+          <div className="absolute inset-0 bg-linear-to-b from-background/80 via-background/90 to-background" />
         </div>
 
         <div className="container mx-auto px-4 relative z-10">
@@ -469,7 +469,7 @@ export function ProjectDetailClient({ project, relatedProjects }: ProjectDetailC
 
           {/* CTA Section */}
           <div className="text-center py-8">
-            <Card className="bg-gradient-to-br from-primary/5 via-background to-purple-500/5 border-primary/20">
+            <Card className="bg-linear-to-br from-primary/5 via-background to-purple-500/5 border-primary/20">
               <CardContent className="p-8">
                 <h3 className="text-xl font-bold mb-3">Interested in this project?</h3>
                 <p className="text-muted-foreground mb-6">

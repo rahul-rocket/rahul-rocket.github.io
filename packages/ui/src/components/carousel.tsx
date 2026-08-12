@@ -104,6 +104,10 @@ const Carousel = React.forwardRef<
       return
     }
 
+    // Embla is already initialised by the time this effect runs, so its "select"
+    // event has been and gone. Reading the current state once is the only way to
+    // seed the arrow-enabled flags; there is no snapshot to subscribe to.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     onSelect(api)
     api.on("reInit", onSelect)
     api.on("select", onSelect)

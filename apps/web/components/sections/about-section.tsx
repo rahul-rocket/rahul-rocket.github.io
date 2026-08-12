@@ -253,7 +253,7 @@ export function AboutSection() {
                   className="group hover:border-primary transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
                 >
                   <CardContent className="p-6 text-center space-y-3">
-                    <div className="inline-flex p-4 rounded-xl bg-gradient-to-br from-primary/10 to-purple-500/10 text-primary group-hover:from-primary group-hover:to-purple-500 group-hover:text-white transition-all">
+                    <div className="inline-flex p-4 rounded-xl bg-linear-to-br from-primary/10 to-purple-500/10 text-primary group-hover:from-primary group-hover:to-purple-500 group-hover:text-white transition-all">
                       <value.icon className="h-6 w-6" />
                     </div>
                     <h4 className="font-semibold text-lg">{value.title}</h4>
@@ -340,7 +340,7 @@ export function AboutSection() {
 
           {/* Open Source Mindset */}
           <div className={`mt-20 transition-all duration-700 delay-500 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}>
-            <Card className="bg-gradient-to-br from-primary/5 via-background to-purple-500/5 border-primary/20">
+            <Card className="bg-linear-to-br from-primary/5 via-background to-purple-500/5 border-primary/20">
               <CardContent className="p-8 md:p-12">
                 <div className="flex flex-col md:flex-row items-center gap-8">
                   <div className="shrink-0">
