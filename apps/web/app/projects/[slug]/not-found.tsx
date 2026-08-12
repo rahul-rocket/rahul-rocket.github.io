@@ -13,7 +13,7 @@ export default function ProjectNotFound() {
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Button asChild>
-            <Link href="/#projects">View All Projects</Link>
+            <Link href="/projects">View All Projects</Link>
           </Button>
           <Button variant="outline" asChild>
             <Link href="/">Go Home</Link>

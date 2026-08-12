@@ -5,6 +5,8 @@ import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
+import { getPublishedPosts } from '@/lib/posts'
+import type { SearchItem } from '@/lib/search-index'
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://rahul.dev"
 
@@ -168,7 +170,16 @@ const jsonLd = {
   ],
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Posts feed the command palette's Blog group. Same build-time-only read as
+  // /blog -- see the note there.
+  const postItems: SearchItem[] = (await getPublishedPosts()).map((post) => ({
+    href: `/blog/${post.slug}`,
+    label: post.title,
+    description: post.excerpt,
+    keywords: post.tags,
+  }))
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -203,7 +214,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </a>
 
           <div className="relative flex min-h-screen flex-col">
-            <Navbar />
+            <Navbar posts={postItems} />
             <main id="main-content" className="flex-1" role="main">
               {children}
             </main>

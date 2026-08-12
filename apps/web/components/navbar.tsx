@@ -3,64 +3,50 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Menu, X, Code2 } from "lucide-react"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { Menu, X } from "lucide-react"
 import { Button } from "@portfolio/ui/button"
 import { cn } from "@portfolio/ui/lib/utils"
 
+import { CommandPalette } from "@/components/command-palette"
+import { Logo } from "@/components/logo"
+import type { SearchItem } from "@/lib/search-index"
+
 const navItems = [
   { href: "/", label: "Home" },
-  { href: "/#about", label: "About" },
-  { href: "/#skills", label: "Skills" },
-  { href: "/#experience", label: "Experience" },
-  { href: "/#projects", label: "Projects" },
+  { href: "/about", label: "About" },
+  { href: "/skills", label: "Skills" },
+  { href: "/experience", label: "Experience" },
+  { href: "/projects", label: "Projects" },
   { href: "/blog", label: "Blog" },
-  { href: "/#contact", label: "Contact" },
+  { href: "/contact", label: "Contact" },
 ]
 
-export function Navbar() {
+export function Navbar({ posts = [] }: { posts?: SearchItem[] }) {
   const [isOpen, setIsOpen] = React.useState(false)
   const [scrolled, setScrolled] = React.useState(false)
-  const [activeSection, setActiveSection] = React.useState("")
   const pathname = usePathname()
 
   React.useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50)
+    const handleScroll = () => setScrolled(window.scrollY > 50)
 
-      // Update active section based on scroll position
-      const sections = ["about", "skills", "experience", "projects", "contact"]
-      let currentSection = ""
-
-      for (const section of sections) {
-        const element = document.getElementById(section)
-        if (element) {
-          const rect = element.getBoundingClientRect()
-          if (rect.top <= 100 && rect.bottom >= 100) {
-            currentSection = section
-            break
-          }
-        }
-      }
-
-      setActiveSection(currentSection)
-    }
-
+    handleScroll()
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
+  // Navigating away should not leave the mobile sheet hanging open.
+  React.useEffect(() => {
+    setIsOpen(false)
+  }, [pathname])
+
+  // Every menu entry is its own route now, so the active item is just the
+  // current path. Sub-routes (/projects/<slug>, /blog/<slug>) light up their
+  // parent.
   const isActiveLink = (href: string) => {
-    if (href === "/" && pathname === "/" && !activeSection) {
-      return true
+    if (href === "/") {
+      return pathname === "/"
     }
-    if (href === "/blog" && pathname.startsWith("/blog")) {
-      return true
-    }
-    if (href.includes("#") && activeSection) {
-      return href.includes(`#${activeSection}`)
-    }
-    return false
+    return pathname === href || pathname.startsWith(`${href}/`)
   }
 
   return (
@@ -73,20 +59,18 @@ export function Navbar() {
       )}
     >
       <nav className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          {/* Logo / Developer Name */}
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-xl font-bold hover:text-primary transition-colors"
-          >
-            <Code2 className="h-8 w-8 text-primary" />
-            <span className="bg-linear-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-              Rahul
-            </span>
-          </Link>
+        {/*
+          Three tracks rather than `justify-between`: the outer two are equal
+          width, which is what keeps the menu optically centred in the viewport
+          regardless of how wide the logo or the search field get.
+        */}
+        <div className="flex items-center gap-4 lg:grid lg:grid-cols-[1fr_auto_1fr]">
+          <div className="flex-1 lg:flex-none">
+            <Logo id="nav" />
+          </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-1">
+          {/* Desktop Navigation -- centre track */}
+          <div className="hidden lg:flex items-center gap-1 justify-self-center">
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -101,20 +85,18 @@ export function Navbar() {
                 {item.label}
               </Link>
             ))}
-            <div className="ml-2">
-              <ThemeToggle />
-            </div>
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="flex items-center gap-2 lg:hidden">
-            <ThemeToggle />
+          {/* Actions -- the theme switch lives in the footer now. */}
+          <div className="flex items-center gap-2 justify-end lg:justify-self-end">
+            <CommandPalette posts={posts} />
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsOpen(!isOpen)}
-              className="rounded-full"
+              className="rounded-full lg:hidden"
               aria-label="Toggle menu"
+              aria-expanded={isOpen}
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
