@@ -198,8 +198,15 @@ from the v1 repository. What follows is only what changed by moving it into this
 - **CI is not wired up for it.** v1's `ci.yml` and `deploy-pages.yml` were not copied. Nothing
   runs its E2E suite, Lighthouse budgets, or export gates automatically — run them by hand
   (see Commands) until a workflow exists.
-- **Its E2E suite needs a matching browser build.** `@playwright/test` is pinned to 1.49.1 and
-  expects Chromium 1148. A container with a different build fails at launch with
-  `Executable doesn't exist`, which is an environment mismatch, not a broken suite. The
-  `command palette › the theme action…` spec is timing-sensitive and flakes roughly one run in
-  three; it is not a regression from the move.
+- **Its E2E suite needs a matching browser build.** `@playwright/test` is pinned to **1.56.1**,
+  which expects **Chromium 1194** — the build the current dev container ships, so the Chromium
+  and mobile-Chrome projects run here (312 specs pass). A container with a different build
+  fails at launch with `Executable doesn't exist`, which is an environment mismatch, not a
+  broken suite; that is also why **WebKit is skipped** in this container, which provisions
+  Chromium only. Keep this pin in step with the container's Chromium rather than moving it to
+  npm `latest`: 1.62.1 wants Chromium 1234 and would take the whole suite back to launch
+  failures. Next 16 would additionally force this to `>=1.51.1` via a peer dependency.
+- **Two specs are timing-sensitive and flake, and neither is a regression.**
+  `command palette › the theme action…` flakes roughly one run in three, and
+  `smooth scroll › leaves keyboard scrolling working` flakes occasionally (21/21 on
+  `--repeat-each=3` when it is re-run).

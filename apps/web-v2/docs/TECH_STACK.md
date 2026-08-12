@@ -33,6 +33,7 @@ group them.
 | Lint/format | Biome 2.x | Exact pin |
 | Hooks | Husky + lint-staged | Exact pin |
 | Tests | Vitest, Testing Library, Playwright | Exact pin |
+| Test bundler | `vite` (Vitest's peer, pinned directly) | Exact pin; **not** the app's bundler |
 | Automated a11y | `@axe-core/playwright` + `axe-core` | Exact pin |
 | Performance gate | `@lhci/cli` (Lighthouse CI) | Exact pin |
 | Byte budgets | `size-limit` + `@size-limit/file` | Exact pin |
@@ -52,6 +53,40 @@ we would rebuild routing, metadata, sitemap, and MDX integration by hand.
 *Plain HTML* — rejected: no content pipeline.
 **Risk:** App Router majors move fast. Mitigated by exact pinning and by using
 no experimental flags.
+
+#### Why this is 15.5.23 and not 16.x
+
+`15.1.6` was deprecated on npm for a security advisory (CVE-2025-66478), so
+staying on it was not an option. The move went to **15.5.23** — the maintained
+`backport` dist-tag — rather than 16.3.0, because 16 was tried, measured, and
+**blocked on the performance budget**, which [PERFORMANCE.md](./PERFORMANCE.md)
+§2 says may not be raised to make a gate pass.
+
+Next 16 builds and exports this app correctly; four things stand in the way, and
+only the third is a real objection:
+
+1. **`next lint` is gone**, so `next.config.mjs`'s `eslint` key is rejected
+   (`Unrecognized key(s) in object: 'eslint'`). Costless to drop — Biome lints
+   this app and the build never ran ESLint here.
+2. **Turbopack is the default builder and cannot load this MDX pipeline.** The
+   `onVisitLine` callback in `src/lib/mdx/plugins.mjs` is a function, and
+   Turbopack only accepts serialisable loader options. `next build --webpack`
+   works today; the header of that file has the full account.
+3. **Every route exceeds its 120 KB JS hard limit by 18–22 KB.** Next 16's
+   baseline runtime is ~18 KB larger, measured: Home 103 KB → 140.27 KB, a case
+   study 141.89 KB, the lightest route 138.06 KB. Nothing in this app's ~5 KB of
+   client code changed. Adopting 16 therefore means either finding ~20 KB or
+   raising the hard limit in PERFORMANCE.md §2 with a stated reason — an
+   editorial decision, taken deliberately, not a side effect of an upgrade.
+4. **The export gains 116 `__next.*.txt` files plus a `_not-found/` route.**
+   These are the client router's segment-prefetch payloads, now unconditional
+   (16.3.0 has no flag to disable them) — and useless here, because navigation is
+   deliberately plain `<a>` and the client router never runs. They also trip
+   `check-export.mjs`'s check 5, whose premise ("nothing in `out/` starts with an
+   underscore except `_next/`") Next 16 makes untrue. `404.html` is still emitted
+   correctly, so the real 404 is unaffected.
+
+Items 1, 2 and 4 have known fixes. Item 3 needs a decision.
 
 ### React 19
 **Why:** required by Next.js 15; Server Components are the mechanism the
@@ -294,6 +329,21 @@ a convenience, never the authority, and `--no-verify` is not a workflow.
 ### Vitest + Testing Library + Playwright
 See [TESTING.md](./TESTING.md) for scope. Vitest for content-pipeline and utility
 logic; Playwright for a small set of user-journey and accessibility checks.
+
+### `vite` — a pinned peer, not a bundler choice
+**Cost:** dev-only, 0 bytes shipped. Next builds the app; Vite never touches it.
+**Why it is listed explicitly rather than left transitive:** Vitest declares Vite
+as a *peer*, and this root's `.npmrc` sets loose peer resolution (see the root
+`AGENTS.md`). On the Vitest 2 → 4 upgrade pnpm therefore satisfied that peer with
+the Vite 5 already in the store, which Vitest 4 cannot use — the suite died at
+startup with `Package subpath './module-runner' is not defined`, an error that
+names neither package. Pinning it here makes the resolution a decision in the
+diff instead of a property of the store.
+**Version:** 7.3.6, deliberately not 8.x. Vite 8 parses with Rolldown, which
+rejects the JSX in `components/ui/badge.tsx` (`Unexpected JSX expression`) and
+fails one suite. Revisit when Rolldown handles `.tsx` as esbuild did.
+**Rejected:** letting the peer resolve itself (that is the bug above); pinning
+Vitest at 2 (leaves the runner two majors behind for no gain).
 
 ### `@axe-core/playwright` + `axe-core` (F0-13)
 **Cost:** dev-only, 0 bytes shipped. **Why:** the accessibility commitment in

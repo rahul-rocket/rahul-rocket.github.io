@@ -7,6 +7,22 @@
  * `content:validate` and by any future standalone compile without being copied.
  *
  * Every entry earns its place; the ordering matters where noted.
+ *
+ * **This file is the blocker on Turbopack, and therefore on Next 16.** Turbopack
+ * serialises loader options to pass them across a process boundary, so an MDX
+ * plugin may only be named by a *string* with plain-object options. On Next 16,
+ * where Turbopack is the default builder, this file fails the build outright:
+ *
+ *     Error: loader .../@next/mdx/mdx-js-loader.js ... does not have
+ *     serializable options.
+ *
+ * Two things here are unserialisable, and only one of them is fixable. The
+ * plugins are imported function references rather than module names, which a
+ * rewrite could address; `onVisitLine` below is a *function*, which no rewrite
+ * can — Turbopack cannot carry a callback into the loader at all. Dropping it
+ * would silently collapse every empty line in every code block, so on Next 16
+ * the builder is what has to give (`next build --webpack`, verified working).
+ * Revisit when rehype-pretty-code handles blank lines without a visitor.
  */
 
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'

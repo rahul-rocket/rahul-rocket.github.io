@@ -32,6 +32,10 @@ const nextConfig = {
 	// A type or lint error must fail the build, not be silently shipped. These
 	// default to false; they are stated explicitly so a future `ignoreDuringBuilds`
 	// is a visible diff rather than an omission.
+	//
+	// The `eslint` key is accepted on 15.x and rejected on 16 ("Unrecognized
+	// key(s) in object: 'eslint'"), because 16 removes `next lint`. It is one of
+	// the two edits the Next 16 move needs — see docs/TECH_STACK.md §2.
 	typescript: { ignoreBuildErrors: false },
 	eslint: { ignoreDuringBuilds: false },
 
