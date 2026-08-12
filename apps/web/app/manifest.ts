@@ -1,3 +1,10 @@
+/**
+ * `output: export` requires every metadata route to declare that it is
+ * static. These read `process.env` at module scope, which is enough for Next to
+ * treat the route as dynamic and fail the export rather than guess.
+ */
+export const dynamic = "force-static"
+
 export default function manifest() {
   return {
     name: "Rahul - Software Developer",

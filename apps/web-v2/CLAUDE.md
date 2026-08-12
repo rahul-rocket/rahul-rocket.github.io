@@ -37,11 +37,44 @@ The app itself is unchanged — same source, same content, same configs, same
   husky or commitlint. Section 12's commit-message rules are therefore no longer
   machine-enforced — follow them by hand. The looser root `.npmrc` also means
   peer-dependency conflicts no longer fail the install.
-- **The GitHub Actions workflows did not come along, so nothing here runs in CI**
-  — not the E2E suite, not Lighthouse, not the export gates. Run them locally.
-  There is no Pages deployment from this repo, and `site.url` still points at
-  `https://rahul-rocket.github.io`; whoever decides where this app deploys next
-  must update it in the same change.
+- **This app now deploys, and it deploys to a SUBDIRECTORY.** The monorepo root
+  has `.github/workflows/deploy-pages.yml`: every push to `develop` builds both
+  apps and publishes one Pages artifact with `apps/web` at the apex and this app
+  under **`/v2/`**. `basePath` is `/v2`, `site.url` is
+  `https://rahul-rocket.github.io/v2`, and `site.basePath` carries the prefix on
+  its own for the two consumers that need it separately.
+
+  Four things follow, and three of them read as bugs if you do not know them:
+
+  - **`basePath` does NOT prefix this site's navigation.** Nav here is plain
+    `<a href="/about/">` on purpose (see the consequences list below), and Next
+    only rewrites URLs it emits itself. `scripts/apply-base-path.mjs` runs after
+    `next build` and prefixes every site-absolute URL in the export. It is part
+    of `pnpm build`. Without it, clicking "About" leaves this application and
+    lands on the apex one, which is a *different site* — not a 404.
+  - **The prefix is duplicated in four places and must not drift**: `basePath`
+    in next.config.mjs, `site.basePath` in `src/config/site.ts`, and the
+    `BASE_PATH` constants in `scripts/apply-base-path.mjs`,
+    `scripts/check-links.mjs` and `scripts/check-export.mjs`. The scripts cannot
+    import TypeScript. `site.test.ts` pins `site.url` to `site.basePath`, and
+    `check:links` fails on any internal link that escapes the prefix.
+  - **`out/` has no `v2/` directory in it.** `basePath` changes the URLs inside
+    the HTML, not where the export is written. The workflow's assembler copies
+    `out/` into `_pages/v2/`. This is why the gate scripts strip the prefix
+    before resolving a URL to a file on disk.
+  - **`pnpm start` no longer runs `serve out`.** It runs
+    `scripts/serve-preview.mjs`, which mounts the export at both `/` and `/v2/`
+    — the `/v2/` mount is what makes assets resolve, and the root mount is what
+    keeps the E2E suite's site-absolute `page.goto('/about/')` calls working
+    without a prefix pass over every spec. For a faithful preview of the *whole*
+    published site, run `pnpm pages:serve` from the repository root; it uses the
+    same assembler the workflow does.
+
+- **The E2E suite and Lighthouse still do not run in CI.** The deploy workflow
+  runs typecheck, both builds, `check:export`, `check:links` and the Vitest
+  suite. Playwright and `lhci` are still local-only, and `playwright.config.ts`
+  has not had a base-path pass — its specs rely on the root mount described
+  above rather than exercising the `/v2/` URLs a real visitor uses.
 - **Biome is still the formatter and linter here**, and the monorepo's Prettier
   and ESLint are configured to leave this directory alone.
 

@@ -1,7 +1,16 @@
 import { getAllProjectSlugs } from "@/lib/projects-data"
 
+/**
+ * `output: export` requires every metadata route to declare that it is
+ * static. These read `process.env` at module scope, which is enough for Next to
+ * treat the route as dynamic and fail the export rather than guess.
+ */
+export const dynamic = "force-static"
+
 export default async function sitemap() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://rahul.dev"
+  // The apex of the Pages site. `apps/web-v2` publishes its own sitemap at
+  // /v2/sitemap.xml and its routes are deliberately absent from this one.
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://rahul-rocket.github.io"
   
   // Get all project slugs
   const projectSlugs = getAllProjectSlugs()

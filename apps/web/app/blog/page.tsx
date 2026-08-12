@@ -6,8 +6,19 @@ import Link from "next/link"
 
 import { getPublishedPosts } from "@/lib/posts"
 
-// Posts come from Postgres, so this page cannot be baked at build time.
-export const dynamic = "force-dynamic"
+/**
+ * Posts come from Postgres, and on a static export that read happens ONCE, at
+ * build time — `getPublishedPosts()` runs inside `next build` and its result is
+ * baked into out/blog/index.html.
+ *
+ * The consequence to know: publishing a post is a deploy, not a write. A row
+ * inserted after the build does not appear until the workflow runs again.
+ *
+ * With `DATABASE_URL` unset the query is skipped entirely and `lib/posts.ts`
+ * returns its seeded posts, so the build works with no Neon project attached —
+ * which is what keeps `pnpm build` runnable on a fresh clone.
+ */
+export const dynamic = "force-static"
 
 export default async function BlogPage() {
   const blogPosts = await getPublishedPosts()

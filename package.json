@@ -9,6 +9,8 @@
     "lint": "turbo run lint",
     "check-types": "turbo run check-types",
     "test": "turbo run test",
+    "pages:assemble": "node scripts/assemble-pages.mjs",
+    "pages:serve": "node scripts/assemble-pages.mjs && pnpm --filter web-v2 exec serve ../../_pages --no-clipboard --listen 4318",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,md,css}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,md,css}\""
   },

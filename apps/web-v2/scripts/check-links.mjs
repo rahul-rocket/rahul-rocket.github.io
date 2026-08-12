@@ -31,6 +31,30 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = join(ROOT, 'out')
 const VERBOSE = process.argv.includes('--verbose')
 
+/**
+ * Must equal `basePath` in next.config.mjs and `site.basePath` in
+ * src/config/site.ts.
+ *
+ * out/ has NO prefix in it — `basePath` rewrites the URLs inside the HTML, not
+ * the directory the export is written to — so every site-absolute href in a
+ * page reads '/v2/about/' while the file it names is 'out/about/index.html'.
+ * Without stripping this, the checker reports every internal link on the site as
+ * broken, which is the kind of total failure that gets a gate disabled instead
+ * of read.
+ */
+const BASE_PATH = '/v2'
+
+/** A site-absolute href as a path within out/. */
+function stripBasePath(pathname) {
+	if (pathname === BASE_PATH) return '/'
+	if (pathname.startsWith(`${BASE_PATH}/`)) {
+		return pathname.slice(BASE_PATH.length)
+	}
+	// Site-absolute but outside /v2: this link leaves this application for the
+	// apex, which this checker cannot see and must not silently pass.
+	return null
+}
+
 /** Every file in out/, as site-absolute posix paths ('/about/index.html'). */
 function walk(dir, base = '') {
 	const found = []
@@ -108,9 +132,20 @@ function main() {
 			// site look broken while being fine.
 			const rawPath = (beforeFragment ?? '').split('?')[0] ?? ''
 			if (rawPath === '') continue
+			// A relative href resolves against the page it is on, which is already
+			// a prefix-free path within out/, so only the site-absolute form needs
+			// the base path taken off.
 			const pathname = rawPath.startsWith('/')
-				? rawPath
+				? stripBasePath(rawPath)
 				: posix.normalize(posix.join(from, rawPath))
+
+			if (pathname === null) {
+				problems.push(
+					`${from} → ${href}  (site-absolute but outside ${BASE_PATH}/; this ` +
+						'app is deployed under that prefix, so the link escapes it)',
+				)
+				continue
+			}
 
 			checked++
 			const result = resolveHref(pathname, files)

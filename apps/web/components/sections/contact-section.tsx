@@ -26,8 +26,8 @@ const contactInfo = [
   {
     icon: Mail,
     title: "Email",
-    value: "rahul@rapidtechplus.com",
-    href: "mailto:rahul@rapidtechplus.com",
+    value: "rahulrathore576@gmail.com",
+    href: "mailto:rahulrathore576@gmail.com",
     description: "Send me an email anytime",
   },
   {
@@ -78,6 +78,29 @@ const socialLinks = [
   },
 ]
 
+/**
+ * Where a submission goes, now that there is no `/api/contact` to receive it.
+ *
+ * This app is a static export on GitHub Pages (next.config.js), so it cannot
+ * accept a POST of its own. Two modes, and which one is live is decided at build
+ * time by whether this variable is set in the workflow environment:
+ *
+ * - SET — the message is POSTed as JSON to a third-party form service
+ *   (Formspree-shaped: it answers 2xx on success, 429 when rate limited, and
+ *   422 with a per-field error list). Nothing about the page changes.
+ * - UNSET — the form becomes a composer. Submitting hands the finished message
+ *   to the reader's own mail client via `mailto:`, prefilled. Nothing is
+ *   transmitted by the page, so nothing can be silently dropped by it, and the
+ *   button says so rather than claiming to send.
+ *
+ * `NEXT_PUBLIC_` is required: this is read in the browser, and the value is
+ * public either way — a form endpoint is a URL anyone can see in the HTML.
+ */
+const CONTACT_ENDPOINT = process.env.NEXT_PUBLIC_CONTACT_ENDPOINT ?? ""
+
+/** The one copy of the address the fallback composes to. */
+const CONTACT_EMAIL = "rahulrathore576@gmail.com"
+
 interface ContactFormData {
   name: string
   email: string
@@ -87,7 +110,57 @@ interface ContactFormData {
 type ContactFormField = keyof ContactFormData
 type ContactFormErrors = Partial<Record<ContactFormField, string>>
 type ContactFormTouched = Partial<Record<ContactFormField, boolean>>
-type SubmitStatus = "success" | "error" | "rate-limited" | null
+type SubmitStatus = "success" | "composed" | "error" | "rate-limited" | null
+
+/**
+ * A `mailto:` carrying the message the reader already typed.
+ *
+ * Both halves are encoded. An unencoded newline or ampersand truncates the body
+ * in most mail clients, silently — the reader sees a half-written message and no
+ * indication that anything was lost.
+ */
+function mailtoHref(data: ContactFormData): string {
+  const params = new URLSearchParams({
+    subject: `Portfolio enquiry from ${data.name}`,
+    body: `${data.message}\n\n—\n${data.name}\n${data.email}`,
+  })
+  return `mailto:${CONTACT_EMAIL}?${params.toString()}`
+}
+
+/**
+ * Per-field errors out of a form service, if it sent any.
+ *
+ * Tolerant of two shapes because the two senders differ: the old `/api/contact`
+ * replied `{ errors: { email: "…" } }`, and Formspree replies
+ * `{ errors: [{ field: "email", message: "…" }] }`. Neither is guaranteed, so an
+ * unrecognised body yields nothing and the generic banner is shown instead.
+ */
+function parseServerErrors(payload: unknown): ContactFormErrors | null {
+  if (typeof payload !== "object" || payload === null || !("errors" in payload)) {
+    return null
+  }
+  const { errors } = payload as { errors: unknown }
+
+  if (Array.isArray(errors)) {
+    const collected: ContactFormErrors = {}
+    for (const entry of errors) {
+      if (typeof entry !== "object" || entry === null) continue
+      const { field, message } = entry as { field?: unknown; message?: unknown }
+      if (
+        (field === "name" || field === "email" || field === "message") &&
+        typeof message === "string"
+      ) {
+        collected[field] = message
+      }
+    }
+    return Object.keys(collected).length > 0 ? collected : null
+  }
+
+  if (typeof errors === "object") {
+    return errors as ContactFormErrors
+  }
+  return null
+}
 
 // Form validation
 const validateForm = (data: ContactFormData): ContactFormErrors => {
@@ -134,7 +207,7 @@ export function ContactSection() {
   ) => {
     const { name, value } = e.target as { name: ContactFormField; value: string }
     setFormData((prev) => ({ ...prev, [name]: value }))
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }))
@@ -144,7 +217,7 @@ export function ContactSection() {
   const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name } = e.target as { name: ContactFormField }
     setTouched((prev) => ({ ...prev, [name]: true }))
-    
+
     // Validate on blur
     const validationErrors = validateForm(formData)
     if (validationErrors[name]) {
@@ -154,7 +227,7 @@ export function ContactSection() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    
+
     // Validate all fields
     const validationErrors = validateForm(formData)
     setErrors(validationErrors)
@@ -165,13 +238,28 @@ export function ContactSection() {
       return
     }
 
+    // No endpoint configured: hand off to the reader's mail client and stop.
+    // Deliberately not wrapped in the try/fetch path below — there is no request
+    // to fail, and reporting "failed to send" for a handoff that worked would be
+    // worse than saying nothing.
+    if (!CONTACT_ENDPOINT) {
+      window.location.href = mailtoHref(formData)
+      setSubmitStatus("composed")
+      return
+    }
+
     setIsSubmitting(true)
     setSubmitStatus(null)
 
     try {
-      const response = await fetch("/api/contact", {
+      const response = await fetch(CONTACT_ENDPOINT, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          // Formspree returns a redirect to its own thank-you page without
+          // this, which a fetch follows opaquely and reports as success.
+          Accept: "application/json",
+        },
         body: JSON.stringify(formData),
       })
 
@@ -181,12 +269,10 @@ export function ContactSection() {
           return
         }
 
-        // The server re-runs the same validation; surface its field errors when it sends them.
+        // The service re-runs its own validation; surface its field errors when
+        // it sends them, so the reader can fix the field rather than re-guess.
         const payload: unknown = await response.json().catch(() => null)
-        const serverErrors =
-          payload && typeof payload === "object" && "errors" in payload
-            ? (payload as { errors: ContactFormErrors }).errors
-            : null
+        const serverErrors = parseServerErrors(payload)
 
         if (serverErrors) {
           setErrors(serverErrors)
@@ -232,7 +318,7 @@ export function ContactSection() {
               Let's <span className="text-gradient">Connect</span>
             </h2>
             <p className="text-muted-foreground mt-4 max-w-2xl mx-auto text-lg">
-              Have a project in mind or want to discuss opportunities? 
+              Have a project in mind or want to discuss opportunities?
               I'd love to hear from you. Let's create something amazing together!
             </p>
           </div>
@@ -310,7 +396,7 @@ export function ContactSection() {
                     <div>
                       <h3 className="font-semibold mb-1">Available for Work</h3>
                       <p className="text-sm text-muted-foreground">
-                        I'm currently open to freelance projects, consulting, 
+                        I'm currently open to freelance projects, consulting,
                         and full-time opportunities. Let's discuss how I can help!
                       </p>
                     </div>
@@ -344,6 +430,29 @@ export function ContactSection() {
                     </div>
                   )}
 
+                  {/* Handed to the reader's mail client (no endpoint configured) */}
+                  {submitStatus === "composed" && (
+                    <div className="mb-6 p-4 rounded-lg bg-primary/10 border border-primary/20 flex items-start gap-3">
+                      <Mail className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-primary">
+                          Your message is ready in your mail app
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Nothing was sent from this page — press send in your mail
+                          client to deliver it. If nothing opened, email me directly at{" "}
+                          <a
+                            href={`mailto:${CONTACT_EMAIL}`}
+                            className="underline hover:text-primary"
+                          >
+                            {CONTACT_EMAIL}
+                          </a>
+                          .
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Rate Limited Message */}
                   {submitStatus === "rate-limited" && (
                     <div className="mb-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-start gap-3">
@@ -354,7 +463,7 @@ export function ContactSection() {
                         </p>
                         <p className="text-sm text-muted-foreground mt-1">
                           You&apos;ve sent several messages already. Please try again later, or
-                          email me directly at rahul@rapidtechplus.com
+                          email me directly at rahulrathore576@gmail.com
                         </p>
                       </div>
                     </div>
@@ -369,7 +478,7 @@ export function ContactSection() {
                           Failed to send message
                         </p>
                         <p className="text-sm text-muted-foreground mt-1">
-                          Please try again or email me directly at rahul@rapidtechplus.com
+                          Please try again or email me directly at rahulrathore576@gmail.com
                         </p>
                       </div>
                     </div>
@@ -465,9 +574,9 @@ export function ContactSection() {
                     </div>
 
                     {/* Submit Button */}
-                    <Button 
-                      type="submit" 
-                      size="lg" 
+                    <Button
+                      type="submit"
+                      size="lg"
                       className="w-full"
                       disabled={isSubmitting}
                     >
@@ -479,15 +588,19 @@ export function ContactSection() {
                       ) : (
                         <>
                           <Send className="h-5 w-5 mr-2" />
-                          Send Message
+                          {/* The label must not promise delivery the page cannot
+                              perform. With no endpoint, submitting opens a mail
+                              client and the reader still has to press send. */}
+                          {CONTACT_ENDPOINT ? "Send Message" : "Compose this message"}
                         </>
                       )}
                     </Button>
 
                     {/* Privacy note */}
                     <p className="text-xs text-muted-foreground text-center">
-                      By submitting this form, you agree to be contacted regarding your inquiry.
-                      Your information will never be shared with third parties.
+                      {CONTACT_ENDPOINT
+                        ? "By submitting this form, you agree to be contacted regarding your inquiry. Your information will never be shared with third parties."
+                        : "This opens your own mail app with the message prefilled — nothing is sent or stored by this page."}
                     </p>
                   </form>
                 </CardContent>
@@ -507,9 +620,9 @@ export function ContactSection() {
                       <h3 className="font-semibold text-lg">Ahmedabad, Gujarat</h3>
                       <p className="text-muted-foreground">India</p>
                       <Button variant="outline" size="sm" className="mt-4" asChild>
-                        <a 
-                          href="https://maps.google.com/?q=Ahmedabad,India" 
-                          target="_blank" 
+                        <a
+                          href="https://maps.google.com/?q=Ahmedabad,India"
+                          target="_blank"
                           rel="noopener noreferrer"
                         >
                           View on Google Maps
@@ -523,19 +636,19 @@ export function ContactSection() {
                 <CardContent className="p-8 flex flex-col justify-center">
                   <h3 className="text-2xl font-bold mb-4">Let's Work Together</h3>
                   <p className="text-muted-foreground mb-6">
-                    Whether you have a project in mind, need technical consultation, 
-                    or just want to say hello, I'm always happy to connect with 
+                    Whether you have a project in mind, need technical consultation,
+                    or just want to say hello, I'm always happy to connect with
                     fellow developers and potential collaborators.
                   </p>
                   <div className="space-y-3">
-                    <a 
-                      href="mailto:rahul@rapidtechplus.com"
+                    <a
+                      href="mailto:rahulrathore576@gmail.com"
                       className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors"
                     >
                       <Mail className="h-5 w-5" />
-                      <span>rahul@rapidtechplus.com</span>
+                      <span>rahulrathore576@gmail.com</span>
                     </a>
-                    <a 
+                    <a
                       href="tel:+918264110143"
                       className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors"
                     >

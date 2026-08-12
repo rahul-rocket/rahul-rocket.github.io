@@ -40,6 +40,14 @@ if (!existsSync(outDir)) {
 const files = walk(outDir)
 const rel = (f) => relative(outDir, f).split('\\').join('/')
 
+/**
+ * Must equal `basePath` in next.config.mjs, `site.basePath` in
+ * src/config/site.ts, and the constants in check-links.mjs and
+ * apply-base-path.mjs. Every absolute URL in the exported HTML carries it; no
+ * path inside out/ does.
+ */
+const BASE_PATH = '/v2'
+
 /*
  * 1. .nojekyll must reach out/.
  *
@@ -162,10 +170,32 @@ for (const f of htmlFiles) {
 			continue
 		}
 
-		if (!existsSync(join(outDir, pathname))) {
+		// The URL carries the deployed base path ('/v2/og/home.png'); out/ does
+		// not ('og/home.png'). basePath prefixes the URLs in the HTML, not the
+		// directory the export is written to, so it has to come off before this
+		// becomes a path on disk. Without this the check fails for every page at
+		// once, which reads as a broken OG pipeline rather than as a path bug.
+		const onDisk =
+			pathname === BASE_PATH
+				? '/'
+				: pathname.startsWith(`${BASE_PATH}/`)
+					? pathname.slice(BASE_PATH.length)
+					: pathname
+
+		// A URL outside the base path is a genuine failure, not a lookup miss: it
+		// would point a link-preview crawler at the apex application.
+		if (onDisk === pathname && pathname !== '/') {
+			fail(
+				'every og:image is inside the base path',
+				`${rel(f)} → ${value} — outside ${BASE_PATH}/, so it names a file in the apex application, not this one`,
+			)
+			continue
+		}
+
+		if (!existsSync(join(outDir, onDisk))) {
 			fail(
 				'every og:image resolves in the export',
-				`${rel(f)} → ${value} — no file at out${pathname}. Run \`pnpm og:generate\` after the build, or check that ogImageForPath() and slugForRoute() still agree.`,
+				`${rel(f)} → ${value} — no file at out${onDisk}. Run \`pnpm og:generate\` after the build, or check that ogImageForPath() and slugForRoute() still agree.`,
 			)
 		}
 	}

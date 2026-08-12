@@ -43,11 +43,22 @@ const BLOG = join(OUT, 'blog')
 
 /**
  * Identity, duplicated from `src/config/site.ts` because this script must not
- * import TypeScript. The values are asserted against the built HTML below, so
- * a drift fails the build rather than shipping a feed pointing at the wrong
- * origin — which is the one failure a duplicated constant must not be allowed.
+ * import TypeScript.
+ *
+ * The origin alone, and the origin plus the base path. Both are needed and they
+ * are not interchangeable:
+ *
+ * - `SITE_ORIGIN` is what `absolutise()` prepends to a root-relative href it
+ *   finds in the exported HTML. Those hrefs ALREADY carry '/v2', because
+ *   `basePath` put it there. Prepending `SITE_URL` instead would emit
+ *   '…/v2/v2/blog/' in every feed entry.
+ * - `SITE_URL` is what the feed's own metadata is built from — self links, the
+ *   feed id, the blog link — none of which appear in the HTML and so none of
+ *   which get the prefix for free.
  */
-const SITE_URL = 'https://rahul-rocket.github.io'
+const SITE_ORIGIN = 'https://rahul-rocket.github.io'
+const SITE_BASE_PATH = '/v2'
+const SITE_URL = `${SITE_ORIGIN}${SITE_BASE_PATH}`
 const SITE_NAME = 'Rahul Rocket'
 const SITE_TITLE = `${SITE_NAME} — Full Stack Software Engineer & Software Architect`
 const SITE_DESCRIPTION =
@@ -131,9 +142,13 @@ function stripMarked(html, attribute, tagName = 'div') {
  * client that renders it — and the failure is invisible from the site.
  */
 function absolutise(html) {
-	return html
-		.replace(/(href|src)="\/(?!\/)/g, `$1="${SITE_URL}/`)
-		.replace(/(href|src)="#/g, `$1="${SITE_URL}/#`)
+	return (
+		html
+			// SITE_ORIGIN, not SITE_URL — the matched href already begins '/v2/'.
+			.replace(/(href|src)="\/(?!\/)/g, `$1="${SITE_ORIGIN}/`)
+			// A bare fragment has no prefix to preserve, so this one takes SITE_URL.
+			.replace(/(href|src)="#/g, `$1="${SITE_URL}/#`)
+	)
 }
 
 function escapeXml(value) {

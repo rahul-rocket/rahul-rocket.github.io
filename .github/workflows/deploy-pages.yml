@@ -1,0 +1,139 @@
+# Publish both apps to GitHub Pages as one artifact.
+#
+#   apps/web     -> https://rahul-rocket.github.io/
+#   apps/web-v2  -> https://rahul-rocket.github.io/v2/
+#
+# The two apps are built INDEPENDENTLY and neither reads the other's output. They
+# are joined exactly once, by scripts/assemble-pages.mjs, which copies
+# apps/web/out to the artifact root and apps/web-v2/out to v2/ and then asserts
+# that V2 did not overwrite any of V1's root-level files. That script is also what
+# `pnpm pages:serve` runs locally, so the layout published here is the layout that
+# can be tested before publishing.
+#
+# FAILURE BEHAVIOUR. Nothing is published unless both builds and all gates pass.
+# `build` and `deploy` are separate jobs joined by `needs:`, so a failure anywhere
+# in `build` means `deploy` never starts and the live site keeps serving the
+# previous successful deployment. There is no partial publish: the artifact is
+# uploaded as one unit at the end of `build`.
+#
+# THE PAGES SOURCE SETTING IS MANUAL AND THIS WORKFLOW CANNOT SET IT.
+# Settings → Pages → Build and deployment → Source must be "GitHub Actions". If
+# it is set to a branch instead, this workflow reports success and the live site
+# never changes — see apps/web-v2/docs/DEPLOYMENT.md §11 for that failure mode.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [develop]
+  # Manual runs, for re-publishing an unchanged tree (a reverted repository
+  # setting, an expired deployment) without an empty commit.
+  workflow_dispatch:
+
+permissions:
+  # Read the repository.
+  contents: read
+  # Upload to and deploy from the Pages service. Both are required by
+  # actions/deploy-pages; `id-token: write` is how it proves to Pages that the
+  # artifact came from this workflow run.
+  pages: write
+  id-token: write
+
+# One deployment at a time. `cancel-in-progress: false` is deliberate: cancelling
+# a half-finished Pages deployment can leave the site serving a partially
+# swapped tree, and a queued run is cheap by comparison.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        # Before setup-node, so that `cache: pnpm` below can find the pnpm store.
+        # The version is pinned to `packageManager` in the root package.json;
+        # a mismatch produces a different lockfile resolution than local installs.
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          # apps/web-v2 declares `engines: node >=22.11 <23` and its @types/node
+          # is pinned to 22.x on purpose (see apps/web-v2/CLAUDE.md §0), so the
+          # runtime here must be 22.x. apps/web is compatible with it.
+          node-version: 22.11.0
+          cache: pnpm
+
+      - name: Install dependencies
+        # --frozen-lockfile fails rather than silently updating pnpm-lock.yaml,
+        # so a dependency change has to be committed to take effect here.
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        # Cheap, and it runs before either build so a type error is reported as a
+        # type error rather than as a build failure deep in a Next log.
+        run: pnpm check-types
+
+      - name: Build V1 (apps/web)
+        # Targeted: --filter builds this package and its workspace dependencies
+        # (@portfolio/ui) and nothing else. web-v2 is not in this graph at all,
+        # which is what makes the two builds independent rather than merely
+        # sequential.
+        run: pnpm --filter web build
+        env:
+          # With DATABASE_URL unset, /blog falls back to the seeded posts in
+          # apps/web/lib/posts.ts and the build still succeeds. Set the secret to
+          # bake real posts into the export instead. The read happens ONCE, here —
+          # publishing a post is a deploy, not a database write.
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXT_PUBLIC_BASE_URL: https://rahul-rocket.github.io
+          # Third-party form endpoint for the contact section. Unset means the
+          # form composes a mailto: instead of POSTing — it still works, it just
+          # hands off to the reader's mail client. There is no /api/contact on a
+          # static export.
+          NEXT_PUBLIC_CONTACT_ENDPOINT: ${{ secrets.CONTACT_ENDPOINT }}
+
+      - name: Build V2 (apps/web-v2)
+        # Runs `next build`, then apply-base-path.mjs (which prefixes the plain
+        # <a href> navigation this app uses instead of next/link), then the OG
+        # card and feed generators. All four are the package's `build` script.
+        run: pnpm --filter web-v2 build
+
+      - name: Gate V2 export
+        # These read out/ and are the checks that catch a /v2 prefix mistake:
+        # check:links fails on any internal link that does not resolve or that
+        # escapes /v2, and check:export fails on a missing .nojekyll or an
+        # og:image that does not exist. Both are fatal — the artifact is not
+        # uploaded if either fails.
+        run: pnpm --filter web-v2 exec node scripts/check-export.mjs && pnpm --filter web-v2 exec node scripts/check-links.mjs
+
+      - name: Test V2
+        # apps/web has no test suite; this is web-v2's Vitest run.
+        run: pnpm --filter web-v2 test
+
+      - name: Assemble the Pages artifact
+        # Copies both exports into _pages/ and asserts the result: both entry
+        # points present, V1's root-level files untouched, V2 entirely inside v2/.
+        run: pnpm pages:assemble
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _pages
+
+  deploy:
+    # Gate. `needs: build` is the whole of the "deployment is blocked if either
+    # app fails to build" requirement: this job cannot start unless every step
+    # above succeeded.
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
