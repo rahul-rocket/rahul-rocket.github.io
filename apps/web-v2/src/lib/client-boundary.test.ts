@@ -1,5 +1,6 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -32,7 +33,10 @@ import { describe, expect, it } from 'vitest'
  * whichever feature happened to land that week.
  */
 
-const SRC = new URL('..', import.meta.url).pathname
+// `fileURLToPath`, not `.pathname`: on Windows the latter yields `/D:/…`, which
+// `readdirSync` resolves against the current drive as `D:\D:\…` and the whole
+// suite fails to collect. CI is Linux, so this gate only breaks locally.
+const SRC = fileURLToPath(new URL('..', import.meta.url))
 
 function walk(dir: string): string[] {
 	const found: string[] = []
