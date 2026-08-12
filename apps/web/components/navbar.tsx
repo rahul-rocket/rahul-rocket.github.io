@@ -80,7 +80,7 @@ export function Navbar() {
             className="flex items-center gap-2 text-xl font-bold hover:text-primary transition-colors"
           >
             <Code2 className="h-8 w-8 text-primary" />
-            <span className="bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-primary to-purple-500 bg-clip-text text-transparent">
               Rahul
             </span>
           </Link>

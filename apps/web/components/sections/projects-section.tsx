@@ -1,17 +1,17 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
-import { 
-  ExternalLink, 
-  Github, 
+import {
+  ExternalLink,
   Folder,
   Star,
   GitFork,
   Filter,
   X,
   Search,
-  ArrowUpRight
+  ArrowUpRight,
 } from "lucide-react"
+import { Github } from "@/components/brand-icons"
 import { Card, CardContent, CardHeader } from "@portfolio/ui/card"
 import { Badge } from "@portfolio/ui/badge"
 import { Button } from "@portfolio/ui/button"
@@ -186,7 +186,7 @@ const FeaturedProjectCard = ({
             alt={project.title}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent lg:bg-gradient-to-r lg:from-transparent lg:via-transparent lg:to-background/90" />
+          <div className="absolute inset-0 bg-linear-to-t from-background/90 via-background/20 to-transparent lg:bg-linear-to-r lg:from-transparent lg:via-transparent lg:to-background/90" />
           
           {/* Overlay buttons on hover */}
           <div className="absolute inset-0 bg-primary/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
@@ -528,7 +528,7 @@ export function ProjectsSection() {
 
           {/* GitHub CTA */}
           <div className={`mt-16 text-center transition-all duration-700 delay-500 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}>
-            <Card className="bg-gradient-to-br from-primary/5 via-background to-purple-500/5 border-primary/20 inline-block max-w-2xl">
+            <Card className="bg-linear-to-br from-primary/5 via-background to-purple-500/5 border-primary/20 inline-block max-w-2xl">
               <CardContent className="p-8">
                 <Github className="h-12 w-12 mx-auto mb-4" />
                 <h3 className="text-xl font-bold mb-3">Want to See More?</h3>

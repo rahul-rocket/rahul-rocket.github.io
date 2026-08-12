@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { ArrowRight, Github, Linkedin, Mail, ChevronDown } from "lucide-react"
+import { ArrowRight, Mail, ChevronDown } from "lucide-react"
+import { Github, Linkedin } from "@/components/brand-icons"
 import { Button } from "@portfolio/ui/button"
 import { Badge } from "@portfolio/ui/badge"
 import Link from "next/link"
@@ -24,7 +25,7 @@ export function HeroSection() {
   return (
     <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Animated background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-purple-500/5" />
+      <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-background to-purple-500/5" />
       
       {/* Animated gradient orbs */}
       <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse" />
@@ -32,7 +33,7 @@ export function HeroSection() {
       <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "2s" }} />
       
       {/* Grid pattern overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8882_1px,transparent_1px),linear-gradient(to_bottom,#8882_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8882_1px,transparent_1px),linear-gradient(to_bottom,#8882_1px,transparent_1px)] bg-size-[14px_24px] mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
 
       <div className="container mx-auto px-4 py-20 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -63,7 +64,7 @@ export function HeroSection() {
                 }`}
               >
                 <span className="block text-foreground">Hi, I'm</span>
-                <span className="block bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                <span className="block bg-linear-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
                   Rahul
                 </span>
                 <span className="block text-foreground text-3xl sm:text-4xl lg:text-5xl mt-2">
@@ -161,7 +162,7 @@ export function HeroSection() {
           >
             <div className="relative">
               {/* Decorative circle behind illustration */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-full blur-3xl scale-75" />
+              <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-purple-500/20 rounded-full blur-3xl scale-75" />
               
               {/* Developer illustration/avatar container */}
               <div className="relative w-80 h-80 xl:w-96 xl:h-96">

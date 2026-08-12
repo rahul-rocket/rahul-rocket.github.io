@@ -10,7 +10,7 @@ code should not introduce any.
 
 ```
 apps/
-  web/                    Next.js 14 App Router site (the only app)
+  web/                    Next.js 16 App Router site (the only app)
 packages/
   ui/                     @portfolio/ui — shared shadcn/ui component library
   eslint-config/          @portfolio/eslint-config — shared ESLint presets
@@ -53,8 +53,12 @@ the type over reaching for `any` or a non-null assertion. Indexed access returns
 `transpilePackages: ["@portfolio/ui"]` in `apps/web/next.config.js`. Adding a new component means
 adding a file under `packages/ui/src/components/` — the `exports` map picks it up by wildcard.
 
-**Tailwind** config lives at `apps/web/tailwind.config.ts` and its `content` globs already
-include `../../packages/ui/src/**`. Class names in the UI package are scanned from there.
+**Tailwind is v4, configured in CSS.** There is no `tailwind.config.ts` — the theme lives in
+the `@theme` block of `apps/web/app/globals.css`, and an `@source` directive there points at
+`../../packages/ui/src/**` so class names in the UI package are still scanned. Add design
+tokens as CSS custom properties inside `@theme`, not as a JS config object. The enter/exit
+animation utilities (`animate-in`, `slide-in-from-*`) come from `tw-animate-css`, imported at
+the top of that file — Tailwind v4 has no `tailwindcss-animate` plugin.
 
 **Components are shadcn/ui (new-york style).** `components.json` is configured with
 `"tsx": true` and aliases pointing at `@portfolio/ui`, so `pnpm dlx shadcn@latest add <name>` will
@@ -106,5 +110,15 @@ be set as project environment variables.
   With `DATABASE_URL` unset it is skipped entirely, so limits do not apply in local dev.
 - `IP_HASH_SALT` should be set in production. Without it the stored IP hashes are reversible
   by brute force, since the IPv4 space is small enough to enumerate.
+- **Brand logos are local, in `apps/web/components/brand-icons.tsx`.** lucide-react removed its
+  brand icon set in v1, so `Github`, `Linkedin`, and `Twitter` are hand-rolled SVGs there.
+  Everything else still comes from `lucide-react`. Do not re-import the brand names from lucide
+  — they do not exist.
+- **`next lint` was removed in Next 16.** `apps/web` lints through `eslint` directly. The web
+  workspace deliberately does *not* pass `--max-warnings 0` (it carries pre-existing
+  `react/no-unescaped-entities` and `no-img-element` warnings); `packages/ui` does.
+- **ESLint is held at 8.** `eslint-config-next` is therefore pinned to `^15`, because v16
+  requires ESLint >= 9. Moving to ESLint 9/10 means converting `packages/eslint-config` from
+  `.eslintrc` objects to flat config; do the two together or not at all.
 - `tests/` currently holds only an empty Python `__init__.py`. There is no test runner wired
   up; do not assume `pnpm test` exists.

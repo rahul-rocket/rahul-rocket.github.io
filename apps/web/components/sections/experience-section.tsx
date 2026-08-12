@@ -140,7 +140,7 @@ const ExperienceCard = ({
       {/* Timeline dot and line */}
       <div className="absolute left-6 lg:left-1/2 transform lg:-translate-x-1/2 flex flex-col items-center">
         <div 
-          className={`w-12 h-12 rounded-full bg-gradient-to-br ${experience.color} flex items-center justify-center shadow-lg z-10 transition-all duration-500 ${
+          className={`w-12 h-12 rounded-full bg-linear-to-br ${experience.color} flex items-center justify-center shadow-lg z-10 transition-all duration-500 ${
             isVisible ? "scale-100 opacity-100" : "scale-50 opacity-0"
           }`}
           style={{ transitionDelay: `${index * 200}ms` }}
@@ -161,7 +161,7 @@ const ExperienceCard = ({
       >
         <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden">
           {/* Gradient top border */}
-          <div className={`h-1 bg-gradient-to-r ${experience.color}`} />
+          <div className={`h-1 bg-linear-to-r ${experience.color}`} />
           
           <CardContent className="p-6">
             {/* Header */}
@@ -338,7 +338,7 @@ export function ExperienceSection() {
 
           {/* Bottom CTA */}
           <div className={`mt-16 text-center transition-all duration-700 delay-500 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}>
-            <Card className="bg-gradient-to-br from-primary/5 via-background to-purple-500/5 border-primary/20 inline-block max-w-2xl">
+            <Card className="bg-linear-to-br from-primary/5 via-background to-purple-500/5 border-primary/20 inline-block max-w-2xl">
               <CardContent className="p-8">
                 <h3 className="text-xl font-bold mb-3">Want to Work Together?</h3>
                 <p className="text-muted-foreground mb-6">
