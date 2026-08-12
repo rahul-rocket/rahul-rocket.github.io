@@ -15,9 +15,35 @@ pnpm check-types      # must pass before you call a change done
 pnpm build            # must pass before you call a change done
 pnpm lint
 pnpm test             # web-v2's Vitest suite (web has no tests)
+```
 
-pnpm pages:assemble   # build the Pages artifact into _pages/ (needs both builds first)
-pnpm pages:serve      # assemble, then serve it -- the only faithful preview of both sites
+**Every script is a Turborepo task**, so a per-app script is `--filter` over the
+same task graph rather than a second way to build. The two apps are separate
+workspaces with separate ports and neither is in the other's dependency graph:
+
+```bash
+pnpm web:dev          # V1 alone, http://localhost:3000
+pnpm web-v2:dev       # V2 alone, http://localhost:3001/v2/
+pnpm apps:dev         # both at once, on those two ports
+
+pnpm web:build        # also: web:start web:lint web:check-types
+pnpm web-v2:build     # also: web-v2:start web-v2:lint web-v2:check-types web-v2:test
+pnpm web-v2:verify    # check:export + check:links over V2's out/
+pnpm apps:build       # both, in parallel
+```
+
+`*:start` serves the **built export**, not a dev server, and `start` declares
+`dependsOn: ["build"]` — so it builds first rather than serving a stale `out/`.
+`web`'s `start` is `serve out`, not `next start`: `next start` refuses to run
+against `output: 'export'`.
+
+Combined — the only faithful preview of how the two sit together at `/` and
+`/v2/`:
+
+```bash
+pnpm pages:build      # build both, then assemble _pages/
+pnpm pages:assemble   # assemble only (needs both builds already done)
+pnpm pages:serve      # assemble, then serve the whole artifact on :4318
 ```
 
 ## Deployment

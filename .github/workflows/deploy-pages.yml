@@ -82,7 +82,7 @@ jobs:
         # (@portfolio/ui) and nothing else. web-v2 is not in this graph at all,
         # which is what makes the two builds independent rather than merely
         # sequential.
-        run: pnpm --filter web build
+        run: pnpm web:build
         env:
           # With DATABASE_URL unset, /blog falls back to the seeded posts in
           # apps/web/lib/posts.ts and the build still succeeds. Set the secret to
@@ -100,7 +100,7 @@ jobs:
         # Runs `next build`, then apply-base-path.mjs (which prefixes the plain
         # <a href> navigation this app uses instead of next/link), then the OG
         # card and feed generators. All four are the package's `build` script.
-        run: pnpm --filter web-v2 build
+        run: pnpm web-v2:build
 
       - name: Gate V2 export
         # These read out/ and are the checks that catch a /v2 prefix mistake:
@@ -108,11 +108,16 @@ jobs:
         # escapes /v2, and check:export fails on a missing .nojekyll or an
         # og:image that does not exist. Both are fatal — the artifact is not
         # uploaded if either fails.
-        run: pnpm --filter web-v2 exec node scripts/check-export.mjs && pnpm --filter web-v2 exec node scripts/check-links.mjs
+        #
+        # Both are turbo tasks declaring `dependsOn: ["build"]`, so this step is
+        # correct even if run on its own: turbo would build first rather than
+        # silently checking a stale out/. Here the build above already satisfies
+        # it and the tasks come from cache.
+        run: pnpm web-v2:verify
 
       - name: Test V2
         # apps/web has no test suite; this is web-v2's Vitest run.
-        run: pnpm --filter web-v2 test
+        run: pnpm web-v2:test
 
       - name: Assemble the Pages artifact
         # Copies both exports into _pages/ and asserts the result: both entry
