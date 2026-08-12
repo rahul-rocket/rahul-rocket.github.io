@@ -95,6 +95,12 @@ jobs:
           # hands off to the reader's mail client. There is no /api/contact on a
           # static export.
           NEXT_PUBLIC_CONTACT_ENDPOINT: ${{ secrets.CONTACT_ENDPOINT }}
+          # The landing page's contribution graph comes from GitHub's GraphQL
+          # API, which always requires a token. Unset means the section renders
+          # the profile without the heatmap rather than failing the build — see
+          # apps/web/lib/github.ts. If the job token turns out not to carry
+          # contribution data, swap in a PAT with read:user.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build V2 (apps/web-v2)
         # Runs `next build`, then apply-base-path.mjs (which prefixes the plain

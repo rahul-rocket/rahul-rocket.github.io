@@ -2,12 +2,20 @@
 
 # IDE and editors
 .idea/
+
 # Share the agreed workspace settings; ignore everything else under .vscode/
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
 !.vscode/launch.json
 !.vscode/tasks.json
+
+# Same split for Claude Code: launch.json defines the two dev servers (web on
+# 3000, web-v2 on 3001) and is shared; everything else there is per-machine --
+# settings.local.json holds one developer's permission grants, and the rest is
+# session state.
+.claude/*
+!.claude/launch.json
 
 # Dependencies
 node_modules/

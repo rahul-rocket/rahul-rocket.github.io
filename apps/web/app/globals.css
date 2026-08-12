@@ -353,3 +353,89 @@
     content: " (" attr(href) ")";
   }
 }
+
+/* ---------- Theme switch ----------
+   Ported from rapidtechplus/rapidtechplus.github.io, with that repo's
+   --footer-* custom properties swapped for this app's design tokens so it
+   reads correctly in both themes. Used by components/theme-toggle.tsx. */
+.theme-switch {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.theme-switch-track {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 58px;
+  height: 30px;
+  padding: 0 7px;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--secondary));
+  transition: border-color 0.2s;
+}
+
+.theme-switch:hover .theme-switch-track {
+  border-color: hsl(var(--primary));
+}
+
+.theme-switch:focus-visible {
+  outline: none;
+}
+
+.theme-switch:focus-visible .theme-switch-track {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+.theme-switch-ico {
+  position: relative;
+  z-index: 1;
+  color: hsl(var(--muted-foreground));
+  transition: color 0.2s;
+}
+
+.theme-switch[data-state="light"] .theme-switch-ico.sun {
+  color: #f2b34b;
+}
+
+.theme-switch[data-state="dark"] .theme-switch-ico.moon {
+  color: hsl(var(--primary));
+}
+
+.theme-switch-knob {
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.3);
+  transform: translate(0, -50%);
+  transition:
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-switch[data-state="dark"] .theme-switch-knob {
+  transform: translate(28px, -50%);
+}
+
+/* Knob squashes while pressed; the dark-state travel is shortened by the
+   same 4px so the wider knob still ends 3px from the track edge. */
+.theme-switch:active .theme-switch-knob {
+  width: 28px;
+}
+
+.theme-switch[data-state="dark"]:active .theme-switch-knob {
+  transform: translate(24px, -50%);
+}

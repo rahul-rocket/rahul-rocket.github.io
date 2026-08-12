@@ -108,13 +108,13 @@ export function HeroSection() {
               }`}
             >
               <Button size="lg" asChild className="rounded-full px-8 gap-2 group">
-                <Link href="/#projects">
+                <Link href="/projects">
                   View Projects
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild className="rounded-full px-8">
-                <Link href="/#contact">
+                <Link href="/contact">
                   Contact Me
                 </Link>
               </Button>
@@ -257,13 +257,15 @@ export function HeroSection() {
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
           }`}
         >
-          <Link
-            href="/#about"
+          {/* The landing page continues below the fold, so this scrolls
+              rather than navigating. */}
+          <a
+            href="#highlights"
             className="flex flex-col items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group"
           >
             <span className="text-sm">Scroll to explore</span>
             <ChevronDown className="h-5 w-5 animate-bounce" />
-          </Link>
+          </a>
         </div>
       </div>
     </section>

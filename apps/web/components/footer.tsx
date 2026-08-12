@@ -1,9 +1,16 @@
 "use client"
 
 import Link from "next/link"
-import { Mail, MapPin, Heart, Code2, ArrowUp } from "lucide-react"
+import { Mail, MapPin, Heart, ArrowUp } from "lucide-react"
 import { Github, Linkedin } from "@/components/brand-icons"
 import { Button } from "@portfolio/ui/button"
+
+import { Logo } from "@/components/logo"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { legalItems } from "@/lib/search-index"
+
+/** First year of public work -- the rahul-rocket GitHub account dates to 2018. */
+const START_YEAR = 2018
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
@@ -32,12 +39,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="lg:col-span-2 space-y-4">
-            <Link href="/" className="flex items-center gap-2 text-xl font-bold">
-              <Code2 className="h-8 w-8 text-primary" />
-              <span className="bg-linear-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-                Rahul
-              </span>
-            </Link>
+            <Logo id="footer" />
             <p className="text-muted-foreground max-w-md leading-relaxed">
               A passionate software developer crafting digital experiences with modern technologies.
               Building scalable, performant web applications from Ahmedabad, India.
@@ -70,19 +72,19 @@ export function Footer() {
                 Home
               </Link>
               <Link
-                href="/#about"
+                href="/about"
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 About
               </Link>
               <Link
-                href="/#projects"
+                href="/projects"
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 Projects
               </Link>
               <Link
-                href="/#experience"
+                href="/experience"
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 Experience
@@ -94,7 +96,7 @@ export function Footer() {
                 Blog
               </Link>
               <Link
-                href="/#contact"
+                href="/contact"
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 Contact
@@ -138,13 +140,47 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-muted-foreground text-sm">
-            © {currentYear} Rahul. All rights reserved.
-          </p>
-          <p className="text-muted-foreground text-sm flex items-center gap-1">
-            Made with <Heart className="h-4 w-4 text-red-500 fill-red-500 animate-pulse" /> in Ahmedabad, India
+        {/* Bottom Bar: copyright, the legal row, and the theme switch on one
+            line at desktop width; the "made with" credit centred beneath. */}
+        <div className="mt-12 pt-8 border-t border-border">
+          {/* Equal outer tracks, so the legal row is optically centred rather
+              than just placed between two items of unequal width. */}
+          <div className="flex flex-col items-center gap-4 lg:grid lg:grid-cols-[1fr_auto_1fr]">
+            <p className="text-muted-foreground text-sm order-1 lg:justify-self-start">
+              © {START_YEAR}–{currentYear} Rahul. All rights reserved.
+            </p>
+
+            <nav
+              aria-label="Legal and sitemap"
+              className="order-3 lg:order-2 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 lg:justify-self-center"
+            >
+              <Link
+                href="/"
+                className="text-muted-foreground text-sm hover:text-foreground transition-colors"
+              >
+                Home
+              </Link>
+              {legalItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="text-muted-foreground text-sm hover:text-foreground transition-colors"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+
+            <span className="order-2 lg:order-3 flex items-center gap-2 lg:justify-self-end">
+              <span className="text-muted-foreground text-sm">Theme</span>
+              <ThemeToggle />
+            </span>
+          </div>
+
+          <p className="text-muted-foreground text-sm flex items-center justify-center gap-1 mt-6">
+            Made with{" "}
+            <Heart className="h-4 w-4 text-red-500 fill-red-500 animate-pulse" />{" "}
+            in Ahmedabad, India
           </p>
         </div>
       </div>

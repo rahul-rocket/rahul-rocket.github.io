@@ -246,7 +246,7 @@ export function ProjectDetailClient({ project, relatedProjects }: ProjectDetailC
           <div className="max-w-4xl mx-auto pt-12">
             {/* Back button */}
             <Button variant="ghost" asChild className="mb-8 -ml-4">
-              <Link href="/#projects">
+              <Link href="/projects">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Projects
               </Link>
@@ -492,7 +492,7 @@ export function ProjectDetailClient({ project, relatedProjects }: ProjectDetailC
                     </a>
                   </Button>
                   <Button variant="secondary" asChild>
-                    <Link href="/#contact">
+                    <Link href="/contact">
                       Contact Me
                     </Link>
                   </Button>
