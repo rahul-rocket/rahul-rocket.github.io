@@ -26,12 +26,12 @@ export function HeroSection() {
     <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Animated background */}
       <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-background to-purple-500/5" />
-      
+
       {/* Animated gradient orbs */}
       <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
       <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "2s" }} />
-      
+
       {/* Grid pattern overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#8882_1px,transparent_1px),linear-gradient(to_bottom,#8882_1px,transparent_1px)] bg-size-[14px_24px] mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
 
@@ -145,7 +145,7 @@ export function HeroSection() {
                 <Linkedin className="h-5 w-5" />
               </a>
               <a
-                href="mailto:rahul@rapidtechplus.com"
+                href="mailto:rahulrathore576@gmail.com"
                 className="p-3 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-all hover:scale-110 hover:-translate-y-1"
                 aria-label="Email Me"
               >
@@ -163,14 +163,14 @@ export function HeroSection() {
             <div className="relative">
               {/* Decorative circle behind illustration */}
               <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-purple-500/20 rounded-full blur-3xl scale-75" />
-              
+
               {/* Developer illustration/avatar container */}
               <div className="relative w-80 h-80 xl:w-96 xl:h-96">
                 {/* Animated rings */}
                 <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-pulse" />
                 <div className="absolute inset-4 rounded-full border-2 border-purple-500/20 animate-pulse" style={{ animationDelay: "0.5s" }} />
                 <div className="absolute inset-8 rounded-full border-2 border-pink-500/20 animate-pulse" style={{ animationDelay: "1s" }} />
-                
+
                 {/* Developer illustration SVG */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <svg
@@ -181,54 +181,54 @@ export function HeroSection() {
                   >
                     {/* Background circle */}
                     <circle cx="200" cy="200" r="180" className="fill-secondary" />
-                    
+
                     {/* Laptop */}
                     <rect x="100" y="200" width="200" height="120" rx="8" className="fill-muted stroke-border" strokeWidth="2" />
                     <rect x="110" y="210" width="180" height="90" rx="4" className="fill-background" />
-                    
+
                     {/* Code on screen */}
                     <rect x="125" y="225" width="60" height="8" rx="2" className="fill-primary" />
                     <rect x="125" y="240" width="100" height="8" rx="2" className="fill-muted-foreground/30" />
                     <rect x="140" y="255" width="80" height="8" rx="2" className="fill-purple-500/50" />
                     <rect x="140" y="270" width="60" height="8" rx="2" className="fill-green-500/50" />
                     <rect x="125" y="285" width="70" height="8" rx="2" className="fill-muted-foreground/30" />
-                    
+
                     {/* Keyboard base */}
                     <ellipse cx="200" cy="330" rx="110" ry="15" className="fill-muted stroke-border" strokeWidth="2" />
-                    
+
                     {/* Person - Head */}
                     <circle cx="200" cy="120" r="50" className="fill-amber-200 dark:fill-amber-300" />
-                    
+
                     {/* Hair */}
                     <path d="M150 120 Q150 70 200 70 Q250 70 250 120 Q250 100 230 95 Q200 85 170 95 Q150 100 150 120" className="fill-gray-800 dark:fill-gray-900" />
-                    
+
                     {/* Face */}
                     <ellipse cx="180" cy="115" rx="5" ry="6" className="fill-gray-800" />
                     <ellipse cx="220" cy="115" rx="5" ry="6" className="fill-gray-800" />
                     <path d="M190 135 Q200 145 210 135" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="stroke-gray-800" fill="none" />
-                    
+
                     {/* Body/Shirt */}
                     <path d="M150 170 Q150 200 170 200 L230 200 Q250 200 250 170 Q250 155 200 155 Q150 155 150 170" className="fill-primary" />
-                    
+
                     {/* Arms */}
                     <path d="M155 180 Q130 190 120 220" stroke="currentColor" strokeWidth="20" strokeLinecap="round" className="stroke-primary" />
                     <path d="M245 180 Q270 190 280 220" stroke="currentColor" strokeWidth="20" strokeLinecap="round" className="stroke-primary" />
-                    
+
                     {/* Hands */}
                     <circle cx="120" cy="225" r="12" className="fill-amber-200 dark:fill-amber-300" />
                     <circle cx="280" cy="225" r="12" className="fill-amber-200 dark:fill-amber-300" />
-                    
+
                     {/* Floating elements */}
                     <g className="animate-bounce" style={{ animationDuration: "3s" }}>
                       <rect x="300" y="100" width="40" height="40" rx="8" className="fill-blue-500/20 stroke-blue-500" strokeWidth="2" />
                       <text x="320" y="127" textAnchor="middle" className="fill-blue-500 text-xs font-bold">&lt;/&gt;</text>
                     </g>
-                    
+
                     <g className="animate-bounce" style={{ animationDuration: "2.5s", animationDelay: "0.5s" }}>
                       <rect x="60" y="150" width="35" height="35" rx="6" className="fill-green-500/20 stroke-green-500" strokeWidth="2" />
                       <text x="77" y="173" textAnchor="middle" className="fill-green-500 text-xs font-bold">{ }</text>
                     </g>
-                    
+
                     <g className="animate-bounce" style={{ animationDuration: "2s", animationDelay: "1s" }}>
                       <circle cx="320" cy="250" r="18" className="fill-purple-500/20 stroke-purple-500" strokeWidth="2" />
                       <text x="320" y="255" textAnchor="middle" className="fill-purple-500 text-xs font-bold">TS</text>
@@ -236,7 +236,7 @@ export function HeroSection() {
                   </svg>
                 </div>
               </div>
-              
+
               {/* Floating tech icons */}
               <div className="absolute -top-4 -right-4 p-3 bg-card rounded-xl shadow-lg border border-border animate-bounce" style={{ animationDuration: "3s" }}>
                 <span className="text-2xl">⚛️</span>
