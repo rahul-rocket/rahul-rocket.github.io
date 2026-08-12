@@ -10,18 +10,28 @@ every change here.
 
 ```bash
 pnpm install          # pnpm only -- npm/yarn will produce the wrong lockfile
-pnpm dev              # dev server on http://localhost:3000
+pnpm dev              # web on http://localhost:3000, web-v2 on http://localhost:3001
 pnpm check-types      # must pass before you call a change done
 pnpm build            # must pass before you call a change done
 pnpm lint
+pnpm test             # web-v2's Vitest suite (web has no tests)
 ```
 
 ## Shape of the repo
 
-- `apps/web` — the Next.js 16 App Router site. Alias `@/*` points at the app root.
+- `apps/web` — the Next.js 16 App Router site, Postgres-backed, deploys to Vercel. Alias `@/*`
+  points at the app root.
+- `apps/web-v2` — the Next.js 15 statically exported site moved over from the `rahul-rocket.github.io`
+  repo. Self-contained: its own Biome/Vitest/Playwright toolchain, its own docs, no shared
+  packages. **Read [apps/web-v2/CLAUDE.md](./apps/web-v2/CLAUDE.md) before editing it** — the
+  notes below describe `apps/web`.
 - `packages/ui` — `@portfolio/ui`, the shared shadcn/ui library. Ships TS source; Next transpiles
-  it. Import as `@portfolio/ui/button`, `@portfolio/ui/lib/utils`.
-- `packages/typescript-config`, `packages/eslint-config` — shared presets.
+  it. Import as `@portfolio/ui/button`, `@portfolio/ui/lib/utils`. Used by `web` only.
+- `packages/typescript-config`, `packages/eslint-config` — shared presets. Used by `web` only.
+
+The two apps share the repository, the lockfile and Turborepo — nothing else. One constraint
+crosses the boundary: both must pin the **same `@types/react`/`@types/react-dom` version**, or
+`web-v2` fails to typecheck against two copies of the React types. See AGENTS.md.
 
 ## Things worth knowing before editing
 

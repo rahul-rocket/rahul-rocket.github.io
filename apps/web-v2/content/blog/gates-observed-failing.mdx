@@ -1,0 +1,100 @@
+---
+title: "A gate you have never seen fail is not a gate"
+summary: "We wired five merge gates into CI, then deliberately broke a pull request to watch them catch it. Four did. The fifth had been silently broken the whole time."
+publishedAt: 2026-05-02
+tags: [testing, devops, performance]
+---
+
+The plan said: add the accessibility check, the byte budget and the Lighthouse
+run to CI before writing any pages, so there is nothing to regress by the time
+they exist. That part worked. The part I nearly skipped was the next sentence,
+which said to then open a deliberately terrible pull request and watch each gate
+catch it.
+
+It felt like ceremony. The jobs were green on every commit; what more evidence
+did I want?
+
+## The bad pull request
+
+Two defects, chosen because they fail in different subsystems and neither is
+visible in review of the diff:
+
+1. A paragraph styled with a colour pair that fails contrast. Two tokens, one
+   line, entirely plausible as a real mistake.
+2. `moment` imported into a client component on the home page. About 200 KB of
+   date library, added the way date libraries are actually added — because
+   something needed a date formatted and it was the first result.
+
+Then push, and read the jobs one at a time.
+
+| Job | Result |
+| --- | --- |
+| Typecheck, lint, unit tests | pass |
+| Build and export | pass |
+| **Bundle budgets** | **fail** — `/ — JS` 124.7 kB against a 120 kB limit, "exceeded by 4.71 kB" |
+| **End-to-end and accessibility** | **fail** — axe violations on `/` in dark theme *and* in light theme, each naming `color-contrast (serious)` and the selector |
+| **Lighthouse** | fail, independently |
+
+Both defects were named, separately, by the job responsible for each. The `/404/`
+route stayed green throughout, which is the evidence that the per-route budgets
+are genuinely per-route and not one aggregate wearing a per-route label.
+
+That is four gates confirmed. It cost about forty minutes.
+
+## The fifth gate had never worked
+
+There is a sixth job that posts a bundle-size comment on every pull request. It
+is documented as advisory — it reports, it never blocks. On this run it did not
+report. It **failed**.
+
+Two independent causes, and the second is the one worth carrying away.
+
+**The package manager printed its banner into the JSON.** The job ran
+`pnpm size --json > size.json`, and pnpm writes `> project@0.1.0 size` to stdout
+before the command's own output. So the file never parsed, the comment step
+caught the error and returned early, and the job reported "no comment to post"
+rather than "the input was garbage". Fixed with `pnpm exec` and a redirect that
+sees only the tool's output.
+
+**`size-limit` exits non-zero when a bundle is over budget.** Which is correct —
+it is a budget tool. But it meant the comment step was skipped by the shell's
+error handling in exactly the case where a size comment is most useful. The pull
+request most in need of the report was, by construction, the only one guaranteed
+not to get it.
+
+So the gate had two failure modes: it was broken on every passing pull request,
+and it was *additionally* broken on every failing one. Nobody had noticed,
+because a job that posts no comment looks the same as a job that had nothing to
+say.
+
+## The asymmetry that makes this necessary
+
+A gate is a claim about the future: *if this class of defect appears, this will
+stop it.* Green builds are not evidence for that claim. They are consistent with
+the gate working and equally consistent with the gate being disconnected, misconfigured,
+scoped to the wrong directory, or silently swallowing its own errors.
+
+The only observation that distinguishes those worlds is a deliberate failure.
+
+And note the second half of what this run taught, which I had not anticipated:
+watching a gate fail in the way you expected is also not sufficient. The budget
+job did exactly what I predicted. The comment job failed in a way I would never
+have guessed, and I only saw it because I was looking at every job on a run I
+expected to be red, rather than skimming for the one I had broken on purpose.
+
+A gate only ever observed passing is not known to work. A gate only ever observed
+failing *in the way you expected* is not fully known to work either.
+
+## What we do now
+
+Every merge gate on this project has been watched failing on a change designed to
+break it, and the observation is recorded in the backlog beside the task —
+including the run number, so it can be re-read rather than remembered.
+
+When a new gate is added, the pull request that adds it is followed by a throwaway
+branch that violates it. The branch is never merged; it exists to produce one
+red run, and its job output is quoted in the merge commit.
+
+That is now the most convincing thing this project has, and it is about forty
+minutes per gate. The documentation says what the gate checks. The red run says
+it is plugged in.

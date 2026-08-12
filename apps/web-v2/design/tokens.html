@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DS-10 — Token playground</title>
+    <link rel="stylesheet" href="../src/styles/tokens.css" />
+    <link rel="stylesheet" href="../src/styles/themes.css" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      body {
+        margin: 0; padding: 0 var(--space-gutter) var(--space-24);
+        background: var(--ui-bg); color: var(--ui-text);
+        font-family: var(--ui-font-body); font-size: var(--ui-font-size-body);
+        line-height: var(--ui-leading-body);
+        -webkit-font-smoothing: antialiased;
+      }
+      .bar {
+        position: sticky; top: 0; z-index: 5;
+        display: flex; gap: var(--space-3); align-items: center; justify-content: space-between;
+        margin-inline: calc(var(--space-gutter) * -1);
+        padding: var(--space-3) var(--space-gutter);
+        background: var(--ui-bg);
+        border-bottom: var(--border-hairline) solid var(--ui-border);
+        font-family: var(--ui-font-mono); font-size: var(--ui-font-size-xs);
+        color: var(--ui-text-muted);
+      }
+      .bar button, select {
+        font: inherit; color: var(--ui-text); background: var(--ui-surface);
+        border: var(--border-hairline) solid var(--ui-border-strong);
+        border-radius: var(--ui-radius-sm); padding: var(--space-2) var(--space-3); cursor: pointer;
+      }
+      :focus-visible { outline: 2px solid var(--ui-focus); outline-offset: 2px; }
+      main { max-width: var(--width-container); margin-inline: auto; }
+      h2 {
+        font-family: var(--ui-font-heading); font-size: var(--ui-font-size-h2);
+        letter-spacing: var(--ui-tracking-heading); font-weight: 600;
+        margin: var(--space-16) 0 var(--space-6);
+        padding-bottom: var(--space-2);
+        border-bottom: var(--border-hairline) solid var(--ui-border);
+      }
+      h3 {
+        font-family: var(--ui-font-mono); font-size: var(--ui-font-size-xs);
+        letter-spacing: var(--ui-tracking-caps); text-transform: uppercase;
+        color: var(--ui-text-subtle); margin: var(--space-8) 0 var(--space-3);
+      }
+      .grid { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); }
+      .swatch {
+        border: var(--border-hairline) solid var(--ui-border);
+        border-radius: var(--ui-radius-md); overflow: hidden;
+      }
+      .swatch .chip { height: 4.5rem; }
+      .swatch .meta {
+        padding: var(--space-3); font-family: var(--ui-font-mono);
+        font-size: var(--ui-font-size-xs); background: var(--ui-surface);
+      }
+      .swatch .meta b { display: block; font-weight: 500; color: var(--ui-text); }
+      .swatch .meta span { color: var(--ui-text-muted); }
+      .pair {
+        display: flex; align-items: baseline; gap: var(--space-4);
+        padding: var(--space-3) 0;
+        border-bottom: var(--border-hairline) solid var(--ui-border);
+        font-family: var(--ui-font-mono); font-size: var(--ui-font-size-xs);
+        color: var(--ui-text-muted);
+      }
+      .pair .demo { font-family: var(--ui-font-body); font-size: var(--ui-font-size-body); color: var(--ui-text); }
+      .type-row { display: flex; align-items: baseline; gap: var(--space-6); margin-bottom: var(--space-4); flex-wrap: wrap; }
+      .type-row code { font-family: var(--ui-font-mono); font-size: var(--ui-font-size-xs); color: var(--ui-text-subtle); white-space: nowrap; }
+      .space-bar { background: var(--ui-accent); height: 1rem; border-radius: 2px; }
+      .box {
+        background: var(--ui-surface); border: var(--border-hairline) solid var(--ui-border);
+        padding: var(--space-4); font-family: var(--ui-font-mono); font-size: var(--ui-font-size-xs);
+        color: var(--ui-text-muted); text-align: center;
+      }
+      .motion-demo {
+        width: 3rem; height: 3rem; border-radius: var(--ui-radius-md);
+        background: var(--ui-accent);
+      }
+      .motion-demo.run { animation: slide 1s var(--ui-ease-out-quint) infinite alternate; }
+      @keyframes slide { from { transform: translateX(0); } to { transform: translateX(12rem); } }
+      button.btn-demo {
+        min-height: 44px; padding: var(--space-3) var(--space-6);
+        border-radius: var(--ui-radius-md); font: inherit; font-weight: 500; cursor: pointer;
+        border: var(--border-hairline) solid transparent;
+      }
+      .btn-primary { background: var(--ui-accent); color: var(--ui-on-accent); }
+      .btn-primary:hover { background: var(--ui-accent-hover); }
+      .btn-ghost { background: none; color: var(--ui-text); border-color: var(--ui-border-strong); }
+      .btn-ghost:hover { background: var(--ui-surface-hover); }
+      .btn-primary:disabled, .btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
+    </style>
+  </head>
+  <body>
+    <div class="bar">
+      <span>DS-10 · token playground</span>
+      <span style="display:flex; gap:var(--space-2)">
+        <button type="button" id="theme">Toggle theme</button>
+      </span>
+    </div>
+
+    <main id="root">
+      <h2>Semantic color</h2>
+      <p style="color: var(--ui-text-muted); max-width: var(--width-prose)">
+        Components consume only these. Every pair that carries a contrast
+        obligation is asserted by <code>scripts/check-contrast.mjs</code>; this
+        page is for judging how they <em>look</em>, not whether they pass.
+      </p>
+      <div class="grid" id="colors"></div>
+
+      <h2>Contrast in practice</h2>
+      <div id="contrast-demo">
+        <div class="pair"><span class="demo" style="color: var(--ui-text)">Body text — AAA, 7:1 minimum</span> --ui-text</div>
+        <div class="pair"><span class="demo" style="color: var(--ui-text-muted)">Muted text — still 4.5:1, never below</span> --ui-text-muted</div>
+        <div class="pair"><span class="demo" style="color: var(--ui-text-subtle)">Subtle meta — large/meta only</span> --ui-text-subtle</div>
+        <div class="pair"><span class="demo" style="color: var(--ui-accent)">Accent link text</span> --ui-accent</div>
+      </div>
+
+      <h2>Type scale</h2>
+      <div id="type"></div>
+
+      <h2>Space scale</h2>
+      <div id="space"></div>
+
+      <h2>Radius &amp; elevation</h2>
+      <div class="grid" id="radius"></div>
+      <h3>Overlay shadow (dialogs and popovers only)</h3>
+      <div class="box" style="box-shadow: var(--ui-shadow-overlay); border-radius: var(--ui-radius-lg); max-width: 20rem">--ui-shadow-overlay</div>
+
+      <h2>Motion</h2>
+      <p style="color: var(--ui-text-muted)">
+        Nothing exceeds 400ms. Under <code>prefers-reduced-motion</code> the
+        demo below stops entirely — that is the global backstop working.
+      </p>
+      <div id="motion"></div>
+      <button type="button" class="btn-demo btn-ghost" id="play" style="margin-top: var(--space-4)">Toggle animation</button>
+
+      <h2>Interaction states</h2>
+      <p style="color: var(--ui-text-muted)">All five states, per UI_GUIDELINES §1. Tab to each to see the focus ring and its 2px offset.</p>
+      <div style="display:flex; gap: var(--space-3); flex-wrap: wrap; margin-top: var(--space-4)">
+        <button class="btn-demo btn-primary">Primary</button>
+        <button class="btn-demo btn-ghost">Secondary</button>
+        <button class="btn-demo btn-primary" disabled>Disabled</button>
+      </div>
+    </main>
+
+    <script>
+      const SEMANTIC = [
+        'bg','bg-subtle','surface','surface-raised','surface-hover',
+        'text','text-muted','text-subtle',
+        'border','border-strong',
+        'accent','accent-hover','accent-muted','on-accent','focus',
+        'success','warning','danger',
+      ];
+      const TYPE = [
+        ['--ui-font-size-display','Display — hero only'],
+        ['--ui-font-size-h1','Heading 1'],
+        ['--ui-font-size-h2','Heading 2'],
+        ['--ui-font-size-h3','Heading 3'],
+        ['--ui-font-size-body','Body copy'],
+        ['--ui-font-size-sm','Small'],
+        ['--ui-font-size-xs','Extra small — the floor'],
+      ];
+      const SPACE = ['--space-1','--space-2','--space-3','--space-4','--space-6','--space-8','--space-12','--space-16','--space-24','--space-section'];
+      const RADIUS = ['--ui-radius-sm','--ui-radius-md','--ui-radius-lg','--ui-radius-full'];
+
+      const cs = () => getComputedStyle(document.documentElement);
+
+      function render() {
+        const styles = getComputedStyle(document.getElementById('root'));
+
+        document.getElementById('colors').innerHTML = SEMANTIC.map(name => {
+          const v = styles.getPropertyValue(`--ui-${name}`).trim();
+          return `<div class="swatch">
+            <div class="chip" style="background: var(--ui-${name})"></div>
+            <div class="meta"><b>--ui-${name}</b><span>${v || '—'}</span></div>
+          </div>`;
+        }).join('');
+
+        document.getElementById('type').innerHTML = TYPE.map(([tok,label]) =>
+          `<div class="type-row">
+             <span style="font-family: var(--ui-font-heading); font-size: var(${tok}); line-height: 1.1; letter-spacing: var(--ui-tracking-heading)">${label}</span>
+             <code>${tok} → ${styles.getPropertyValue(tok).trim()}</code>
+           </div>`).join('');
+
+        document.getElementById('space').innerHTML = SPACE.map(tok =>
+          `<div class="type-row" style="gap: var(--space-4); margin-bottom: var(--space-2)">
+             <span class="space-bar" style="width: var(${tok})"></span>
+             <code>${tok} → ${styles.getPropertyValue(tok).trim()}</code>
+           </div>`).join('');
+
+        document.getElementById('radius').innerHTML = RADIUS.map(tok =>
+          `<div class="box" style="border-radius: var(${tok})">${tok}</div>`).join('');
+
+        document.getElementById('motion').innerHTML =
+          ['--duration-instant','--duration-fast','--duration-base','--duration-slow']
+            .map(tok => `<div class="type-row"><code>${tok} → ${styles.getPropertyValue(tok).trim()}</code></div>`).join('')
+          + `<div class="motion-demo" id="ball" style="margin-top: var(--space-4)"></div>`;
+      }
+
+      document.getElementById('theme').addEventListener('click', () => {
+        const root = document.documentElement;
+        root.dataset.theme = root.dataset.theme === 'light' ? 'dark' : 'light';
+        render();
+      });
+      document.getElementById('play').addEventListener('click', () => {
+        document.getElementById('ball')?.classList.toggle('run');
+      });
+
+      render();
+    </script>
+  </body>
+</html>

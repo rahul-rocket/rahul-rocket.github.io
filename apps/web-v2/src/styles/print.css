@@ -1,0 +1,178 @@
+/*
+ * C-05 — PRINT STYLES. docs/WEBSITE_STRUCTURE.md §4.11.
+ *
+ * ONE STYLESHEET RATHER THAN `print:` UTILITIES SCATTERED THROUGH THE MARKUP.
+ * A print design is a whole-document decision — what is removed, what colour
+ * the page is, how links are expanded — and thirty `print:hidden` classes
+ * spread across ten components cannot be reviewed as a design or reasoned about
+ * as a whole. The markup provides exactly two hooks, `[data-resume]` and
+ * `[data-print-hide]`, and everything else is targeted from here.
+ *
+ * IT APPLIES TO EVERY PAGE, NOT ONLY THE RÉSUMÉ. Someone printing a case study
+ * should get the case study, not a navigation bar and a footer site map. The
+ * résumé-specific rules are scoped to `[data-resume]`; the rest is general.
+ *
+ * `color-adjust` is deliberately NOT forced. Printing a dark theme onto white
+ * paper is how a reader loses a cartridge and gets an unreadable page, so the
+ * rules below set an explicit light-on-white document instead of asking the
+ * browser to reproduce the screen.
+ */
+
+@media print {
+	/* ------------------------------------------------------------------ *
+	 * The document
+	 * ------------------------------------------------------------------ */
+
+	:root,
+	:root[data-theme="dark"],
+	:root[data-theme="light"] {
+		/* Overriding the semantic tokens rather than the components is what makes
+		   every component print correctly without any of them knowing about
+		   print. The token layer is the seam, exactly as DESIGN_SYSTEM §1 intends. */
+		--ui-bg: #fff;
+		--ui-bg-subtle: #fff;
+		--ui-surface: #fff;
+		--ui-surface-raised: #fff;
+		--ui-surface-hover: #fff;
+		--ui-text: #111;
+		--ui-text-muted: #333;
+		--ui-text-subtle: #555;
+		--ui-border: #bbb;
+		--ui-border-strong: #888;
+		--ui-accent: #111;
+		--ui-accent-hover: #111;
+		color-scheme: light;
+	}
+
+	html,
+	body {
+		background: #fff !important;
+		color: #111 !important;
+		font-size: 10.5pt;
+		line-height: 1.4;
+	}
+
+	@page {
+		margin: 16mm 14mm;
+	}
+
+	/* ------------------------------------------------------------------ *
+	 * What comes off the page
+	 *
+	 * The shell is navigation, and paper cannot be navigated. The skip link,
+	 * header, footer, back-to-top and scroll rail all go; so does anything the
+	 * markup has explicitly flagged.
+	 * ------------------------------------------------------------------ */
+
+	#site-header,
+	#site-footer,
+	[data-testid="scroll-progress"],
+	.u-back-to-top,
+	.u-backdrop,
+	.u-page-backdrop,
+	[data-print-hide],
+	nav[aria-label="Breadcrumb"],
+	nav[aria-label="On this page"],
+	dialog {
+		display: none !important;
+	}
+
+	/*
+	 * Gradient headings print as SOLID INK, and this rule is the reason the
+	 * effect is safe to ship at all.
+	 *
+	 * `.u-gradient-text` works by setting the text transparent and letting a
+	 * background show through the glyphs. Printers routinely drop background
+	 * images — most do so by default — and the result of that combination is a
+	 * page whose main heading is blank. Not faint: absent. Undoing both halves
+	 * here means the printed heading is the same black type as everything
+	 * around it, whatever the driver decides to do with backgrounds.
+	 */
+	.u-gradient-text {
+		background-image: none !important;
+		color: #000 !important;
+		-webkit-text-fill-color: #000 !important;
+	}
+
+	/* The skip link is `position: fixed` and would otherwise print in the
+	   corner of page one. */
+	a[href="#main"] {
+		display: none !important;
+	}
+
+	main {
+		padding: 0 !important;
+	}
+
+	/* ------------------------------------------------------------------ *
+	 * Links, expanded
+	 *
+	 * A printed page cannot be clicked, so a link's destination has to be on
+	 * the paper. Internal links are expanded to absolute URLs; `mailto:` and
+	 * in-page anchors are not, because the address is already the link text
+	 * and a fragment is meaningless off-screen.
+	 * ------------------------------------------------------------------ */
+
+	a[href^="http"]::after {
+		content: " (" attr(href) ")";
+		font-size: 0.85em;
+		word-break: break-all;
+	}
+
+	a[href^="/"]::after {
+		content: " (https://rahul-rocket.github.io" attr(href) ")";
+		font-size: 0.85em;
+		word-break: break-all;
+	}
+
+	a[href^="#"]::after,
+	a[href^="mailto:"]::after {
+		content: "";
+	}
+
+	a {
+		text-decoration: none !important;
+		color: #111 !important;
+	}
+
+	/* ------------------------------------------------------------------ *
+	 * Page breaks
+	 * ------------------------------------------------------------------ */
+
+	h1,
+	h2,
+	h3 {
+		break-after: avoid-page;
+	}
+
+	li,
+	figure,
+	pre,
+	blockquote {
+		break-inside: avoid;
+	}
+
+	/* ------------------------------------------------------------------ *
+	 * The résumé
+	 *
+	 * Denser than the screen version and single-column regardless of width,
+	 * because the print viewport is wide enough to trigger the desktop
+	 * breakpoints and a two-column résumé on A4 wastes half a page.
+	 * ------------------------------------------------------------------ */
+
+	[data-resume] {
+		gap: 1.2rem;
+	}
+
+	[data-resume] * {
+		break-inside: auto;
+	}
+
+	[data-resume] li {
+		break-inside: avoid;
+	}
+
+	[data-resume] section {
+		break-inside: auto;
+	}
+}

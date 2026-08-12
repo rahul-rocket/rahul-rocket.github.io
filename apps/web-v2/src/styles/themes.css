@@ -1,0 +1,147 @@
+/*
+ * SEMANTIC LAYER — docs/DESIGN_SYSTEM.md §2, §3
+ *
+ * Components consume ONLY these names. A component referencing --ink-800 or
+ * --teal-500 directly is a review blocker: literal names cannot survive a
+ * palette change, semantic ones can.
+ *
+ * Dark is the default (`:root`). Light is a separate design, not an inversion —
+ * note that surface ordering flips (dark: surfaces get LIGHTER with elevation;
+ * light: surfaces get DARKER), and the accent steps down two stops because the
+ * same hue that reads correctly on near-black is unreadable on paper.
+ *
+ * Every pair here is verified by scripts/check-contrast.mjs. Editing a value
+ * without running it is how the AAA commitment quietly dies.
+ */
+
+/* ==============================================================
+ * DIRECTION B — "Instrument". LOCKED (DS-11).
+ *
+ * Directions A ("Editorial", warm sand + ochre + serif) and C ("Signal",
+ * violet) were deleted here, and their primitives with them, once B was
+ * chosen. DS-11's acceptance criterion says the losing two are deleted, and
+ * the reason is not tidiness: a dormant [data-direction] block is a second
+ * accent hue sitting in every stylesheet, one attribute away from being
+ * reintroduced by accident, in violation of DESIGN_SYSTEM §3's "One accent".
+ * They remain in git history if the choice is ever revisited.
+ * ============================================================== */
+
+:root {
+	color-scheme: dark;
+
+	--ui-bg: var(--ink-1000);
+	--ui-bg-subtle: var(--ink-950);
+	--ui-surface: var(--ink-900);
+	--ui-surface-raised: var(--ink-850);
+	--ui-surface-hover: var(--ink-800);
+
+	--ui-text: var(--ink-50);
+	--ui-text-muted: var(--ink-300); /* floor: must clear 4.5:1 */
+	--ui-text-subtle: var(--ink-400); /* meta only, never prose */
+	--ui-text-inverse: var(--ink-1000);
+
+	--ui-border: var(--ink-800);
+	/* border-strong is used for INPUT and control boundaries, so WCAG 1.4.11
+     applies: 3:1 against the adjacent background. --ui-border is
+     decorative hairline only and carries no such requirement.
+
+     ink-400, not ink-500. This is the pair the aurora binds hardest against —
+     a control border is asserted at 3:1 on the composited backdrop, and the
+     dark wash is what pushed the old value to 1.66:1. Lightening the border is
+     the right direction to resolve that: a MORE visible control boundary is
+     the outcome WCAG 1.4.11 wants, so the fix and the requirement point the
+     same way. */
+	--ui-border-strong: var(--ink-400);
+
+	--ui-accent: var(--teal-500);
+	--ui-accent-hover: var(--teal-300);
+	--ui-accent-muted: var(--teal-700);
+	--ui-on-accent: var(--ink-1000);
+
+	/* The decorative spectrum — DS-14, and the rule that governs it is in
+	   tokens.css beside the primitives. In one line: these are for LIGHT, not
+	   for meaning. Nothing here is ever a text colour, a control border, or the
+	   sole difference between two states, and `check:contrast` therefore has no
+	   pair for any of them — which is a statement about where they may be used,
+	   not a hole in the contract. `--ui-accent` remains the only accent. */
+	--ui-spectrum-1: var(--teal-500);
+	--ui-spectrum-2: var(--indigo-500);
+	--ui-spectrum-3: var(--violet-500);
+
+	/* Focus is deliberately NOT the accent. When a focused element is also an
+     accented element, an accent-colored ring is invisible. DESIGN_SYSTEM §9. */
+	--ui-focus: var(--ink-50);
+
+	--ui-success: var(--success-500);
+	--ui-warning: var(--warning-500);
+	--ui-danger: var(--danger-500);
+
+	/* Elevation in dark mode is surface lightness + a hairline, not shadow —
+     shadows are nearly invisible on near-black. DESIGN_SYSTEM §6. */
+	--ui-shadow-overlay: 0 16px 48px -12px oklch(0% 0 0 / 0.7);
+
+	--ui-font-heading: var(--ui-font-grotesque);
+	--ui-font-body: var(--ui-font-text);
+}
+
+[data-theme="light"] {
+	color-scheme: light;
+
+	--ui-bg: var(--ink-50);
+	--ui-bg-subtle: var(--ink-100);
+	--ui-surface: oklch(100% 0 0);
+	--ui-surface-raised: oklch(100% 0 0);
+	--ui-surface-hover: var(--ink-100);
+
+	--ui-text: var(--ink-950);
+	--ui-text-muted: var(--ink-600);
+	--ui-text-subtle: var(--ink-500);
+	--ui-text-inverse: var(--ink-50);
+
+	--ui-border: var(--ink-200);
+	--ui-border-strong: var(--ink-500);
+
+	--ui-accent: var(--teal-700);
+	--ui-accent-hover: var(--teal-800);
+	--ui-accent-muted: var(--teal-300);
+	--ui-on-accent: oklch(100% 0 0);
+
+	/* Two steps darker than the dark theme's spectrum, for the same reason the
+	   accent steps down: a hue tuned to glow on near-black is a pastel smear on
+	   paper. These are still decorative-only. */
+	--ui-spectrum-1: var(--teal-600);
+	--ui-spectrum-2: var(--indigo-600);
+	--ui-spectrum-3: var(--violet-600);
+
+	--ui-focus: var(--ink-950);
+
+	--ui-success: var(--success-700);
+	--ui-warning: var(--warning-700);
+	--ui-danger: var(--danger-700);
+
+	--ui-shadow-overlay: 0 16px 48px -16px oklch(0% 0 0 / 0.18);
+}
+
+/* ==============================================================
+ * Global reduced-motion backstop.
+ * The ONLY sanctioned !important in the codebase.
+ * docs/ANIMATION_GUIDELINES.md §2
+ * ============================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+/* Focus ring — DESIGN_SYSTEM §9. Never removed, never eased. */
+:focus-visible {
+	outline: 2px solid var(--ui-focus);
+	outline-offset: 2px;
+	border-radius: inherit;
+}

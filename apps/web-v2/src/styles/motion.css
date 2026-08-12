@@ -1,0 +1,902 @@
+/*
+ * MOTION — the reveal system, in CSS.
+ * docs/redesign/ANIMATION_GUIDE.md §4
+ *
+ * The JavaScript half of a scroll reveal is one IntersectionObserver and two
+ * attributes (src/lib/hooks/use-reveal.ts). Everything visual is here, and that
+ * split is what makes the no-JS guarantee structural rather than conventional.
+ *
+ * READ THE SELECTORS IN THIS ORDER, because the ordering IS the guarantee:
+ *
+ *   [data-reveal]                       — no hidden state. This is what ships
+ *                                         in the HTML. Fully visible.
+ *   [data-reveal-armed="true"]          — hidden. Added by JS after hydration,
+ *                                         and ONLY to elements that are
+ *                                         off-screen at mount.
+ *   [data-revealed="true"]              — animated back to visible.
+ *
+ * Nothing in the served HTML carries either attribute, so a reader with
+ * JavaScript disabled, a hydration failure, an observer that never fires, or a
+ * reduced-motion preference all land on the first line: content visible. There
+ * is no code path that can strand an element at opacity: 0, because the rule
+ * that hides it requires an attribute only JavaScript can add.
+ *
+ * ANIMATIONS ARE transform + opacity ONLY (law 3). transform never contributes
+ * to CLS, which is also why no reveal here uses margin, height, or top.
+ */
+
+@media (prefers-reduced-motion: no-preference) {
+	/* The armed state. Note this is the ONLY rule in the file that hides
+	   anything, and it requires an attribute JS must add. */
+	[data-reveal-armed="true"] {
+		opacity: 0;
+		transform: translate3d(0, var(--reveal-distance, 24px), 0);
+	}
+
+	[data-reveal-armed="true"][data-stagger] > * {
+		opacity: 0;
+		transform: translate3d(0, var(--reveal-distance, 24px), 0);
+	}
+
+	/* The revealed state. 250ms is the `base` duration token — reveals are the
+	   most frequent motion on the site, so they sit at the fast end of law 2's
+	   400ms entrance budget rather than at the limit. */
+	[data-reveal-armed="true"][data-revealed="true"],
+	[data-reveal-armed="true"][data-revealed="true"][data-stagger] > * {
+		opacity: 1;
+		transform: none;
+		transition:
+			opacity var(--duration-base) var(--ui-ease-out-quint),
+			transform var(--duration-base) var(--ui-ease-out-quint);
+	}
+
+	/*
+	 * Stagger, entirely in CSS.
+	 *
+	 * The delay could be computed in JS and written per child, but nth-child
+	 * costs zero bytes and zero work at runtime. Enumerated to 12 because that
+	 * is the largest group on the site (the skills grid); a 13th child simply
+	 * inherits the last delay rather than breaking, which is the right failure.
+	 *
+	 * The step is capped so a long group still finishes inside the entrance
+	 * budget — the same policy as staggerDelayMs() in reveal-policy.ts, which is
+	 * the tested source of truth for the JS-driven case.
+	 */
+	[data-stagger] > *:nth-child(1) {
+		transition-delay: 0ms;
+	}
+	[data-stagger] > *:nth-child(2) {
+		transition-delay: 40ms;
+	}
+	[data-stagger] > *:nth-child(3) {
+		transition-delay: 80ms;
+	}
+	[data-stagger] > *:nth-child(4) {
+		transition-delay: 120ms;
+	}
+	[data-stagger] > *:nth-child(5) {
+		transition-delay: 155ms;
+	}
+	[data-stagger] > *:nth-child(6) {
+		transition-delay: 185ms;
+	}
+	[data-stagger] > *:nth-child(7) {
+		transition-delay: 210ms;
+	}
+	[data-stagger] > *:nth-child(8) {
+		transition-delay: 235ms;
+	}
+	[data-stagger] > *:nth-child(9) {
+		transition-delay: 255ms;
+	}
+	[data-stagger] > *:nth-child(10) {
+		transition-delay: 270ms;
+	}
+	[data-stagger] > *:nth-child(11) {
+		transition-delay: 285ms;
+	}
+	[data-stagger] > *:nth-child(n + 12) {
+		transition-delay: 300ms;
+	}
+}
+
+/*
+ * L-08 — the two rules Lenis needs, written here rather than imported.
+ *
+ * `lenis/dist/lenis.css` exists, but importing it would put its rules on every
+ * route's stylesheet for a feature that loads on a minority of page views, and
+ * four of its five rules are for modes this site does not use (`autoToggle`,
+ * `lenis-stopped`, the horizontal prevents). These two are the ones that apply.
+ *
+ * Both are keyed off classes Lenis puts on <html> itself, so they are inert
+ * until the instance exists — a reader who is gated out never sees either rule
+ * take effect.
+ */
+
+/*
+ * THE ONE THAT IS NOT OPTIONAL.
+ *
+ * globals.css sets `html { scroll-behavior: smooth }`, and Lenis 1.3 does not
+ * manage that property itself (older versions shipped this rule in their own
+ * stylesheet; 1.3.25 does not — verified in the installed dist). Left alone, the
+ * browser's native smooth scroll and Lenis's per-frame `scrollTo` animate the
+ * same scroll position at once: an anchor jump lands short, and the skip link
+ * lands the reader somewhere other than `#main`. That is hard rule 3 in
+ * docs/ANIMATION_GUIDELINES.md §5, which removes Lenis from the project — so
+ * this declaration is the condition of the dependency being here at all.
+ *
+ * Scoped to `.lenis-smooth`, which Lenis adds only while it is actually
+ * smoothing, so native smooth scrolling is untouched everywhere else.
+ */
+html.lenis.lenis-smooth {
+	scroll-behavior: auto;
+}
+
+/*
+ * Lenis measures the document against `scrollHeight`. A percentage height on
+ * <html> or <body> makes that measurement the viewport rather than the content,
+ * and the page stops scrolling at one screen.
+ */
+html.lenis,
+html.lenis body {
+	height: auto;
+}
+
+/*
+ * ==============================================================
+ * SCROLL-DRIVEN: the progress rail (inventory item 24) and the back-to-top
+ * button. Both are documented as JavaScript in the plans and are neither.
+ *
+ * ONE `@supports` GATE COVERS BOTH, and the fallback is ABSENCE rather than a
+ * frozen widget. A rail stuck at zero and a floating button pinned over the
+ * content at every scroll position both read as a broken page; nothing reads as
+ * a browser without a 2023 CSS feature. Everything either does is available by
+ * other means — the scrollbar shows position, and Home / the skip link / the
+ * footer all reach the top of the document.
+ *
+ * WHY THE REDUCED-MOTION BACKSTOP DOES NOT BREAK THESE.
+ *
+ * themes.css forces `animation-duration: 0.01ms !important` onto every
+ * animation. For a *time-driven* animation that is the intent. For a
+ * progress-based timeline it would be catastrophic — the rail would jump to full
+ * width at the first pixel of scroll, which is not "reduced motion", it is false
+ * information — except that a scroll timeline resolves its own duration from the
+ * scroll range and ignores `animation-duration` entirely. Verified in Chromium
+ * under emulated `prefers-reduced-motion: reduce` (0%, 66%, 100% of the range
+ * all correct) before either of these was written, and pinned by
+ * `e2e/shell.spec.ts` so a future edit to the backstop cannot quietly break them.
+ *
+ * That is also exactly what docs/ANIMATION_GUIDELINES.md §3 requires: item 24 is
+ * on the short list kept under reduced motion, "because it is information".
+ * ============================================================== */
+
+.u-scroll-progress,
+.u-back-to-top {
+	display: none;
+}
+
+@supports (animation-timeline: scroll()) {
+	.u-scroll-progress {
+		display: block;
+		/* `scaleX` from a `transform-origin: left` (the `origin-left` utility on
+		   the element) — a compositor-only property, so the rail costs no layout
+		   and no paint as it grows. Law 3. */
+		animation: u-scroll-progress linear both;
+		animation-timeline: scroll(root block);
+	}
+
+	.u-back-to-top {
+		display: flex;
+		animation: u-back-to-top linear both;
+		animation-timeline: scroll(root block);
+		/* Fades in over the first viewport of scrolling, then stays. `100vh` is a
+		   length in a timeline range, not a duration, so it is not a magic number
+		   the token layer should own — it is literally "one screen down". */
+		animation-range: 0 100vh;
+	}
+}
+
+/*
+ * A-06 — the /journey timeline spine.
+ *
+ * The same mechanism as the rail above, on a `view()` timeline rather than the
+ * root scroll: the spine draws in proportion to how far its own container has
+ * travelled through the viewport, so it tracks the milestones rather than the
+ * document.
+ *
+ * THE FALLBACK IS A COMPLETE LINE, NOT AN ABSENT ONE. Note the direction of the
+ * gate: `scaleY(1)` is the DEFAULT and the animation overrides it downward.
+ * That is what makes "no scroll timelines", "reduced motion" and "JavaScript
+ * disabled" all land on a fully drawn spine — A-06's acceptance criterion —
+ * instead of on a line stuck at zero height, which is what writing the base
+ * state as `scaleY(0)` would have produced.
+ */
+.u-timeline-spine {
+	transform: scaleY(1);
+}
+
+@supports (animation-timeline: view()) {
+	.u-timeline-spine {
+		animation: u-timeline-spine linear both;
+		animation-timeline: view(block);
+		/* Complete when the container's end is one viewport-height from the top,
+		   so the line is drawn by the time the last milestone is read rather than
+		   when the container leaves the screen entirely. */
+		animation-range: cover 0% cover 85%;
+	}
+}
+
+@keyframes u-timeline-spine {
+	from {
+		transform: scaleY(0);
+	}
+	to {
+		transform: scaleY(1);
+	}
+}
+
+@keyframes u-scroll-progress {
+	from {
+		transform: scaleX(0);
+	}
+	to {
+		transform: scaleX(1);
+	}
+}
+
+/*
+ * `visibility`, not `opacity` alone. An invisible but focusable control is the
+ * classic keyboard trap; `visibility: hidden` removes the button from the tab
+ * order and the accessibility tree, and the discrete step at the 1% keyframe is
+ * what keeps it out of both until it is actually on screen.
+ */
+@keyframes u-back-to-top {
+	0% {
+		opacity: 0;
+		visibility: hidden;
+	}
+	1% {
+		visibility: visible;
+	}
+	100% {
+		opacity: 1;
+		visibility: visible;
+	}
+}
+
+/*
+ * Interaction primitives.
+ *
+ * These are CSS because they can be. docs/ANIMATION_GUIDELINES.md §4: "If a
+ * transition can be done with a CSS class, it must be — it ships zero
+ * JavaScript and cannot be broken by hydration."
+ */
+
+/* Buttons depress 1px on press — §8. */
+.u-press {
+	transition: transform var(--duration-fast) var(--ui-ease-out-quint);
+}
+.u-press:active {
+	transform: translateY(1px);
+}
+
+/*
+ * Gradient hairline. A ::before masked to the border box, so the gradient sits
+ * in the border rather than behind the content. Hover moves OPACITY only, which
+ * keeps it compositor-only.
+ *
+ * The focus-visible clause is not optional: a hover-only affordance is invisible
+ * to every keyboard and touch user, and a glow with no focus counterpart is the
+ * characteristic accessibility failure of this visual style
+ * (docs/UI_GUIDELINES.md §6, §12).
+ */
+.u-hairline {
+	position: relative;
+}
+.u-hairline::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	border-radius: inherit;
+	padding: var(--border-hairline);
+	background: var(--ui-hairline-gradient);
+	-webkit-mask:
+		linear-gradient(#000 0 0) content-box,
+		linear-gradient(#000 0 0);
+	mask:
+		linear-gradient(#000 0 0) content-box,
+		linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	mask-composite: exclude;
+	opacity: 0.5;
+	transition: opacity var(--duration-fast) var(--ui-ease-in-out);
+	pointer-events: none;
+}
+.u-hairline:hover::before,
+.u-hairline:focus-within::before {
+	opacity: 1;
+}
+
+/*
+ * Spotlight. The gradient's position comes from --mx/--my, written to this
+ * element's inline style by a pointermove subscriber. The layer's own opacity
+ * is what fades in, so nothing but opacity animates.
+ *
+ * Behind a `pointer: fine` gate in JS as well: the custom properties are never
+ * written on a touch device, so this renders at its default centre position and
+ * stays at opacity 0.
+ */
+.u-spotlight {
+	position: relative;
+	isolation: isolate;
+}
+.u-spotlight::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	border-radius: inherit;
+	background: var(--ui-spotlight);
+	opacity: 0;
+	transition: opacity var(--duration-base) var(--ui-ease-in-out);
+	pointer-events: none;
+}
+.u-spotlight:hover::after {
+	opacity: 1;
+}
+
+/*
+ * The aria-hidden backdrop: aurora, grid, grain.
+ *
+ * The painting itself is static — nothing here loops, which is the whole
+ * argument in docs/redesign/DESIGN_SYSTEM.md §2.2. What movement it has comes
+ * from `.u-drift` below, which is scroll-driven and therefore costs nothing
+ * while the reader is still.
+ *
+ * `inset: -10%` on the aurora layer rather than `0`: the drift translates this
+ * layer by a few percent, and a layer sized exactly to its container would
+ * expose a hard edge at the extreme of that translation. Oversizing it is
+ * cheaper than clamping the animation, and `overflow: hidden` on the parent
+ * means the extra area is never painted.
+ */
+.u-backdrop {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	overflow: hidden;
+	pointer-events: none;
+}
+.u-backdrop::before,
+.u-backdrop::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+}
+.u-backdrop::before {
+	inset: -10%;
+	background-image: var(--ui-aurora);
+}
+.u-backdrop::after {
+	background-image: var(--ui-grain);
+	opacity: var(--ui-grain-opacity);
+}
+
+/*
+ * ==============================================================
+ * THE PAGE BACKDROP — the single largest visual change in this revision, and
+ * the cheapest.
+ *
+ * Before it, the aurora existed only inside the hero. Every route below the
+ * fold, and every route that is not Home, was one uninterrupted flat --ui-bg —
+ * so the site looked designed for the first 800px and undesigned for the rest.
+ *
+ * It is one `position: fixed` element in the root layout carrying the page
+ * mesh. Fixed rather than absolute for a reason that is about cost, not
+ * placement: a fixed layer is painted once into its own compositor layer and is
+ * NOT repainted as the document scrolls, so a full-viewport gradient behind
+ * every page costs one paint per page view rather than one per frame. An
+ * absolutely-positioned equivalent sized to the document would repaint on
+ * scroll and would also stretch the gradient over a 12,000px page, which is the
+ * same as not having it.
+ *
+ * `--ui-mesh-strength` is the whole reason the page mesh and the hero aurora
+ * are separate tokens: content sits on this for the entire length of every
+ * page, so it is the background in nearly every contrast assertion that
+ * matters, while the hero aurora is only ever behind one screen of large type.
+ * ============================================================== */
+.u-page-backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: -1;
+	overflow: hidden;
+	pointer-events: none;
+	background-color: var(--ui-bg);
+}
+.u-page-backdrop::before,
+.u-page-backdrop::after {
+	content: "";
+	position: absolute;
+	inset: -10%;
+}
+.u-page-backdrop::before {
+	background-image: var(--ui-mesh);
+	opacity: var(--ui-mesh-strength);
+}
+.u-page-backdrop::after {
+	inset: 0;
+	background-image: var(--ui-grain);
+	opacity: var(--ui-grain-opacity);
+}
+.u-grid {
+	position: absolute;
+	inset: 0;
+	background-image:
+		repeating-linear-gradient(
+			to right,
+			var(--ui-grid-line) 0 1px,
+			transparent 1px var(--ui-grid-size)
+		),
+		repeating-linear-gradient(
+			to bottom,
+			var(--ui-grid-line) 0 1px,
+			transparent 1px var(--ui-grid-size)
+		);
+	-webkit-mask-image: radial-gradient(
+		70% 55% at 50% 0%,
+		#000 0%,
+		transparent 100%
+	);
+	mask-image: radial-gradient(70% 55% at 50% 0%, #000 0%, transparent 100%);
+}
+
+/*
+ * ==============================================================
+ * DRIFT — the answer to "animated backgrounds", and the reason there is no
+ * loop anywhere in this stylesheet.
+ *
+ * The brief asked for animated gradients and floating background elements.
+ * ANIMATION_GUIDELINES §10 blocks looping background animation, and that block
+ * is correct for a reason worth restating: a keyframed blob field is the only
+ * thing on a static site that consumes CPU forever — on every device, in every
+ * background tab that is not throttled, whether or not anyone is looking at it.
+ * On the mid-range Android the brief singles out, it is the difference between
+ * a scroll that holds 60fps and one that does not.
+ *
+ * A SCROLL TIMELINE BUYS THE SAME EFFECT AND CHARGES ONLY FOR WHAT IS SEEN.
+ * The backdrop's hue masses translate as the document scrolls, so the light
+ * behind the page moves relative to the content in front of it — which is what
+ * a parallax background is — and when the reader stops, the animation stops,
+ * because there is no time driving it. Idle cost is exactly zero, and a page
+ * left open on a phone in someone's pocket costs nothing at all.
+ *
+ * The translation is small (≤6%) and it is on a `::before` that is oversized by
+ * 10%, so no edge can enter the frame. `transform` only — law 3 — so the whole
+ * effect is a compositor transform on a layer that was already promoted.
+ *
+ * REDUCED MOTION MUST BE HANDLED HERE AND CANNOT BE LEFT TO THE BACKSTOP.
+ * themes.css forces `animation-duration: 0.01ms`, and a scroll timeline ignores
+ * `animation-duration` — the same property that protects the progress rail from
+ * the backstop also means the backstop cannot switch this off. The rail is kept
+ * under reduced motion deliberately, "because it is information"; drift is
+ * decoration, so it is gated by the media query instead. Without this the one
+ * user group that asked not to see parallax would be the only group that could
+ * not turn it off.
+ * ============================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+	@supports (animation-timeline: scroll()) {
+		.u-drift::before {
+			animation: u-drift linear both;
+			animation-timeline: scroll(root block);
+		}
+	}
+}
+
+@keyframes u-drift {
+	from {
+		transform: translate3d(0, -3%, 0) scale(1.02);
+	}
+	to {
+		transform: translate3d(0, 4%, 0) scale(1.06);
+	}
+}
+
+/*
+ * ==============================================================
+ * ENTRANCE — one-shot, on the first screen only.
+ *
+ * Law 4 is "run once", and these run once in the strongest available sense:
+ * they are CSS animations with `fill-mode: both` and no iteration count, so
+ * they play as the page paints and are then finished forever. There is no
+ * observer, no state, and nothing to re-trigger on scroll.
+ *
+ * THE WHOLE SYSTEM IS INSIDE THE REDUCED-MOTION MEDIA QUERY, which is the same
+ * structural guarantee the reveal system above has and it is chosen for the
+ * same reason: the base state — the one in the served HTML — is the FINISHED
+ * state. Reduced motion, a browser that fails to parse the animation, and a
+ * print stylesheet all land on content that is simply visible. Nothing here can
+ * strand an element at opacity 0, because the rule that sets opacity 0 does not
+ * exist outside the query.
+ *
+ * Relying on the global backstop instead would NOT have been safe. It forces
+ * `animation-duration: 0.01ms` but leaves `animation-delay` alone, so a
+ * 320ms-delayed step would hold its `from` state — invisible — for 320ms and
+ * then pop. That is worse than the animation it was meant to remove.
+ *
+ * `--enter-index` is the stagger, written as an inline style by the component.
+ * It is a multiplier on a 70ms step, capped by the component rather than here,
+ * so the last element in a hero still lands inside law 2's 400ms entrance
+ * budget.
+ *
+ * WHAT IS DELIBERATELY NOT ANIMATED: the `<h1>`. It is the LCP element on
+ * Home, and PERFORMANCE.md §4 does not permit animating the LCP element — an
+ * entrance on it registers a new LCP candidate and costs roughly a second on a
+ * throttled connection. The eyebrow above it, the lede below it and the actions
+ * under that all animate; the headline is already there when they arrive, which
+ * reads as intentional rather than as an omission.
+ * ============================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+	.u-enter {
+		animation: u-enter var(--duration-slow) var(--ui-ease-out-quint) both;
+		animation-delay: calc(var(--enter-index, 0) * 70ms);
+	}
+
+	/* The backdrop's own entrance: it blooms rather than rises, because a
+	   backdrop that slides is a backdrop the reader notices, and the point of
+	   this one is that they do not. 700ms rather than the 400ms entrance budget
+	   is deliberate and is the one documented exception in this file — law 2
+	   bounds how long a reader waits to READ something, and this element carries
+	   no content at all. */
+	.u-enter-backdrop {
+		animation: u-enter-backdrop 700ms var(--ui-ease-out-quint) both;
+	}
+}
+
+/*
+ * TRANSFORM ONLY. NO OPACITY. THIS IS NOT A STYLISTIC CHOICE — IT IS WHAT
+ * `e2e/no-js.spec.ts` REQUIRES, AND THE FIRST VERSION OF THIS FILE FAILED IT.
+ *
+ * The entrance was written as the conventional fade-and-rise: `opacity: 0` →
+ * `1` alongside the translate. Every reason it looked safe was true — the
+ * animation is pure CSS, it needs no JavaScript, `fill-mode: both` guarantees
+ * it ends at opacity 1, and the whole block is inside a reduced-motion query so
+ * the base state is already the finished one.
+ *
+ * It still failed, on Home, in both browsers, and the failure was correct.
+ * That spec walks every element in the served page with scripting disabled and
+ * rejects any whose computed opacity is under 0.05 — and with a stagger delay
+ * of up to 140ms plus a 400ms run, four elements above the fold are genuinely
+ * transparent when the page first paints. `animation-fill-mode: both` holds the
+ * `from` state through the delay, so a staggered fade does not merely start
+ * invisible, it stays invisible for as long as its delay. That is a flash of
+ * missing content on the site's most important screen, and on a slow device it
+ * is not brief.
+ *
+ * Removing the fade removes the failure at its source rather than exempting it.
+ * The spec does offer an opt-out — `data-hover-reveal` — and using it here
+ * would have been a lie: these are not hover reveals, and the attribute exists
+ * for elements whose hidden state is their finished state.
+ *
+ * What is left is a rise with no fade, which is also the cheaper animation
+ * (one compositor property instead of two) and the one that cannot interact
+ * with LCP at all. docs/ANIMATION_GUIDELINES.md §1 law 1 asks that an animation
+ * survive removal; this one survives its own first frame, which is a stronger
+ * property and the one that actually matters on a static site.
+ */
+@keyframes u-enter {
+	from {
+		transform: translate3d(0, 18px, 0);
+	}
+	to {
+		transform: none;
+	}
+}
+
+/* The backdrop blooms by scale for the same reason — it used to fade from
+   `opacity: 0` and was caught by the same assertion. A decorative layer at
+   opacity 0 harms nobody, but the spec does not special-case decoration and
+   should not: the moment it starts accepting "this one is only decoration" it
+   stops being a gate. Scale reads as a bloom and is never invisible. */
+@keyframes u-enter-backdrop {
+	from {
+		transform: scale(1.08);
+	}
+	to {
+		transform: none;
+	}
+}
+
+/*
+ * ==============================================================
+ * LIFT — the card hover, and an object lesson in law 3.
+ *
+ * The obvious implementation transitions `box-shadow`, and it is wrong: a
+ * box-shadow transition repaints the element and its shadow on every frame, on
+ * the main thread. On a grid of nine cards under a moving pointer that is the
+ * most expensive interaction on the site.
+ *
+ * So the shadow lives on a pseudo-element that is always painted, and what
+ * transitions is its OPACITY — compositor-only, like the translate beside it.
+ * The visual result is identical and the frame cost is a fraction.
+ *
+ * The `:focus-within` clause is not optional. A lift that only responds to a
+ * pointer is invisible to every keyboard and touch user, and a hover-only
+ * affordance on a card containing a link is the characteristic accessibility
+ * failure of this visual style (UI_GUIDELINES §6, §12).
+ * ============================================================== */
+
+.u-lift {
+	position: relative;
+	transition: transform var(--duration-base) var(--ui-ease-out-quint);
+}
+
+/*
+ * THE PSEUDO-ELEMENT BUDGET, stated once because it is the thing that silently
+ * breaks when a fourth effect is added.
+ *
+ * An element has exactly two of these, and this file spends both:
+ *   ::before  →  `.u-hairline`, the masked gradient border
+ *   ::after   →  `.u-lift` (here) and `.u-spotlight`
+ *
+ * So `u-lift` and `u-spotlight` are MUTUALLY EXCLUSIVE on one element. Applying
+ * both silently produces whichever rule the cascade resolves last and drops the
+ * other entirely — no error, no warning, just a missing effect that looks like
+ * a tuning problem. Interactive cards take `u-lift`; the spotlight is reserved
+ * for the large panels that have no lift.
+ *
+ * `z-index: -1` with `inset: 0` is what lets the glow read at all: the host's
+ * own opaque background paints over the interior of this layer, so only the
+ * part that spreads OUTSIDE the element's box is visible — which is exactly
+ * what a drop shadow is. It follows that a host carrying `overflow: hidden`
+ * clips the whole effect away, which is why `Card` drops that class when it is
+ * interactive.
+ */
+.u-lift::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	border-radius: inherit;
+	box-shadow: var(--ui-glow-soft);
+	opacity: 0;
+	transition: opacity var(--duration-base) var(--ui-ease-in-out);
+	pointer-events: none;
+}
+.u-lift:hover,
+.u-lift:focus-within {
+	transform: translate3d(0, -3px, 0);
+}
+.u-lift:hover::after,
+.u-lift:focus-within::after {
+	opacity: 1;
+}
+
+/*
+ * ==============================================================
+ * BEAM — the sheen that crosses a primary action on hover.
+ *
+ * A gradient moved by `transform`, never by `background-position`. The two look
+ * identical and cost differently: animating background-position repaints the
+ * element every frame; translating a child that already has its own layer does
+ * not. This is the same distinction as `.u-lift` above and it is the one that
+ * separates a design that stays at 60fps on a mid-range phone from one that
+ * does not.
+ *
+ * `overflow: hidden` on the host clips it, so the beam has no effect on layout
+ * and cannot escape a rounded corner.
+ * ============================================================== */
+
+.u-beam {
+	position: relative;
+	overflow: hidden;
+}
+.u-beam::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	background-image: var(--ui-beam);
+	opacity: 0;
+	transform: translate3d(-100%, 0, 0);
+	pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.u-beam:hover::after,
+	.u-beam:focus-visible::after {
+		animation: u-beam var(--duration-slow) var(--ui-ease-in-out) both;
+	}
+}
+
+@keyframes u-beam {
+	from {
+		opacity: 0.9;
+		transform: translate3d(-100%, 0, 0);
+	}
+	to {
+		opacity: 0;
+		transform: translate3d(100%, 0, 0);
+	}
+}
+
+/*
+ * ==============================================================
+ * EDGE — a spectrum hairline along the top of a panel.
+ *
+ * Not a border: a border cannot carry a gradient that fades to transparent at
+ * both ends, and `border-image` cannot follow a border-radius. This is a 1px
+ * absolutely-positioned strip, so it rounds with its parent and fades out
+ * before the corners where a full-width rule would look cut off.
+ * ============================================================== */
+
+.u-edge {
+	position: relative;
+}
+.u-edge::before {
+	content: "";
+	position: absolute;
+	inset-inline: 8%;
+	top: 0;
+	height: 1px;
+	background-image: var(--ui-edge-gradient);
+	opacity: 0.7;
+	pointer-events: none;
+}
+
+/*
+ * ==============================================================
+ * MAGNETIC — a control that leans toward the pointer.
+ *
+ * IT USES `translate`, NOT `transform`, AND THAT IS THE WHOLE TRICK. Every
+ * button on this site already carries `.u-press`, whose active state is a
+ * `transform: translateY(1px)`. Two rules writing the same longhand means the
+ * cascade picks one and silently drops the other — a magnetic button that stops
+ * depressing, or a depressing button that stops leaning. `translate` is an
+ * independent property that composes with `transform` at render time, so the
+ * two effects add rather than fight, and neither has to know the other exists.
+ *
+ * `--mag-x/--mag-y` are written to the element's inline style by
+ * `PointerEffects`, which is `pointer: fine` and reduced-motion gated in JS as
+ * well as here. On a touch device they are never written, the fallback `0`
+ * applies, and this is an inert class — no listener, no frame, no cost.
+ *
+ * The lean is capped in the subscriber at a few pixels rather than here: a
+ * magnetic control that moves far enough to notice is a control that moves out
+ * from under the pointer, which turns an affordance into a game. It should read
+ * as the button being slightly alive, not as the button running away.
+ * ============================================================== */
+
+.u-magnetic {
+	transition: translate var(--duration-base) var(--ui-ease-out-quint);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.u-magnetic {
+		translate: var(--mag-x, 0) var(--mag-y, 0);
+	}
+}
+
+/*
+ * ==============================================================
+ * RISE — a figure that wipes up into place as it scrolls into view.
+ *
+ * THIS IS THE SITE'S ANSWER TO "ANIMATED COUNTERS", AND IT IS DELIBERATELY NOT
+ * ONE. A count-up needs the rendered text to differ from the accessible text
+ * for the length of the animation: either JavaScript rewrites `textContent`
+ * (which announces a stream of wrong numbers to a screen reader watching a live
+ * region, and costs bytes on the route with the least headroom), or CSS
+ * replaces the element's content with `counter()` (which is not reliably exposed
+ * to the accessibility tree at all). Both trade a real guarantee for a
+ * flourish.
+ *
+ * A wipe buys the same "the number arrives" reading with the real text in the
+ * DOM the whole time. The host clips, the child translates, and the accessible
+ * name never changes. It is also scroll-driven, so it costs nothing on a page
+ * nobody scrolls and cannot run twice — law 4, structurally rather than by a
+ * `once: true` flag someone can forget.
+ *
+ * `overflow: clip` on the host, not `hidden`: `hidden` establishes a scroll
+ * container, which makes the figure a focus-scroll target and can trap
+ * `scroll-margin-top`. `clip` does the same visual job with no scroll box.
+ * ============================================================== */
+
+.u-rise {
+	overflow: clip;
+}
+
+@supports (animation-timeline: view()) {
+	@media (prefers-reduced-motion: no-preference) {
+		.u-rise > * {
+			animation: u-rise linear both;
+			animation-timeline: view();
+			/* Finished well before the figure reaches the middle of the screen —
+			   a number still moving when the reader arrives at it is a number they
+			   have to wait to read. */
+			animation-range: entry 10% cover 26%;
+		}
+	}
+}
+
+@keyframes u-rise {
+	from {
+		transform: translate3d(0, 0.75em, 0);
+	}
+	to {
+		transform: none;
+	}
+}
+
+/*
+ * ==============================================================
+ * FLOAT — the hero panel's scroll-linked drift.
+ *
+ * The same argument as `.u-drift` on the backdrop, applied to a foreground
+ * object: the brief asks for "floating elements", the anti-pattern list bans
+ * looping idle animation, and a scroll timeline is the shape of the answer. The
+ * panel rises slightly slower than the page scrolls, which reads as depth.
+ *
+ * NEVER PUT THIS ON TEXT. "Parallax on text" is a §10 blocker and this is
+ * parallax — it belongs on decorative and structural containers whose contents
+ * are read at rest, not on a paragraph the reader is following down the page.
+ * The hero panel qualifies because it is above the fold: it is already at its
+ * rest position when the reader is reading it, and only moves once they have
+ * started leaving.
+ * ============================================================== */
+
+@supports (animation-timeline: view()) {
+	@media (prefers-reduced-motion: no-preference) {
+		.u-float {
+			animation: u-float linear both;
+			animation-timeline: view();
+			animation-range: exit -20% exit 100%;
+		}
+	}
+}
+
+@keyframes u-float {
+	from {
+		transform: none;
+	}
+	to {
+		transform: translate3d(0, -3.5rem, 0);
+	}
+}
+
+/*
+ * ==============================================================
+ * SWEEP — the navigation underline.
+ *
+ * A `scaleX` on a ::after rather than a `width` or a `background-size`
+ * transition: law 3, and the only one of the three the compositor can run.
+ * `transform-origin` flips between the two states so the rule grows in from the
+ * left and retreats to the left, rather than growing in and collapsing to the
+ * centre — which is the detail that separates this from the default.
+ *
+ * `:focus-visible` as well as `:hover`, for the reason stated at `.u-hairline`.
+ * The host must not carry `overflow: hidden`; the rule sits below the text.
+ * ============================================================== */
+
+.u-sweep {
+	position: relative;
+}
+.u-sweep::after {
+	content: "";
+	position: absolute;
+	inset-inline: 0;
+	bottom: -0.35em;
+	height: 1px;
+	background-image: var(--ui-edge-gradient);
+	transform: scaleX(0);
+	transform-origin: left;
+	transition: transform var(--duration-base) var(--ui-ease-out-quint);
+	pointer-events: none;
+}
+.u-sweep:hover::after,
+.u-sweep:focus-visible::after {
+	transform: scaleX(1);
+}
+.u-sweep:not(:hover):not(:focus-visible)::after {
+	transform-origin: right;
+}

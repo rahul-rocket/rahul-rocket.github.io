@@ -1,0 +1,8 @@
+# Presence, not content, is what matters.
+#
+# GitHub Pages runs Jekyll over the published tree unless this file exists, and
+# Jekyll silently drops every path beginning with an underscore — which is where
+# Next.js puts its entire build output (_next/). The failure mode is a site that
+# serves its HTML correctly with no CSS and no JavaScript at all.
+#
+# Asserted in CI against out/ by scripts/check-export.mjs (F0-05).

@@ -1,0 +1,280 @@
+---
+title: "Reconciliation that stopped needing a human"
+summary: "Six hours a day of manual settlement review, and it still missed breaks. A deterministic, replayable matching engine cut it to twenty minutes."
+role: "Lead engineer — architecture, matching engine, delivery; team of six"
+period:
+  from: 2021-02
+  to: 2022-01
+order: 1
+featured: true
+needsReview: true
+problem: "Two analysts spent six hours a day matching payouts by hand, and the exceptions they missed became audit findings."
+stack:
+  - typescript
+  - nodejs
+  - postgres
+  - redis
+  - event-driven
+  - data-modelling
+  - testing
+  - observability
+  - system-design
+metrics:
+  - label: "Daily manual review"
+    before: "6h"
+    after: "20m"
+    method: "Median of the operations team's own daily time log over the eight weeks either side of cutover"
+  - label: "Unmatched breaks at month end"
+    before: "3.1%"
+    after: "0.2%"
+    method: "Share of settlement lines with no automated match, counted at the close of each of the six months after launch"
+  - label: "Full reconciliation run"
+    before: "48m"
+    after: "90s"
+    method: "Wall-clock duration of the nightly job, p95 over 30 consecutive runs on unchanged hardware"
+publishedAt: 2026-08-05
+---
+
+<Callout variant="warning" title="Drafted, pending the author's review">
+This case study is written to the site's documented standard but has not yet
+been checked against the author's own records. The numbers are illustrative
+until they are replaced with figures whose measurement method the author can
+reproduce. Nothing on this site is indexed while this notice is present.
+</Callout>
+
+## Overview
+
+A payments platform settled funds to several thousand merchants daily and
+reconciled the result by hand. We replaced the spreadsheet-and-judgment process
+with a deterministic matching engine backed by an append-only ledger, so that
+every match was explainable and every run was replayable. Manual review dropped
+from six hours a day to twenty minutes, and the remaining twenty minutes are
+spent on genuine exceptions rather than on finding them.
+
+## The Problem
+
+Settlement is the step where money that has been *promised* is checked against
+money that has *moved*. A payment processor sends a daily file of transfers; the
+platform holds its own record of what each merchant was owed; and reconciliation
+is the work of matching one against the other and explaining every line that
+does not match. A line that does not match is called a break, and breaks are
+where both fraud and bugs surface first.
+
+Two analysts did this in a spreadsheet. The process took about six hours a day
+and it was not merely slow, it was *unreliable in a specific direction*: it
+found the large breaks and missed the small ones, because a human scanning
+fourteen thousand rows tunes out anything under a rounding threshold. Three
+percent of lines were unmatched at month end, and the accumulated small
+unmatched lines were the ones that appeared in an auditor's sample.
+
+Three things made it worse than a staffing problem. Retries were invisible: a
+transfer retried by the processor appeared twice, and nothing in the process
+distinguished a duplicate from a genuine second payment. The matching rules
+existed only in the analysts' heads, so the same break could be resolved two
+ways on two days. And there was no way to answer "why was this matched?" after
+the fact, which meant that every audit question became a reconstruction rather
+than a lookup.
+
+The business framing was a headcount request. The engineering framing was that
+the platform had no *record* of its own settlement reasoning, only an outcome —
+and an outcome without its reasoning cannot be checked, cannot be replayed, and
+cannot be automated safely.
+
+## Constraints
+
+- **A regulated domain.** A wrong number is an audit finding, not a bug report,
+  and "we will fix it forward" is not available.
+- **No pause in settlement.** Merchants are paid daily; the migration had to run
+  alongside the existing process, not instead of it.
+- **The processor's file format was not negotiable** and changed twice a year
+  without much warning.
+- **A team of six**, of whom two were new to the domain.
+- **Every automated match had to be explainable** to a non-engineer, in writing,
+  after the fact.
+
+## Options Considered
+
+**Buy a reconciliation product.** Several exist, they are mature, and they solve
+this exact problem. Two things ruled it out: the platform's own settlement model
+had domain-specific netting rules that would have had to be expressed as
+configuration in someone else's vocabulary, and the audit requirement meant we
+would have been explaining a vendor's matching decisions rather than our own.
+
+**Automate the spreadsheet.** A script that applied the analysts' rules to the
+same two files. Cheap, fast to deliver, and it would have inherited the actual
+defect: the rules were undocumented and inconsistent, so automating them would
+have made the inconsistency faster and harder to see.
+
+**A deterministic matching engine over an append-only ledger.** Model both sides
+as immutable entries, apply an ordered set of named matching strategies, and
+record which strategy matched each pair. More work, and it makes the reasoning a
+first-class artifact.
+
+**A machine-learning matcher.** Raised, and rejected in one meeting. A
+probabilistic match is unexplainable by construction, which fails the single
+hardest requirement on the list.
+
+## The Decision
+
+The deterministic engine, with the ledger as the substrate.
+
+The decisive property was not accuracy — the automated rules were about as
+accurate as a careful analyst — but *explainability*. Every match records the
+strategy that produced it, the two entries it joined, and the run that made it.
+An auditor's question becomes a query. An analyst's disagreement becomes a bug
+report against a named rule instead of an argument about judgment.
+
+The second property was replay. Because entries are immutable and strategies are
+pure functions over them, a run can be re-executed against corrected reference
+data and the difference inspected. The old process had no equivalent: correcting
+a mistake meant redoing a day's work by hand.
+
+**The cost of this was** roughly three months of additional delivery time
+against the automate-the-spreadsheet option, and an ongoing obligation: every
+new settlement product now needs its matching strategy written and tested before
+it can launch, which has twice delayed a product by a sprint. That is a real
+tax, and it is the correct one to pay in this domain — but it is a tax, and the
+team feels it.
+
+## Architecture
+
+<Diagram
+  title="Settlement matching pipeline"
+  description="Processor files and internal payout records are normalised into an append-only ledger, matched by an ordered set of named strategies, and written back as explainable match records with unmatched lines raised as exceptions."
+  viewBox="0 0 860 320"
+  equivalent={
+    <>
+      Two inputs arrive independently: the processor's daily transfer file and
+      the platform's own payout records. Both are normalised into immutable
+      ledger entries, each carrying an idempotency key derived from its natural
+      identifiers — so an ingested file replayed twice produces no duplicates.
+      The matching engine then applies strategies in a fixed order, from exact
+      reference match down to amount-and-date-window heuristics, and stops at
+      the first that succeeds. Each match is written with the name of the
+      strategy that produced it. Anything unmatched after the last strategy
+      becomes an exception with a reason code, which is what the analysts now
+      spend their twenty minutes on.
+    </>
+  }
+>
+  <g className="text-border-strong">
+    <rect x="20" y="30" width="160" height="56" rx="8" />
+    <rect x="20" y="120" width="160" height="56" rx="8" />
+    <rect x="240" y="75" width="160" height="56" rx="8" />
+    <rect x="460" y="75" width="170" height="56" rx="8" />
+    <rect x="690" y="20" width="150" height="56" rx="8" />
+    <rect x="690" y="130" width="150" height="56" rx="8" />
+    <rect x="240" y="220" width="390" height="56" rx="8" />
+  </g>
+  <g className="text-text-muted" strokeWidth="1.25">
+    <path d="M180 58 h30 q15 0 15 15 v15 q0 10 10 10 h5" />
+    <path d="M180 148 h30 q15 0 15 -15 v-15 q0 -10 10 -10 h5" />
+    <path d="M400 103 h55" markerEnd="url(#arrow2)" />
+    <path d="M630 95 h55" markerEnd="url(#arrow2)" />
+    <path d="M630 115 h30 q15 0 15 15 v20" markerEnd="url(#arrow2)" />
+    <path d="M545 131 v85" markerEnd="url(#arrow2)" />
+  </g>
+  <defs>
+    <marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" stroke="none" />
+    </marker>
+  </defs>
+  <g className="fill-current text-text" strokeWidth="0" fontSize="14" fontFamily="var(--ui-font-body)">
+    <text x="100" y="54" textAnchor="middle">Processor file</text>
+    <text x="100" y="72" textAnchor="middle" className="text-text-muted">daily, SFTP</text>
+    <text x="100" y="144" textAnchor="middle">Payout records</text>
+    <text x="100" y="162" textAnchor="middle" className="text-text-muted">internal</text>
+    <text x="320" y="99" textAnchor="middle">Ledger</text>
+    <text x="320" y="117" textAnchor="middle" className="text-text-muted">append-only, idempotent</text>
+    <text x="545" y="99" textAnchor="middle">Matching engine</text>
+    <text x="545" y="117" textAnchor="middle" className="text-text-muted">ordered strategies</text>
+    <text x="765" y="44" textAnchor="middle">Match records</text>
+    <text x="765" y="62" textAnchor="middle" className="text-text-muted">with strategy name</text>
+    <text x="765" y="154" textAnchor="middle">Exceptions</text>
+    <text x="765" y="172" textAnchor="middle" className="text-text-muted">with reason code</text>
+    <text x="435" y="244" textAnchor="middle">Replay: same inputs, same output, always</text>
+    <text x="435" y="262" textAnchor="middle" className="text-text-muted">strategies are pure functions over immutable entries</text>
+  </g>
+</Diagram>
+
+## Implementation Highlights
+
+**Idempotency keys derived from the data, not generated.** Every ledger entry's
+key is a hash of the natural identifiers the source already carries — processor
+reference, merchant, amount, value date. A file re-ingested after a failed run
+produces the same keys and inserts nothing, so "run it again" became a safe
+operation rather than a decision requiring a database backup.
+
+```ts
+const ledgerKey = (entry: SourceEntry) =>
+  createHash('sha256')
+    .update([entry.source, entry.reference, entry.merchantId,
+             entry.amountMinor, entry.valueDate].join('|'))
+    .digest('hex')
+```
+
+**Strategies as an ordered list of pure functions.** Each strategy takes the
+unmatched sets and returns candidate pairs; the engine applies them in order and
+removes matched entries before the next runs. Ordering is the entire semantics —
+exact reference match must run before any fuzzy amount match, or a coincidental
+amount collision wins over the certain answer. That ordering is asserted by a
+test, because it is the kind of thing a refactor reorders without noticing.
+
+**A regression corpus rather than fixtures.** Six months of anonymised historical
+files became a test corpus, and every strategy change is measured against it:
+how many lines matched, how many differently, and which. That is how we found
+that a proposed date-window widening would have matched 340 more lines and 12 of
+them wrongly.
+
+## Challenges & Solutions
+
+**The processor's file changed format mid-project.** A column was added and two
+were reordered, with a week's notice. The normalisation layer had been written
+as a parser tied to positions; it was rewritten to key off the header row and to
+fail loudly on an unrecognised column rather than shifting silently. The failure
+mode we avoided is the one that matters: a positional parser reading a reordered
+file produces plausible, wrong data and no error.
+
+**Analysts did not trust it, correctly, for six weeks.** We ran both processes in
+parallel and compared outputs daily. The engine and the humans disagreed on
+about forty lines a day at first; every disagreement was triaged, and roughly a
+third of them were the engine being right about something the manual process had
+been quietly getting wrong for years. Running in parallel cost six weeks of
+duplicated effort and was the only thing that produced trust.
+
+**A replay that was not actually deterministic.** An early strategy sorted
+candidates by a timestamp with second precision, and same-second entries came
+back in database order — so two replays of one input could produce two different
+matchings. Found by running the corpus twice and diffing, which is now part of
+the test suite.
+
+## Outcome
+
+<Metrics>
+  <Metric label="Daily manual review" before="6h" after="20m"
+    method="Median of the operations team's own daily time log, eight weeks either side of cutover" />
+  <Metric label="Unmatched breaks at month end" before="3.1%" after="0.2%"
+    method="Share of settlement lines with no automated match, at the close of each of the six months after launch" />
+  <Metric label="Full reconciliation run" before="48m" after="90s"
+    method="Wall-clock p95 over 30 consecutive nightly runs on unchanged hardware" />
+</Metrics>
+
+The twenty remaining minutes are the point. They are spent on exceptions the
+engine raised deliberately, with a reason code attached, rather than on finding
+exceptions in a spreadsheet — which is a different job that happens to take a
+similar amount of time.
+
+## What I'd Do Differently
+
+I would build the exception workflow first and the matching engine second. We
+delivered excellent matching and a rudimentary exception queue, and for the first
+two months the analysts' experience was that the tool had automated the easy part
+and left them with a worse interface for the hard part. The queue was rewritten
+in month three and should have been designed in month one.
+
+I would also resist the ledger's gravitational pull. Because it was immutable,
+explainable and replayable, it became attractive as a general event store, and
+two unrelated features were built on top of it that had no business being
+coupled to settlement. Unwinding one of those took a quarter. A component that
+is good at its job invites use that its guarantees were never designed for, and
+saying no to that is part of owning it.

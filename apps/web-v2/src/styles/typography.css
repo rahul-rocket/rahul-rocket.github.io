@@ -1,0 +1,160 @@
+/*
+ * PROSE STYLES for MDX — docs/DESIGN_SYSTEM.md §4, docs/BLOG_SYSTEM.md §6.
+ *
+ * Scoped to `.prose` rather than applied to bare elements, so the token
+ * playground, the design mockups, and future non-prose pages are unaffected.
+ *
+ * Tokens only. Every value here is a var(); a literal in this file is the same
+ * review blocker it is in a component.
+ */
+
+.prose {
+	max-width: var(--width-prose);
+}
+
+/* Spacing is the parent's job — CLAUDE.md §7. Prose is the one place that rule
+   inverts, because the vertical rhythm between a paragraph and the heading that
+   follows it is a property of the flow, not of either element. `* + *` states it
+   once instead of margin-bottom on nine selectors that then disagree. */
+.prose > * + * {
+	margin-block-start: var(--space-6);
+}
+
+.prose > h2 {
+	margin-block-start: var(--space-12);
+	font-family: var(--ui-font-heading);
+	font-size: var(--ui-font-size-h2);
+	line-height: var(--ui-leading-heading);
+	letter-spacing: var(--ui-tracking-heading);
+}
+
+.prose > h3 {
+	margin-block-start: var(--space-8);
+	font-family: var(--ui-font-heading);
+	font-size: var(--ui-font-size-h3);
+	line-height: var(--ui-leading-heading);
+	letter-spacing: var(--ui-tracking-heading);
+}
+
+.prose :where(ul, ol) {
+	padding-inline-start: var(--space-6);
+}
+
+.prose :where(ul, ol) > li + li {
+	margin-block-start: var(--space-2);
+}
+
+.prose ul {
+	list-style: disc;
+}
+
+.prose ol {
+	list-style: decimal;
+}
+
+/* ------------------------------------------------------------------ *
+ * Heading anchors
+ *
+ * Hidden until the heading is hovered OR the anchor itself has focus.
+ * `:focus-within` is not optional: a control that appears only on hover is
+ * unreachable by keyboard, so the anchor would tab to an invisible target — a
+ * WCAG 2.4.7 failure and the most common way this pattern is shipped broken.
+ * ------------------------------------------------------------------ */
+
+.heading-anchor {
+	margin-inline-start: var(--space-2);
+	color: var(--ui-text-subtle);
+	text-decoration: none;
+	opacity: 0;
+	transition: opacity var(--duration-fast) var(--ui-ease-out-quint);
+}
+
+:is(h2, h3, h4):hover > .heading-anchor,
+.heading-anchor:focus-visible {
+	opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.heading-anchor {
+		transition: none;
+	}
+}
+
+/* ------------------------------------------------------------------ *
+ * Code — Shiki, highlighted at build time.
+ *
+ * rehype-pretty-code emits BOTH themes as custom properties on every token
+ * (`--shiki-light`, `--shiki-dark`). Switching is therefore a CSS variable
+ * swap with no JavaScript and no re-render on theme toggle — which is the
+ * whole reason for build-time highlighting. `keepBackground: false` in the
+ * plugin config is why the surface below is ours and not the theme's.
+ * ------------------------------------------------------------------ */
+
+.prose :not(pre) > code {
+	padding: var(--space-0_5) var(--space-1);
+	border-radius: var(--ui-radius-sm);
+	background: var(--ui-surface);
+	font-family: var(--ui-font-mono);
+	font-size: 0.9em; /* relative to surrounding text, so it tracks any size */
+}
+
+.prose pre {
+	padding: var(--space-4);
+	border: var(--border-hairline) solid var(--ui-border);
+	border-radius: var(--ui-radius-md);
+	background: var(--ui-surface);
+	font-family: var(--ui-font-mono);
+	font-size: var(--ui-font-size-sm);
+	line-height: 1.6;
+
+	/* A code block that overflows must scroll, and a scrollable region must be
+	   keyboard-reachable or its content is unreachable without a mouse
+	   (WCAG 2.1.1). `tabindex` is added by B-04 with an accessible name; the
+	   overflow declaration is what makes the region exist at all. */
+	overflow-x: auto;
+}
+
+.prose pre code {
+	background: none;
+	padding: 0;
+}
+
+/* The light theme is the default written into the tokens; dark overrides. */
+.prose [data-theme="light"] code span,
+:root[data-theme="light"] .prose code span {
+	color: var(--shiki-light);
+	background-color: var(--shiki-light-bg);
+}
+
+:root:not([data-theme="light"]) .prose code span {
+	color: var(--shiki-dark);
+	background-color: var(--shiki-dark-bg);
+}
+
+/* ------------------------------------------------------------------ *
+ * Tables — must scroll on narrow viewports rather than force the page to.
+ * The page body never scrolls horizontally.
+ * ------------------------------------------------------------------ */
+
+.prose table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: var(--ui-font-size-sm);
+}
+
+.prose :is(th, td) {
+	padding: var(--space-2) var(--space-3);
+	border-block-end: var(--border-hairline) solid var(--ui-border);
+	text-align: start;
+}
+
+.prose th {
+	color: var(--ui-text);
+	font-weight: 600;
+}
+
+.prose blockquote {
+	padding-inline-start: var(--space-4);
+	border-inline-start: 2px solid var(--ui-border-strong);
+	color: var(--ui-text-muted);
+}

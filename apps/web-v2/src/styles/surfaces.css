@@ -1,0 +1,599 @@
+/*
+ * SURFACE LAYER — composed surfaces
+ * docs/redesign/DESIGN_SYSTEM.md §2, docs/DESIGN_SYSTEM.md §14 (DS-14)
+ *
+ * The third token tier. tokens.css holds primitives, themes.css assigns
+ * semantic roles, and this file *composes* those roles into the surfaces that
+ * produce depth: mesh, aurora, glass, grain, glow, gradient hairlines,
+ * spotlight, beams.
+ *
+ * WHY A THIRD FILE. Every token here is derived — a gradient built from three
+ * semantic colors, a shadow built from the accent. Derived values belong
+ * downstream of what they derive from. The practical reason is
+ * check-contrast.mjs: it reads themes.css as the authoritative list of flat
+ * color pairs, and keeping compositions out of that file means it never has to
+ * learn to parse a radial-gradient(). It reads *this* file separately, flattens
+ * the translucent layers by alpha compositing, and asserts text against the
+ * result — see the composited contexts in that script.
+ *
+ * Components consume these names and nothing below them, exactly as with
+ * themes.css.
+ *
+ * THE ALPHA VALUES BELOW ARE CONTRAST-CONSTRAINED, NOT TASTE-CONSTRAINED.
+ * Raising any of them lightens the effective background behind hero text and
+ * pushes --ui-border-strong toward its 3:1 floor (WCAG 1.4.11), which is the
+ * binding constraint on the dark aurora; on the light theme the binding
+ * constraint is the accent link, which clears 4.5:1 with very little to spare.
+ * `pnpm check:contrast` is the authority; it fails before the design does, and
+ * it now checks every tone below rather than only the default one.
+ *
+ * ------------------------------------------------------------------
+ * WHY THIS FILE GREW — the honest version.
+ *
+ * Everything in the previous revision was already here: aurora, glass, grain,
+ * glow, spotlight, grid. All of it was tuned so far down that it did not
+ * render. The dark aurora peaked at 0.07 alpha over near-black, the grid lines
+ * were white at 0.028, and the composed result was a page indistinguishable
+ * from a flat #0a0a0b. The infrastructure was correct and the numbers were
+ * decoration-shaped placeholders.
+ *
+ * So the change here is mostly ARITHMETIC, not architecture: the same layers,
+ * given values that survive a real display in a lit room, plus the tone system
+ * that stops fourteen routes sharing one backdrop. That is why the diff is
+ * large and the byte cost is not — a gradient stop is the same number of bytes
+ * whether or not you can see it.
+ * ------------------------------------------------------------------
+ */
+
+/* ==============================================================
+ * THE TONE SYSTEM — one backdrop composition, five hue arrangements.
+ *
+ * The brief asked that "every page has its own visual identity while remaining
+ * consistent with the global design system", and the cheap wrong answer is a
+ * different layout per route. Layout is where consistency lives; LIGHT is where
+ * identity can vary for free.
+ *
+ * A tone rotates which spectrum hue leads and where the mass sits. It changes
+ * three custom properties. It costs zero bytes of JavaScript, zero requests,
+ * and no additional CSS per route — the aurora composition below is written
+ * once and reads whichever three colors the tone bound.
+ *
+ * Tones are named for the KIND OF PAGE they belong to, not for their lead hue.
+ * `data-tone="work"` survives a palette change; `data-tone="indigo"` does not,
+ * and would put a literal color name in the markup — the thing
+ * DESIGN_SYSTEM §1.3 exists to prevent.
+ *
+ * The attribute goes on the element that owns the backdrop (usually <main> via
+ * PageContainer, or a Section that paints its own). It inherits, so a section
+ * inside a toned page may override it locally.
+ * ============================================================== */
+
+:root {
+	/* Default — teal leads, indigo answers, violet is a trace at the horizon.
+	   Home and the identity pages. */
+	--ui-tone-1: oklch(74% 0.16 195 / 0.18);
+	--ui-tone-2: oklch(58% 0.19 265 / 0.18);
+	--ui-tone-3: oklch(60% 0.185 305 / 0.11);
+	/* Where each mass sits. Two numbers per layer, so a tone can move the light
+	   without touching the gradient geometry. */
+	--ui-tone-1-at: 14% 2%;
+	--ui-tone-2-at: 88% 16%;
+	--ui-tone-3-at: 58% 88%;
+}
+
+[data-tone="work"] {
+	/* Indigo leads and the mass moves right — the case-study and services pages,
+	   where the page opens with a dense index rather than a headline. */
+	--ui-tone-1: oklch(58% 0.19 265 / 0.2);
+	--ui-tone-2: oklch(74% 0.16 195 / 0.14);
+	--ui-tone-3: oklch(60% 0.185 305 / 0.12);
+	--ui-tone-1-at: 86% 0%;
+	--ui-tone-2-at: 8% 26%;
+	--ui-tone-3-at: 50% 92%;
+}
+
+[data-tone="writing"] {
+	/* Violet leads, weighted left and high. Blog, uses — the reading routes. */
+	--ui-tone-1: oklch(60% 0.185 305 / 0.19);
+	--ui-tone-2: oklch(58% 0.19 265 / 0.15);
+	--ui-tone-3: oklch(74% 0.16 195 / 0.09);
+	--ui-tone-1-at: 10% 0%;
+	--ui-tone-2-at: 78% 22%;
+	--ui-tone-3-at: 46% 90%;
+}
+
+[data-tone="record"] {
+	/* Teal, low and wide, with almost no violet. The evidence routes —
+	   experience, journey, skills, résumé, now — where the page is a long
+	   vertical list and a heavy top-lit wash would fight the first screen. */
+	--ui-tone-1: oklch(74% 0.16 195 / 0.15);
+	--ui-tone-2: oklch(58% 0.19 265 / 0.12);
+	--ui-tone-3: oklch(60% 0.185 305 / 0.07);
+	--ui-tone-1-at: 50% -6%;
+	--ui-tone-2-at: 96% 40%;
+	--ui-tone-3-at: 4% 70%;
+}
+
+[data-tone="contact"] {
+	/* All three converge on centre — the one page whose job is a single action,
+	   so the light points at it. */
+	--ui-tone-1: oklch(74% 0.16 195 / 0.18);
+	--ui-tone-2: oklch(58% 0.19 265 / 0.18);
+	--ui-tone-3: oklch(60% 0.185 305 / 0.12);
+	--ui-tone-1-at: 30% 10%;
+	--ui-tone-2-at: 70% 10%;
+	--ui-tone-3-at: 50% 70%;
+}
+
+/* ==============================================================
+ * LIGHT THEME TONES.
+ *
+ * NOT THE SAME NUMBERS WITH A DIFFERENT BACKGROUND. The light theme runs the
+ * aurora in the opposite direction and on a much tighter budget, and the reason
+ * is arithmetic rather than taste: on near-white, ANY layer darker than the
+ * background reduces contrast for the dark text above it, and the light accent
+ * link clears its 4.5:1 floor by about 0.3. There is almost nothing to spend.
+ *
+ * So light tones are HIGH-LIGHTNESS TINTS. The hue arrives as chroma at 92–95%
+ * lightness rather than as a darker colour, which is why the alphas can be
+ * larger here than in dark while the composited luminance barely moves. An
+ * earlier attempt used the dark theme's lightnesses at reduced alpha, composited
+ * to #d2eaed, and failed accent at 4.13:1 — check:contrast caught it; the eye
+ * would not have.
+ *
+ * The light theme gets its premium reading from ELEVATION rather than from
+ * wash: white cards, real layered shadows tinted toward the spectrum, and a
+ * background that is a shade off-white rather than paper. That is why the glow
+ * and shadow tokens below are not merely the dark ones at lower opacity.
+ * ============================================================== */
+
+[data-theme="light"] {
+	--ui-tone-1: oklch(90% 0.075 195 / 0.3);
+	--ui-tone-2: oklch(90% 0.07 265 / 0.26);
+	--ui-tone-3: oklch(91% 0.065 305 / 0.18);
+}
+
+[data-theme="light"] [data-tone="work"],
+[data-theme="light"][data-tone="work"] {
+	--ui-tone-1: oklch(90% 0.07 265 / 0.32);
+	--ui-tone-2: oklch(90% 0.075 195 / 0.24);
+	--ui-tone-3: oklch(91% 0.065 305 / 0.2);
+}
+
+[data-theme="light"] [data-tone="writing"],
+[data-theme="light"][data-tone="writing"] {
+	--ui-tone-1: oklch(91% 0.065 305 / 0.32);
+	--ui-tone-2: oklch(90% 0.07 265 / 0.24);
+	--ui-tone-3: oklch(90% 0.075 195 / 0.16);
+}
+
+[data-theme="light"] [data-tone="record"],
+[data-theme="light"][data-tone="record"] {
+	--ui-tone-1: oklch(90% 0.075 195 / 0.26);
+	--ui-tone-2: oklch(90% 0.07 265 / 0.18);
+	--ui-tone-3: oklch(91% 0.065 305 / 0.12);
+}
+
+[data-theme="light"] [data-tone="contact"],
+[data-theme="light"][data-tone="contact"] {
+	--ui-tone-1: oklch(90% 0.075 195 / 0.3);
+	--ui-tone-2: oklch(90% 0.07 265 / 0.3);
+	--ui-tone-3: oklch(91% 0.065 305 / 0.22);
+}
+
+/* ==============================================================
+ * AURORA AND MESH — painted, never looped.
+ *
+ * The brief asked for animated blobs. ANIMATION_GUIDELINES §10 blocks
+ * "auto-playing video or looping background animation" and §1 law 3 blocks
+ * animating filter: blur on a large surface. Both blocks are correct: a looping
+ * blob field is the only thing on a static site that costs CPU forever, on
+ * every device, whether or not anyone is looking at it — and on the mid-range
+ * Android the brief singles out it is the difference between a smooth scroll
+ * and a stuttering one.
+ *
+ * So the movement is bought a different way, and there are two of them, both in
+ * motion.css: the backdrop DRIFTS ON A SCROLL TIMELINE (`.u-drift`), which
+ * costs exactly zero when the reader is not scrolling and cannot run at all on
+ * a page nobody touches; and the hero backdrop BLOOMS ONCE on entrance
+ * (`.u-enter`). Neither is a loop. The painting itself is four radial gradients
+ * composed into one background-image on one aria-hidden element: zero
+ * JavaScript, zero animation frames, zero requests, ~0.4 KB.
+ *
+ * `--ui-aurora-1/2/3` are kept as names even though the tone layer now supplies
+ * the colours, because check-contrast.mjs composites exactly those three tokens
+ * to model the worst case. They ARE the tone colours — the indirection is what
+ * lets the checker resolve a tone without knowing tones exist.
+ * ============================================================== */
+
+:root {
+	--ui-aurora-1: var(--ui-tone-1);
+	--ui-aurora-2: var(--ui-tone-2);
+	--ui-aurora-3: var(--ui-tone-3);
+
+	/* The fourth layer, and the only achromatic one: a broad lift from the top
+	   of the frame that separates the hero from the flat page below it. It is
+	   listed last in the composition (so it paints underneath) and is what stops
+	   the three hue masses reading as three stains on black. */
+	--ui-aurora-lift: oklch(24% 0.028 264 / 0.2);
+
+	/* THE HERO / SECTION BACKDROP. Full strength. Used by `.u-backdrop` on
+	   elements that own a screen: the hero, the CTA panel, the 404. */
+	--ui-aurora:
+		radial-gradient(
+			62% 52% at var(--ui-tone-1-at),
+			var(--ui-aurora-1) 0%,
+			transparent 72%
+		),
+		radial-gradient(
+			58% 48% at var(--ui-tone-2-at),
+			var(--ui-aurora-2) 0%,
+			transparent 70%
+		),
+		radial-gradient(
+			70% 46% at var(--ui-tone-3-at),
+			var(--ui-aurora-3) 0%,
+			transparent 74%
+		),
+		radial-gradient(
+			120% 70% at 50% -20%,
+			var(--ui-aurora-lift) 0%,
+			transparent 100%
+		);
+
+	/* THE PAGE MESH. The same composition at roughly a third of the strength,
+	   painted once behind the whole document by `.u-page-backdrop` in the root
+	   layout.
+	 *
+	 * This is the single change that stops the site reading as a flat sheet.
+	 * Before it, every route below the fold was one uninterrupted --ui-bg, and
+	 * the aurora existed only inside the hero — so the site looked designed for
+	 * 800px and undesigned for the other nine thousand. It is `position: fixed`,
+	 * so it is painted once and never repainted while the document scrolls.
+	 *
+	 * It is deliberately weaker than the hero aurora rather than the same layer
+	 * reused: content sits directly on this for the entire length of every page,
+	 * so its composited result is the background in almost every contrast
+	 * assertion that matters. */
+	--ui-mesh-strength: 0.42;
+	--ui-mesh:
+		radial-gradient(
+			70% 44% at var(--ui-tone-1-at),
+			var(--ui-aurora-1) 0%,
+			transparent 76%
+		),
+		radial-gradient(
+			64% 40% at var(--ui-tone-2-at),
+			var(--ui-aurora-2) 0%,
+			transparent 74%
+		),
+		radial-gradient(
+			76% 42% at var(--ui-tone-3-at),
+			var(--ui-aurora-3) 0%,
+			transparent 78%
+		);
+}
+
+[data-theme="light"] {
+	/* Light's lift RAISES luminance rather than lowering it — the inversion the
+	   header of the tone block describes. A darker lift here would eat the
+	   accent link's entire remaining contrast budget. */
+	--ui-aurora-lift: oklch(100% 0 0 / 0.55);
+	/* The light mesh may be stronger because its layers hold luminance: the
+	   composite is a tinted white, not a tinted grey. */
+	--ui-mesh-strength: 0.55;
+}
+
+/* ==============================================================
+ * Glass — elevation level 2 only.
+ *
+ * Three hard rules (DESIGN_SYSTEM §2.1), because backdrop-filter is the most
+ * expensive property in this file:
+ *   1. Small, fixed-size, fixed-position surfaces only — header, command
+ *      palette, mobile sheet, popover. Never a card grid, never a full-width
+ *      section, never anything that scrolls with the page.
+ *   2. Never animated. Not the blur radius, not the opacity of the blurring
+ *      layer. Either re-triggers the backdrop sample every frame.
+ *   3. Alpha floor 0.72, so text on glass clears the same contrast floor as
+ *      text on --ui-surface when the lightest sanctioned backdrop is behind it.
+ *
+ * The saturation lift is what makes glass read as glass rather than as a grey
+ * panel: it exaggerates the hue of whatever the mesh put behind it, so the
+ * header picks up the page's tone without being given a colour of its own.
+ * ============================================================== */
+
+:root {
+	--ui-glass-bg: oklch(14% 0.015 264 / 0.72);
+	--ui-glass-border: oklch(100% 0 0 / 0.12);
+	--ui-glass-blur: 16px;
+	--ui-glass-saturate: 1.8;
+	/* A second, lighter glass for panels that float ON a section rather than
+	   over the document — the proof tiles, the CTA panel. Lower blur, because
+	   these are larger and blur cost scales with area. */
+	--ui-glass-panel-bg: oklch(20% 0.017 264 / 0.55);
+	--ui-glass-panel-blur: 8px;
+}
+
+[data-theme="light"] {
+	--ui-glass-bg: oklch(100% 0 0 / 0.74);
+	--ui-glass-border: oklch(0% 0 0 / 0.07);
+	--ui-glass-panel-bg: oklch(100% 0 0 / 0.66);
+}
+
+/* ==============================================================
+ * Grain.
+ *
+ * One inline feTurbulence as a data URI, tiled. ~380 bytes, no request, no
+ * raster decode. It rides on the same aria-hidden backdrop as the aurora.
+ *
+ * The rule that makes it safe: grain applies to the BACKDROP, never to a
+ * text-bearing element, and never with mix-blend-mode over text. Grain over
+ * glyphs measurably reduces effective contrast at small sizes and no automated
+ * checker will catch it.
+ *
+ * Its job in this revision is specific: a large soft gradient on an 8-bit
+ * display bands into visible steps, and grain is the standard dither. The
+ * aurora got roughly three times stronger, so the banding it would otherwise
+ * show got worse — the grain went up with it, not for texture but to hide the
+ * steps.
+ * ============================================================== */
+
+:root {
+	--ui-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+	--ui-grain-opacity: 0.05;
+}
+
+[data-theme="light"] {
+	--ui-grain-opacity: 0.03;
+}
+
+/* ==============================================================
+ * Glow, shadow and gradient hairlines.
+ *
+ * Glow is never the SOLE indicator of a state — it accompanies a border or
+ * color change that a reader on a low-quality display can also see, and it
+ * always has a focus-visible equivalent. A hover glow with no focus
+ * counterpart is the characteristic accessibility failure of this visual
+ * style (UI_GUIDELINES §12).
+ *
+ * THE SHADOW SCALE IS FOUR STEPS AND EVERY ONE IS TWO LAYERS. A single
+ * `0 4px 12px rgba(0,0,0,.1)` is the shadow of a sticker; real elevation has a
+ * tight contact shadow that says where the object touches, plus a wide diffuse
+ * one that says how far above the page it is. Two layers is the minimum that
+ * expresses both, which is why there is no one-layer step here.
+ * ============================================================== */
+
+:root {
+	--ui-shadow-sm:
+		0 1px 2px oklch(0% 0 0 / 0.4), 0 2px 6px -2px oklch(0% 0 0 / 0.35);
+	--ui-shadow-md:
+		0 2px 4px oklch(0% 0 0 / 0.4), 0 10px 24px -8px oklch(0% 0 0 / 0.45);
+	--ui-shadow-lg:
+		0 4px 8px oklch(0% 0 0 / 0.4), 0 24px 48px -16px oklch(0% 0 0 / 0.55);
+	--ui-shadow-overlay: 0 16px 48px -12px oklch(0% 0 0 / 0.7);
+
+	--ui-glow-accent:
+		0 0 0 1px oklch(80% 0.115 195 / 0.28),
+		0 8px 32px -8px oklch(80% 0.115 195 / 0.38);
+	/* The spectrum glow — two hues, so a lifted card is lit from two sides. Used
+	   on hover and on the hero's primary action. Decorative by definition: it is
+	   a shadow, and a shadow can carry no information. */
+	--ui-glow-brand:
+		0 0 0 1px oklch(72% 0.135 265 / 0.24),
+		0 10px 30px -10px oklch(80% 0.115 195 / 0.34),
+		0 18px 60px -24px oklch(64% 0.14 305 / 0.4);
+	--ui-glow-soft:
+		0 1px 2px oklch(0% 0 0 / 0.36), 0 12px 32px -14px oklch(0% 0 0 / 0.55);
+
+	/* The status dot's ring — the STATIC replacement for a pulsing indicator.
+	   ANIMATION_GUIDELINES §10 blocks motion that runs before the reader has
+	   interacted for longer than 400ms, which a pulse does forever; a ring reads
+	   as "live" for zero frames a second. It is a token rather than an arbitrary
+	   `shadow-[…]` in the hero because UI_GUIDELINES §1 rules that form out, and
+	   because a second status indicator elsewhere must not invent its own. */
+	--ui-glow-status: 0 0 0 3px oklch(84% 0.16 152 / 0.22);
+
+	/* Gradient borders are a ::before carrying this behind a padding-box
+	   background — NOT border-image (cannot round correctly) and NOT an animated
+	   conic gradient (repaints every frame). Hover changes the pseudo-element's
+	   OPACITY only, which keeps it inside law 3. */
+	--ui-hairline-gradient: linear-gradient(
+		180deg,
+		oklch(100% 0 0 / 0.2),
+		oklch(100% 0 0 / 0.05) 40%,
+		transparent
+	);
+
+	/* The spectrum edge, for surfaces that should read as lit rather than
+	   outlined — the top rule of the hero panel, the CTA, the featured card. */
+	--ui-edge-gradient: linear-gradient(
+		100deg,
+		transparent 0%,
+		var(--ui-spectrum-1) 22%,
+		var(--ui-spectrum-2) 55%,
+		var(--ui-spectrum-3) 78%,
+		transparent 100%
+	);
+
+	/* The display-heading fill. Its FIRST STOP IS --ui-text, deliberately: the
+	   heading is legible before the gradient contributes anything, so a browser
+	   without background-clip, a forced-colors mode, and a print stylesheet all
+	   land on solid readable type rather than on a transparent heading. That is
+	   the whole reason the gradient runs text → spectrum and not spectrum →
+	   spectrum.
+
+	   THE HOLD IS 16%, NOT A THIRD, AND THAT NUMBER IS EMPIRICAL. It was 32%,
+	   which reads correctly on a long heading and produces NO VISIBLE COLOUR AT
+	   ALL on a short one — `/projects` is titled "Projects" and `/blog` is
+	   titled "Writing", so on those two pages a third of the run is most of the
+	   word. A gradient that only appears on headings above some unstated length
+	   is worse than no gradient: it looks like a bug on the pages it misses.
+	   Every step in the type scale that may carry this is large text by the
+	   `Heading` type's own rule, so the shorter hold costs no contrast floor. */
+	--ui-gradient-text: linear-gradient(
+		112deg,
+		var(--ui-text) 0%,
+		var(--ui-text) 16%,
+		var(--ui-spectrum-1) 56%,
+		var(--ui-spectrum-2) 94%
+	);
+
+	/* The primary action's fill. Text on it is --ui-on-accent, and the contrast
+	   contract asserts that pair against --ui-accent — which is the DARKEST stop
+	   here, so every other stop is more contrast, not less. Ordering the stops
+	   any other way would make the button's legibility depend on which pixel the
+	   reader looks at. */
+	--ui-gradient-cta: linear-gradient(
+		108deg,
+		var(--ui-accent) 0%,
+		var(--ui-accent) 34%,
+		var(--ui-spectrum-2) 118%
+	);
+
+	/* Positioned by --mx/--my written directly to an element's inline style from
+	   a pointermove subscriber. No React state — ANIMATION_GUIDELINES §5's hard
+	   rule, and the INP budget depends on it.
+
+	   THE FIRST STOP IS ITS OWN TOKEN BECAUSE IT HAS TO BE MEASURED.
+	   `.u-spotlight` sets `isolation: isolate`, so its `::after` at `z-index: -1`
+	   paints AFTER the host's own background and BEFORE the host's text — the
+	   glow is between the panel fill and the words on it, not behind both. That
+	   makes it a real backdrop for every text role on the panel, at exactly the
+	   moment a pointer is over it, and nothing was checking it: `check:contrast`
+	   parses flat colours and cannot see a stop inside a radial-gradient.
+
+	   Naming the peak lets the script composite it like any other layer, so the
+	   `panel glass + spotlight` contexts assert the same pairs against the lit
+	   surface. This is not a token invented in order to be measured — the
+	   gradient below is its only consumer and it is the value that was already
+	   there. */
+	--ui-spotlight-peak: oklch(80% 0.115 195 / 0.16);
+	--ui-spotlight: radial-gradient(
+		300px circle at var(--mx, 50%) var(--my, 50%),
+		var(--ui-spotlight-peak),
+		oklch(72% 0.135 265 / 0.08) 40%,
+		transparent 72%
+	);
+
+	/* The sheen that crosses a primary button on hover and the hero panel once
+	   on entrance. A gradient moved by `transform`, never by background-position:
+	   background-position animation repaints the element every frame, transform
+	   does not. */
+	--ui-beam: linear-gradient(
+		100deg,
+		transparent 20%,
+		oklch(100% 0 0 / 0.28) 50%,
+		transparent 80%
+	);
+
+	/* Painted grid backdrop. Two repeating-linear-gradients, masked to fade at
+	   the edges. Visible now — the previous 0.028 white was below the threshold
+	   of most displays, which is a decoration nobody has ever seen. */
+	--ui-grid-line: oklch(100% 0 0 / 0.06);
+	--ui-grid-size: 56px;
+
+	/* ---------------------------------------------------------------
+	 * THE CARD FILL — why every card on the site was reading as a rectangle.
+	 *
+	 * `--ui-surface` is a flat fill, and a flat fill on a flat page is a drawn
+	 * boundary rather than an object: the card and the page differ by one step of
+	 * ink lightness and a hairline, which at a glance is a border and nothing
+	 * else. Real objects are lit from somewhere, and the cheapest honest way to
+	 * say so is a fill that is fractionally brighter at the top edge than at the
+	 * bottom — the same information a physical card gives you from the room's
+	 * light, at the cost of one gradient.
+	 *
+	 * IT MOVES BETWEEN TWO ROLES THAT ARE BOTH ALREADY IN THE CONTRAST CONTRACT,
+	 * which is what makes it safe to apply globally. In dark it runs
+	 * `--ui-surface-raised` (ink-850) → `--ui-surface` (ink-900): a 4% lightness
+	 * span, and text is verified against BOTH ends by check:contrast because both
+	 * are named surfaces. There is no new colour here and therefore no new
+	 * assertion to forget.
+	 *
+	 * The flat `bg-surface` stays underneath it in `Surface`, so a printer or a
+	 * forced-colors mode that drops `background-image` lands on exactly the
+	 * colour the checker measured.
+	 * --------------------------------------------------------------- */
+	--ui-card-fill: linear-gradient(
+		180deg,
+		var(--ui-surface-raised) 0%,
+		var(--ui-surface) 62%
+	);
+}
+
+[data-theme="light"] {
+	/* Light shadows are TINTED TOWARD THE SPECTRUM rather than neutral black,
+	   and that is the single detail that separates a premium light theme from a
+	   default one. A pure-black shadow on white reads as dirt; a shadow carrying
+	   a trace of the page's own hue reads as depth. The chroma is low enough
+	   that it is never nameable as a colour — it is only ever noticed by its
+	   absence. */
+	--ui-shadow-sm:
+		0 1px 2px oklch(48% 0.04 265 / 0.06),
+		0 2px 6px -2px oklch(48% 0.04 265 / 0.08);
+	--ui-shadow-md:
+		0 2px 4px oklch(48% 0.04 265 / 0.05),
+		0 12px 28px -10px oklch(48% 0.04 265 / 0.14);
+	--ui-shadow-lg:
+		0 4px 8px oklch(48% 0.04 265 / 0.05),
+		0 28px 56px -20px oklch(48% 0.04 265 / 0.18);
+	--ui-shadow-overlay: 0 16px 48px -16px oklch(48% 0.04 265 / 0.22);
+
+	--ui-glow-accent:
+		0 0 0 1px oklch(52.5% 0.09 205 / 0.24),
+		0 8px 32px -8px oklch(52.5% 0.09 205 / 0.22);
+	--ui-glow-brand:
+		0 0 0 1px oklch(50% 0.14 265 / 0.18),
+		0 10px 30px -10px oklch(52.5% 0.09 205 / 0.2),
+		0 18px 60px -24px oklch(52% 0.13 305 / 0.24);
+	--ui-glow-soft:
+		0 1px 2px oklch(48% 0.04 265 / 0.06),
+		0 12px 32px -14px oklch(48% 0.04 265 / 0.16);
+
+	/* The light theme's status ring is built on the light `--success-700`, not on
+	   the dark theme's `-500`: the same ring that reads as a halo on near-black
+	   is a grey smudge on paper. */
+	--ui-glow-status: 0 0 0 3px oklch(44% 0.11 152 / 0.2);
+
+	--ui-hairline-gradient: linear-gradient(
+		180deg,
+		oklch(0% 0 0 / 0.12),
+		oklch(0% 0 0 / 0.03) 40%,
+		transparent
+	);
+
+	--ui-beam: linear-gradient(
+		100deg,
+		transparent 20%,
+		oklch(100% 0 0 / 0.6) 50%,
+		transparent 80%
+	);
+
+	--ui-spotlight-peak: oklch(52.5% 0.09 205 / 0.1);
+	--ui-spotlight: radial-gradient(
+		300px circle at var(--mx, 50%) var(--my, 50%),
+		var(--ui-spotlight-peak),
+		oklch(50% 0.14 265 / 0.05) 40%,
+		transparent 72%
+	);
+
+	--ui-grid-line: oklch(0% 0 0 / 0.055);
+
+	/* The light theme runs the card fill the other way, and it has to: both
+	   `--ui-surface` and `--ui-surface-raised` are pure white here, so the dark
+	   theme's declaration would produce a gradient from white to white. A card on
+	   paper is lit from above too, but "lighter than white" does not exist — so
+	   the shading goes into the LOWER half instead, easing toward `--ui-bg`
+	   (ink-50) at the foot of the card. The top edge stays pure white, which is
+	   what keeps the card reading as the brightest thing on the page.
+
+	   `--ui-bg` is the page colour, so the bottom of a card is at most as dark as
+	   the surface beside it — and every text role is verified against `--ui-bg`
+	   already. As in dark, this introduces no colour the contract has not seen. */
+	--ui-card-fill: linear-gradient(
+		180deg,
+		var(--ui-surface) 0%,
+		var(--ui-surface) 55%,
+		var(--ui-bg) 100%
+	);
+}

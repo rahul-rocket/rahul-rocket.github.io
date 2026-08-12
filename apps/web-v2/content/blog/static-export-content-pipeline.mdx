@@ -1,0 +1,71 @@
+---
+title: "Validating content at the build boundary"
+summary: "Every frontmatter field on this site passes a Zod schema before it can be rendered, so a malformed post fails the build instead of shipping a broken page."
+publishedAt: 2026-07-29
+tags: [architecture, typescript, nextjs]
+draft: false
+---
+
+This post exists to exercise the pipeline end to end (F1-11). It is real prose
+rather than lorem ipsum for one reason: the accessibility and link-checking jobs
+run against whatever is in `out/`, and placeholder text with no headings, no
+links, and no code blocks would give both of them nothing to find.
+
+## Why validation happens at the boundary
+
+The rule is one line — every piece of content passes a schema before anything
+renders it. The value is in *where* the failure lands. Without it, a `summary`
+field that someone stretched to 240 characters becomes a truncated search
+snippet discovered six months later in Search Console. With it, the same mistake
+is a build failure with the filename and the field in the message.
+
+That is the whole argument for the length bounds being in the schema rather than
+in a style guide: a style guide is a thing you remember, and a schema is a thing
+you cannot forget.
+
+## What the pipeline actually does
+
+1. Read the file from `content/blog/` at build time.
+2. Split frontmatter from body with `gray-matter`.
+3. Parse the frontmatter with `postFrontmatterSchema`. Failure stops the build.
+4. Compile the body through the remark/rehype set.
+5. Render in a Server Component, so no MDX runtime reaches the browser.
+
+Two of the plugin orderings matter, and both are the kind of thing that fails
+quietly. `rehype-slug` has to run before `rehype-autolink-headings`, or every
+heading anchor points at an id that does not exist yet. `remark-frontmatter` has
+to run first of all, or the `---` block renders as a horizontal rule followed by
+a stray paragraph.
+
+## Highlighting costs nothing at runtime
+
+Code is highlighted by Shiki during the build:
+
+```ts
+const parsed = postFrontmatterSchema.safeParse(data)
+if (!parsed.success) {
+  throw new Error(`Invalid frontmatter in ${slug}.mdx`)
+}
+```
+
+The markup above arrived pre-styled. A post page ships **zero kilobytes** of
+syntax highlighter, which is why Prism and highlight.js were both rejected — see
+[the writing index](/blog/) for the shape of that argument.
+
+Both themes are emitted at once, as custom properties on every token, and CSS
+picks one. [Shiki](https://shiki.style) is what makes that cheap; a
+JavaScript-switched highlighter would have to re-render every block on a theme
+toggle. That external link is here on purpose, incidentally — it is what
+exercises the `rel="noopener noreferrer"` and "opens in a new tab" handling in
+the MDX component map.
+
+### Tables work too
+
+| Stage | When it runs | What a failure means |
+| --- | --- | --- |
+| Schema parse | Build | The frontmatter is wrong |
+| MDX compile | Build | The body is malformed |
+| Render | Build | A component threw |
+
+Everything above happens before a visitor exists. That is the point of a static
+site: the only thing left at request time is sending bytes.
