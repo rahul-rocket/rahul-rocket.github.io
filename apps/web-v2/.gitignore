@@ -11,6 +11,11 @@
 next-env.d.ts
 *.tsbuildinfo
 
+# The base-path-aware preview tree built by scripts/serve-preview.mjs -- out/
+# mounted at both / and /v2/ so the export's own URLs resolve. Rebuilt on every
+# `pnpm start`, never edited by hand.
+/.preview
+
 # testing
 /coverage
 /playwright-report

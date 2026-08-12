@@ -35,13 +35,13 @@ export const metadata: Metadata = {
   authors: [{ name: "Rahul", url: baseUrl }],
   creator: "Rahul",
   publisher: "Rahul",
-  
+
   // Canonical URL
   metadataBase: new URL(baseUrl),
   alternates: {
     canonical: "/",
   },
-  
+
   // Open Graph
   openGraph: {
     type: "website",
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
       },
     ],
   },
-  
+
   // Twitter Card
   twitter: {
     card: "summary_large_image",
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     creator: "@rahul",
     site: "@rahul",
   },
-  
+
   // Robots
   robots: {
     index: true,
@@ -84,7 +84,7 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  
+
   // Icons
   icons: {
     icon: [
@@ -98,7 +98,7 @@ export const metadata: Metadata = {
       { rel: "mask-icon", url: "/safari-pinned-tab.svg", color: "#7c3aed" },
     ],
   },
-  
+
   // Verification
   verification: {
     google: "google-site-verification-code",
@@ -108,11 +108,11 @@ export const metadata: Metadata = {
       "msvalidate.01": "bing-verification-code",
     },
   },
-  
+
   // App-specific
   applicationName: "Rahul - Software Developer",
   category: "technology",
-  
+
   // Other
   other: {
     "msapplication-TileColor": "#7c3aed",
@@ -155,7 +155,7 @@ const jsonLd = {
     addressRegion: "Gujarat",
     addressCountry: "India",
   },
-  email: "rahul@rapidtechplus.com",
+  email: "rahulrathore576@gmail.com",
   telephone: "+91-8264110143",
   knowsAbout: [
     "React",
@@ -176,11 +176,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://images.unsplash.com" />
-        
+
         {/* DNS Prefetch */}
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
-        
+
         {/* JSON-LD Structured Data */}
         <script
           type="application/ld+json"
@@ -201,7 +201,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           >
             Skip to main content
           </a>
-          
+
           <div className="relative flex min-h-screen flex-col">
             <Navbar />
             <main id="main-content" className="flex-1" role="main">

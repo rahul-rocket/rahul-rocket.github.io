@@ -1,0 +1,16 @@
+Presence, not content.
+
+GitHub Pages runs Jekyll over a published tree unless this file exists at its
+root, and Jekyll excludes every path beginning with an underscore -- which is the
+whole of _next/. The failure mode is not a 404 page: the HTML is served fine and
+every stylesheet and script inside it is missing, so the site renders as unstyled
+text. That looks like a CSS bug and is not one.
+
+The artifact-based Pages deployment this repo uses (actions/upload-pages-artifact
+plus actions/deploy-pages) does not invoke Jekyll, so today this file is
+insurance rather than a load-bearing part of the build. It stays because the
+protection costs nothing and the failure it prevents is both total and
+misdiagnosable, and because a switch back to branch-based publishing would
+otherwise reintroduce it silently.
+
+apps/web-v2/public/.nojekyll is the same file for the same reason.

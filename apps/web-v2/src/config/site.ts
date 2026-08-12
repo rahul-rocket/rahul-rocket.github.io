@@ -18,8 +18,27 @@ export const site = {
 	description:
 		'I design and deliver production systems end to end, and I can walk you through every decision inside them.',
 
-	/** Absolute, no trailing slash. Feeds, canonicals, and OG tags build on it. */
-	url: 'https://rahul-rocket.github.io',
+	/**
+	 * Absolute, no trailing slash. Feeds, canonicals, and OG tags build on it.
+	 *
+	 * This app is the /v2 subdirectory of the Pages site; `apps/web` holds the
+	 * apex. The `/v2` is part of the identity rather than a build detail, because
+	 * every string that leaves the page — canonical, og:url, sitemap entries,
+	 * JSON-LD @ids, feed links — must carry it, and `basePath` in
+	 * next.config.mjs prefixes only the URLs Next itself emits (Link, Image,
+	 * script and stylesheet tags). Metadata is ours to get right.
+	 */
+	url: 'https://rahul-rocket.github.io/v2',
+
+	/**
+	 * The subdirectory half of `url`, on its own.
+	 *
+	 * Must equal `basePath` in next.config.mjs. It is separated out so the two
+	 * consumers that need to reason about the prefix rather than the whole URL —
+	 * `absoluteUrl` below, and the link checker walking an out/ tree that has no
+	 * prefix in it — do not each re-derive it by string surgery on `url`.
+	 */
+	basePath: '/v2',
 
 	locale: 'en-US',
 	/** BCP 47, for the `lang` attribute. */
@@ -83,7 +102,14 @@ export type Site = typeof site
  * the consuming client, not the site, and silently break link previews.
  */
 export function absoluteUrl(path: string): string {
-	return new URL(path, `${site.url}/`).toString()
+	// The leading slash is stripped deliberately. `site.url` now carries a
+	// subdirectory ('/v2'), and a site-absolute reference resolves against the
+	// ORIGIN of the base, not against its path — `new URL('/about/', '…/v2/')` is
+	// '…/about/', silently one directory too shallow. Every caller passes an
+	// app-relative path ('/about/', '/#person', '/sitemap.xml'), so relativising
+	// it here is what keeps the prefix on. This is the whole reason the /v2 move
+	// is not a one-line config change.
+	return new URL(path.replace(/^\/+/, ''), `${site.url}/`).toString()
 }
 
 /**

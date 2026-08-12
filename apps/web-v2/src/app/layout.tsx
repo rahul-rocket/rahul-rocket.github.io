@@ -57,7 +57,12 @@ const bootScript = `${themeScript}\n${enhancementScript}`
 assertContentIntegrity()
 
 export const metadata: Metadata = {
-	metadataBase: new URL(site.url),
+	// Trailing slash is load-bearing now that `site.url` ends in '/v2'. Next
+	// resolves any relative metadata URL against this base, and a base without
+	// the slash treats '/v2' as a filename to replace rather than a directory to
+	// descend from — so a relative image would land at the apex, which is a
+	// different application.
+	metadataBase: new URL(`${site.url}/`),
 	title: {
 		default: `${site.name} — ${site.role}`,
 		template: `%s — ${site.name}`,

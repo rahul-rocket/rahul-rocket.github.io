@@ -15,7 +15,7 @@ const homeJsonLd = {
     jobTitle: "Software Developer",
     description: "Professional Software Developer based in Ahmedabad, India. Specializing in React, Next.js, Node.js, and modern web technologies.",
     url: process.env.NEXT_PUBLIC_BASE_URL || "https://rahul.dev",
-    email: "rahul@rapidtechplus.com",
+    email: "rahulrathore576@gmail.com",
     telephone: "+91-8264110143",
     address: {
       "@type": "PostalAddress",
@@ -51,27 +51,27 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd) }}
       />
-      
+
       {/* Main sections with semantic HTML */}
       <article>
         <HeroSection />
-        
+
         <section aria-labelledby="about-heading">
           <AboutSection />
         </section>
-        
+
         <section aria-labelledby="skills-heading">
           <SkillsSection />
         </section>
-        
+
         <section aria-labelledby="experience-heading">
           <ExperienceSection />
         </section>
-        
+
         <section aria-labelledby="projects-heading">
           <ProjectsSection />
         </section>
-        
+
         <section aria-labelledby="contact-heading">
           <ContactSection />
         </section>

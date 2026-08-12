@@ -23,11 +23,20 @@ const nextConfig = {
 	// images must be pre-sized at authoring time.
 	images: { unoptimized: true },
 
-	// The site is served from the apex of a user Pages site
-	// (rahul-rocket.github.io), so basePath is empty. A project Pages site would
-	// need '/repo-name' here AND in every absolute URL the metadata builders
-	// emit — see docs/GITHUB_PAGES.md before changing this.
-	basePath: '',
+	// This app is published as the /v2 subdirectory of the user Pages site
+	// rahul-rocket.github.io, whose apex is served by `apps/web`. The export
+	// itself is still written to out/ at the root — basePath changes the URLs
+	// *inside* the HTML, not the on-disk layout — and the deploy workflow copies
+	// out/ into _pages/v2/.
+	//
+	// The warning the old comment carried is real and is discharged in three
+	// places, not one: `site.url` in src/config/site.ts (canonicals, OG,
+	// sitemap, robots, JSON-LD), `SITE_URL` in scripts/generate-feeds.mjs, and
+	// `BASE_PATH` in scripts/check-links.mjs. basePath does NOT touch strings in
+	// metadata, so changing this line alone would leave every absolute URL the
+	// site emits pointing one directory too shallow.
+	// See docs/GITHUB_PAGES.md before changing this.
+	basePath: '/v2',
 
 	// A type or lint error must fail the build, not be silently shipped. These
 	// default to false; they are stated explicitly so a future `ignoreDuringBuilds`

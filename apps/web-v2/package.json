@@ -9,9 +9,9 @@
 	},
 	"scripts": {
 		"dev": "next dev --port 3001",
-		"build": "next build && node scripts/generate-og.mjs && node scripts/generate-feeds.mjs",
-		"start": "serve out --no-clipboard --listen 3001",
-		"start:test": "serve out --no-clipboard --listen 4319",
+		"build": "next build && node scripts/apply-base-path.mjs && node scripts/generate-og.mjs && node scripts/generate-feeds.mjs",
+		"start": "node scripts/serve-preview.mjs --port 3001",
+		"start:test": "node scripts/serve-preview.mjs --port 4319",
 		"check-types": "tsc --noEmit",
 		"typecheck": "tsc --noEmit",
 		"lint": "biome check .",

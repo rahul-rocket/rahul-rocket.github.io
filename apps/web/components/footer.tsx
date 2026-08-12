@@ -42,15 +42,15 @@ export function Footer() {
               A passionate software developer crafting digital experiences with modern technologies.
               Building scalable, performant web applications from Ahmedabad, India.
             </p>
-            
+
             {/* Contact Info */}
             <div className="space-y-2 pt-2">
               <a
-                href="mailto:rahul@rapidtechplus.com"
+                href="mailto:rahulrathore576@gmail.com"
                 className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
               >
                 <Mail className="h-4 w-4" />
-                <span>rahul@rapidtechplus.com</span>
+                <span>rahulrathore576@gmail.com</span>
               </a>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <MapPin className="h-4 w-4" />
@@ -128,7 +128,7 @@ export function Footer() {
                 <Linkedin className="h-5 w-5" />
               </a>
               <a
-                href="mailto:rahul@rapidtechplus.com"
+                href="mailto:rahulrathore576@gmail.com"
                 className="p-3 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-all hover:scale-110"
                 aria-label="Email"
               >
