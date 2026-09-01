@@ -55,7 +55,7 @@ jobs:
         # Before setup-node, so that `cache: pnpm` below can find the pnpm store.
         # The version is pinned to `packageManager` in the root package.json;
         # a mismatch produces a different lockfile resolution than local installs.
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           version: 9.15.0
 
