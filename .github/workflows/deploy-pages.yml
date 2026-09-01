@@ -59,7 +59,7 @@ jobs:
         with:
           version: 9.15.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           # apps/web-v2 declares `engines: node >=22.11 <23` and its @types/node
           # is pinned to 22.x on purpose (see apps/web-v2/CLAUDE.md §0), so the
