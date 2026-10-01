@@ -44,6 +44,8 @@ Combined — the only faithful preview of how the two sit together at `/` and
 pnpm pages:build      # build both, then assemble _pages/
 pnpm pages:assemble   # assemble only (needs both builds already done)
 pnpm pages:serve      # assemble, then serve the whole artifact on :4318
+pnpm pages:lighthouse # Lighthouse over _pages/: same pages of V1 and V2, side by side
+                      # (then `node scripts/lighthouse-summary.mjs` for the table)
 ```
 
 ## Deployment

@@ -120,7 +120,7 @@ test.describe('structured data', () => {
 		) as { '@graph': { '@type': string; '@id'?: string }[] }
 
 		const person = home['@graph'].find((node) => node['@type'] === 'Person')
-		expect(person?.['@id']).toBe('https://rahul-rocket.github.io/#person')
+		expect(person?.['@id']).toBe('https://rahul-rocket.github.io/v2/#person')
 	})
 
 	test('a case study is a TechArticle with a breadcrumb trail', async ({
@@ -146,7 +146,7 @@ test.describe('feeds and crawl directives', () => {
 			expect(response.status(), `${path} is not served`).toBe(200)
 
 			const body = await response.text()
-			expect(body).toContain('https://rahul-rocket.github.io/blog/')
+			expect(body).toContain('https://rahul-rocket.github.io/v2/blog/')
 			// A relative href inside feed content resolves against the reader's own
 			// origin, which is a broken link in every client that renders it.
 			expect(body, `${path} contains a root-relative href`).not.toMatch(
