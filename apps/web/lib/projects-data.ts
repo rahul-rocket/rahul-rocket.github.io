@@ -19,6 +19,141 @@ export function projectCoverPath(slug: string): string {
  * measured number to put in it.
  */
 export const projectsData: ProjectsData = {
+  "ever-gauzy": {
+    id: "ever-gauzy",
+    title: "Ever Gauzy",
+    subtitle: "Open-source business management platform (ERP / CRM / HRM)",
+    category: "Open Source",
+    status: "Open source · Live",
+    role: "Core Contributor",
+    client: "Ever Co.",
+    year: "2026",
+    period: "2020 – 2026",
+    featured: true,
+    github: "https://github.com/ever-co/ever-gauzy",
+    demo: "https://app.gauzy.co",
+    links: [
+      { label: "Documentation", href: "https://docs.gauzy.co" },
+      { label: "My commits", href: "https://github.com/ever-co/ever-gauzy/commits/develop?author=rahul-rocket" },
+    ],
+    thumbnail: projectCoverPath("ever-gauzy"),
+    screenshots: [],
+    summary:
+      "Six years as a core contributor to a large open-source ERP/CRM/HRM platform — about 9,000 commits across the NestJS API, Angular apps, multi-database migrations, multi-tenancy and third-party integrations.",
+    overview:
+      "Ever Gauzy is an open business-management platform for collaborative, on-demand and sharing economies: HR with time tracking and performance monitoring, CRM, ERP, invoicing, payments and project management. It runs as web, desktop (Electron) and server apps over a headless API that other products — including Ever Teams — are built on.",
+    problemStatement:
+      "A platform used as both a product and a headless backend has to run on several databases, isolate many tenants in one deployment, integrate with the tools teams already use, and stay maintainable while dozens of contributors change it every week.",
+    solutionApproach: [
+      "Wrote and maintained database migrations for PostgreSQL, MySQL and SQLite side by side, so every schema change ships for all three.",
+      "Worked on the dual TypeORM / MikroORM data layer that lets the platform run on either ORM.",
+      "Built multi-tenant safeguards — tenant guards, tenant-scoped API keys and per-tenant custom SMTP.",
+      "Built and maintained integrations: GitHub (Octokit, webhook issue sync), Hubstaff and Upwork time-tracking sync, Zapier webhooks, and Wasabi/S3 file storage.",
+      "Added a global email service with template rendering, global API logging middleware, and plugin and integration packages.",
+      "Kept the codebase healthy at scale: DeepScan and cspell fixes, dependency upgrades, and Angular/Nx build maintenance.",
+    ],
+    techStack: {
+      frontend: ["Angular", "RxJS", "Nebular / ngx-admin", "Electron"],
+      backend: ["NestJS", "TypeScript", "TypeORM", "MikroORM", "Knex", "PostgreSQL", "MySQL", "SQLite"],
+      services: ["GitHub API (Octokit)", "Hubstaff", "Upwork", "Zapier", "Wasabi / S3", "SMTP"],
+      devops: ["Nx", "Lerna", "Docker", "Kubernetes", "GitHub Actions"],
+    },
+    contribution: {
+      stats: [
+        { label: "Commits", value: "9,000+" },
+        { label: "Share of all commits", value: "≈ 32%" },
+        { label: "Pull requests I merged", value: "2,000+" },
+        { label: "Years active", value: "2020 – 2026" },
+      ],
+      highlights: [
+        "Multi-database migrations (PostgreSQL, MySQL, SQLite) for core entities",
+        "Tenant guards, tenant API keys and per-tenant custom SMTP",
+        "GitHub ↔ Gauzy issue sync via webhooks and Octokit",
+        "Hubstaff and Upwork activity and screenshot sync",
+        "Zapier webhook subscriptions and Wasabi file storage provider",
+        "Global email/template service and API logging middleware",
+        "MikroORM support alongside TypeORM",
+        "Static-analysis and spelling cleanups across the monorepo (DeepScan, cspell)",
+      ],
+      source:
+        "git log on ever-co/ever-gauzy develop, counting commits under the author's names and emails (9,017 of 27,951).",
+    },
+    features: [
+      "Time tracking with desktop timer, screenshots and activity",
+      "Employee, team and project management",
+      "CRM, invoicing, estimates and payments",
+      "Multi-tenant, multi-organization deployments",
+      "Integrations with GitHub, Hubstaff, Upwork and Zapier",
+      "Headless APIs used by other Ever products",
+    ],
+    challenges: [
+      {
+        challenge: "Every schema change has to work on three databases",
+        solution:
+          "Database-specific migrations written for PostgreSQL, MySQL and SQLite for each change, rather than relying on ORM sync.",
+      },
+      {
+        challenge: "Many tenants sharing one deployment",
+        solution: "Tenant-scoped guards and API keys at the API layer, plus per-tenant configuration such as custom SMTP.",
+      },
+    ],
+    learnings: [],
+    results: [],
+    relatedProjects: ["ever-teams", "nestjs-multi-orm"],
+  },
+
+  "ever-teams": {
+    id: "ever-teams",
+    title: "Ever Teams",
+    subtitle: "Open-source work and project-management platform",
+    category: "Open Source",
+    status: "Open source · Live",
+    role: "Contributor (backend APIs)",
+    client: "Ever Co.",
+    year: "2024",
+    period: "2023 – 2024",
+    featured: false,
+    github: "https://github.com/ever-co/ever-teams",
+    demo: "https://app.ever.team",
+    links: [{ label: "Website", href: "https://ever.team" }],
+    thumbnail: projectCoverPath("ever-teams"),
+    screenshots: [],
+    summary:
+      "A Next.js and React Native work-management app built on Ever Gauzy's headless APIs. My part was on the API side: authentication and organization endpoints Teams depends on.",
+    overview:
+      "Ever Teams is an open work and project-management platform with web, mobile and browser-extension clients. It runs on top of the Ever Gauzy platform, using it as a headless backend.",
+    problemStatement:
+      "Ever Teams needs team-aware authentication and organization data from Gauzy's APIs, which were originally designed around Gauzy's own Angular app.",
+    solutionApproach: [
+      "Updated authentication APIs to include teams in the response.",
+      "Fixed the user-organization list API and missing backend relations Teams relied on.",
+    ],
+    techStack: {
+      frontend: ["Next.js", "React", "React Native (Expo)", "TypeScript"],
+      backend: ["Ever Gauzy APIs", "NestJS"],
+      services: [],
+      devops: ["Nx", "Docker"],
+    },
+    contribution: {
+      stats: [
+        { label: "Commits in this repo", value: "6" },
+        { label: "Active", value: "2023 – 2024" },
+      ],
+      highlights: [
+        "Team-aware authentication APIs",
+        "User-organization list API fix",
+        "Missing backend relations (#2348)",
+      ],
+      source:
+        "git log on ever-co/ever-teams develop. Most backend work for Teams landed in the Ever Gauzy repository instead.",
+    },
+    features: ["Team task management", "Time tracking", "Web, mobile and browser-extension clients"],
+    challenges: [],
+    learnings: [],
+    results: [],
+    relatedProjects: ["ever-gauzy"],
+  },
+
   "iq-insights": {
     id: "iq-insights",
     title: "IQ Insights",
@@ -28,6 +163,7 @@ export const projectsData: ProjectsData = {
     role: "Lead Engineer",
     client: "RapidTechPlus",
     year: "2026",
+    period: "2025 – 2026",
     featured: true,
     thumbnail: projectCoverPath("iq-insights"),
     screenshots: [],
@@ -48,6 +184,15 @@ export const projectsData: ProjectsData = {
       backend: ["NestJS 11", "Supabase", "PostgreSQL", "Upstash Redis"],
       services: ["Stripe", "Razorpay", "SendGrid"],
       devops: ["Turborepo", "pnpm", "GitHub Actions"],
+    },
+    contribution: {
+      stats: [
+        { label: "Commits", value: "745" },
+        { label: "Share of all commits", value: "98%" },
+        { label: "Active", value: "2025 – 2026" },
+      ],
+      highlights: [],
+      source: "git log on the private repository's default branch, counting commits under the author's names and emails (745 of 764).",
     },
     features: [
       "Multiple test types with adaptive questions and instant scoring",
@@ -73,6 +218,7 @@ export const projectsData: ProjectsData = {
     role: "Architect",
     client: "RapidTechPlus",
     year: "2026",
+    period: "2026",
     featured: true,
     thumbnail: projectCoverPath("planix"),
     screenshots: [],
@@ -92,6 +238,15 @@ export const projectsData: ProjectsData = {
       services: ["OpenAPI / Swagger"],
       devops: ["Turborepo", "pnpm", "Docker", "GitHub Actions"],
     },
+    contribution: {
+      stats: [
+        { label: "Commits", value: "252" },
+        { label: "Share of all commits", value: "96%" },
+        { label: "Active", value: "2026" },
+      ],
+      highlights: [],
+      source: "git log on the private repository's default branch, counting commits under the author's names and emails (252 of 263).",
+    },
     features: [],
     challenges: [],
     learnings: [],
@@ -108,6 +263,7 @@ export const projectsData: ProjectsData = {
     role: "Lead Engineer",
     client: "RapidTechPlus",
     year: "2026",
+    period: "2026",
     featured: true,
     thumbnail: projectCoverPath("brainboost"),
     screenshots: [],
@@ -128,6 +284,15 @@ export const projectsData: ProjectsData = {
       backend: ["NestJS", "Prisma", "PostgreSQL", "Redis"],
       services: [],
       devops: ["Turborepo", "pnpm", "Docker Compose", "Git hooks"],
+    },
+    contribution: {
+      stats: [
+        { label: "Commits", value: "239" },
+        { label: "Share of all commits", value: "98%" },
+        { label: "Active", value: "2026" },
+      ],
+      highlights: [],
+      source: "git log on the private repository's default branch, counting commits under the author's names and emails (239 of 244).",
     },
     features: [
       "Games across memory, focus, logic, reaction speed, maths and creativity",
@@ -150,7 +315,8 @@ export const projectsData: ProjectsData = {
     role: "Lead Engineer",
     client: "RapidTechPlus",
     year: "2026",
-    featured: true,
+    period: "2026",
+    featured: false,
     thumbnail: projectCoverPath("creator-os"),
     screenshots: [],
     summary:
@@ -170,6 +336,15 @@ export const projectsData: ProjectsData = {
       services: ["Stripe", "Better Auth", "MinIO"],
       devops: ["Turborepo", "pnpm", "Docker", "GitHub Actions"],
     },
+    contribution: {
+      stats: [
+        { label: "Commits", value: "223" },
+        { label: "Share of all commits", value: "100%" },
+        { label: "Active", value: "2026" },
+      ],
+      highlights: [],
+      source: "git log on the private repository's default branch, counting commits under the author's names and emails (223 of 223).",
+    },
     features: ["Multi-provider AI generation", "Background job processing", "Credit-metered subscriptions", "Admin console"],
     challenges: [],
     learnings: [],
@@ -186,6 +361,7 @@ export const projectsData: ProjectsData = {
     role: "Lead Engineer",
     client: "RapidTechPlus",
     year: "2026",
+    period: "2025 – 2026",
     featured: false,
     thumbnail: projectCoverPath("kidzorides"),
     screenshots: [],
@@ -206,6 +382,15 @@ export const projectsData: ProjectsData = {
       backend: ["Next.js Route Handlers", "MongoDB", "NestJS (target)", "PostgreSQL / Prisma (target)"],
       services: ["Razorpay", "WhatsApp", "Supabase (target)"],
       devops: ["Turborepo", "pnpm", "Docker", "GitHub Actions"],
+    },
+    contribution: {
+      stats: [
+        { label: "Commits", value: "144" },
+        { label: "Share of all commits", value: "7%" },
+        { label: "Active", value: "2025 – 2026" },
+      ],
+      highlights: [],
+      source: "git log on the private repository's default branch, counting commits under the author's names and emails (144 of 2,054). The rest of the history came from an AI app builder.",
     },
     features: [
       "Fleet browsing with date, duration and add-on selection",
@@ -240,6 +425,7 @@ export const projectsData: ProjectsData = {
     role: "Architect",
     client: "RapidTechPlus",
     year: "2026",
+    period: "2026",
     featured: false,
     thumbnail: projectCoverPath("hisaab"),
     screenshots: [],
@@ -260,6 +446,15 @@ export const projectsData: ProjectsData = {
       services: ["Supabase (prototype)"],
       devops: ["Turborepo", "pnpm", "Husky", "commitlint"],
     },
+    contribution: {
+      stats: [
+        { label: "Commits", value: "67" },
+        { label: "Share of all commits", value: "100%" },
+        { label: "Active", value: "2026" },
+      ],
+      highlights: [],
+      source: "git log on the private repository's default branch, counting commits under the author's names and emails (67 of 67).",
+    },
     features: ["Group expenses", "Fair-share and net-balance calculation", "Minimal settlement plan", "Guest participation"],
     challenges: [],
     learnings: [],
@@ -276,6 +471,7 @@ export const projectsData: ProjectsData = {
     role: "Architect",
     client: "RapidTechPlus",
     year: "2026",
+    period: "2026",
     featured: false,
     thumbnail: projectCoverPath("blueprint-ai"),
     screenshots: [],
@@ -295,6 +491,15 @@ export const projectsData: ProjectsData = {
       services: [],
       devops: ["Turborepo", "pnpm", "gitleaks", "GitHub Actions"],
     },
+    contribution: {
+      stats: [
+        { label: "Commits", value: "40" },
+        { label: "Share of all commits", value: "91%" },
+        { label: "Active", value: "2026" },
+      ],
+      highlights: [],
+      source: "git log on the private repository's default branch, counting commits under the author's names and emails (40 of 44).",
+    },
     features: [],
     challenges: [],
     learnings: [],
@@ -311,6 +516,7 @@ export const projectsData: ProjectsData = {
     role: "Lead Engineer",
     client: "RapidTechPlus",
     year: "2026",
+    period: "2026",
     featured: false,
     thumbnail: projectCoverPath("decorra"),
     screenshots: [],
@@ -330,6 +536,15 @@ export const projectsData: ProjectsData = {
       services: [],
       devops: ["Turborepo", "pnpm", "Husky"],
     },
+    contribution: {
+      stats: [
+        { label: "Commits", value: "38" },
+        { label: "Share of all commits", value: "100%" },
+        { label: "Active", value: "2026" },
+      ],
+      highlights: [],
+      source: "git log on the private repository's default branch, counting commits under the author's names and emails (38 of 38).",
+    },
     features: ["Multi-theme engine", "City selector, search and mega-nav", "Catalog of experiences, add-ons and bookings", "Operations console"],
     challenges: [],
     learnings: [],
@@ -346,6 +561,7 @@ export const projectsData: ProjectsData = {
     role: "Author",
     client: "RapidTechPlus",
     year: "2026",
+    period: "2026",
     featured: false,
     thumbnail: projectCoverPath("kickstart"),
     screenshots: [],
@@ -365,6 +581,15 @@ export const projectsData: ProjectsData = {
       backend: ["Node.js", "TypeScript", "Commander", "Inquirer", "execa"],
       services: [],
       devops: ["tsup", "Vitest", "GitHub Actions"],
+    },
+    contribution: {
+      stats: [
+        { label: "Commits", value: "21" },
+        { label: "Share of all commits", value: "100%" },
+        { label: "Active", value: "2026" },
+      ],
+      highlights: [],
+      source: "git log on the private repository's default branch, counting commits under the author's names and emails (21 of 21).",
     },
     features: [
       "Next.js, Vite React or Angular frontends",
@@ -412,7 +637,7 @@ export const projectsData: ProjectsData = {
     challenges: [],
     learnings: [],
     results: [],
-    relatedProjects: ["planix"],
+    relatedProjects: ["ever-gauzy", "planix"],
   },
 }
 

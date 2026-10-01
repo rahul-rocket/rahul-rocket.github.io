@@ -84,7 +84,35 @@ export const openSourceProjects: OpenSourceEntry[] = [
  * Contributions to other people's projects. See the note above for why this is
  * empty rather than drafted; `/open-source` renders no section when it is.
  */
-export const contributions: OpenSourceEntry[] = []
+export const contributions: OpenSourceEntry[] = [
+	{
+		id: 'ever-gauzy',
+		name: 'ever-co/ever-gauzy',
+		url: 'https://github.com/ever-co/ever-gauzy',
+		kind: 'contribution',
+		summary:
+			'Core contributor to an open-source ERP/CRM/HRM platform from 2020 to ' +
+			'2026 — about 9,000 of its 27,951 commits on develop. Multi-database ' +
+			'migrations for PostgreSQL, MySQL and SQLite, the dual TypeORM/MikroORM ' +
+			'data layer, tenant guards and per-tenant SMTP, and integrations with ' +
+			'GitHub, Hubstaff, Upwork, Zapier and Wasabi storage.',
+		stack: [
+			'typescript',
+			'nestjs',
+			'angular',
+			'postgres',
+			'migrations',
+			'auth',
+			'docker',
+		],
+	},
+]
 
 /** Everything below the substance bar. One line each, no cards. */
-export const minorContributions: MinorContribution[] = []
+export const minorContributions: MinorContribution[] = [
+	{
+		project: 'ever-co/ever-teams',
+		url: 'https://github.com/ever-co/ever-teams',
+		what: 'Team-aware authentication and organization API fixes (2023–2024)',
+	},
+]
