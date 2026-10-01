@@ -5,8 +5,8 @@ import { Stack } from '@/components/ui/stack'
 import { Text } from '@/components/ui/text'
 import { cn } from '@/lib/cn'
 import type { CaseStudy } from '@/lib/content/schemas'
+import { caseStudyTransitionName } from '@/lib/view-transition'
 import { formatPeriod } from './lib/format-period'
-import { caseStudyTransitionName } from './lib/transition-name'
 
 /**
  * P-04 — a case-study entry on `/projects` and on Home.

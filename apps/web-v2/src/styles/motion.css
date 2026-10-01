@@ -917,9 +917,9 @@ html.lenis body {
  *   site-header    — present on both pages, so it holds still instead of
  *                    fading out and back in, which is what makes it read as
  *                    "the same site" rather than "a new page".
- *   case-study-*   — a project card's title and that study's `<h1>`
- *                    (features/projects/lib/transition-name.ts). The browser
- *                    morphs one into the other, position and size.
+ *   case-study-*,  — a project or blog card's title and the `<h1>` of the
+ *   post-*           page it links to (src/lib/view-transition.ts). The
+ *                    browser morphs one into the other, position and size.
  *
  * PROGRESSIVE BY CONSTRUCTION. A browser without support ignores the at-rule
  * and navigates exactly as before; there is no fallback path to maintain.

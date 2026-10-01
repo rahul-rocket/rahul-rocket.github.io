@@ -4,6 +4,7 @@ import { Text } from '@/components/ui/text'
 import { cn } from '@/lib/cn'
 import type { Post } from '@/lib/content/schemas'
 import { formatDate } from '@/lib/format-date'
+import { postTransitionName } from '@/lib/view-transition'
 
 /**
  * B-02 — a post entry on `/blog`, `/blog/tags/[tag]` and Home.
@@ -57,7 +58,14 @@ export function PostCard({
 				{post.readingTimeMinutes} min read
 			</Text>
 
-			<Heading level={level} size="h3">
+			{/* Morphs into the post's `<h1>` on navigation — "PAGE TRANSITIONS"
+			    in motion.css. On the heading, not the anchor: an inline box that
+			    wraps to two lines cannot carry a transition name. */}
+			<Heading
+				level={level}
+				size="h3"
+				style={{ viewTransitionName: postTransitionName(post.slug) }}
+			>
 				<a
 					href={post.href}
 					className="text-text no-underline after:absolute after:inset-0 after:content-[''] hover:text-accent"

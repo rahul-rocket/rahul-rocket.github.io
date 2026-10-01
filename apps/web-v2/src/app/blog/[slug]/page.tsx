@@ -21,6 +21,7 @@ import {
 	breadcrumbSchema,
 	graph,
 } from '@/lib/seo/structured-data'
+import { postTransitionName } from '@/lib/view-transition'
 
 /**
  * `/blog/[slug]` — B-03, B-09. docs/BLOG_SYSTEM.md §6.
@@ -136,7 +137,12 @@ export default async function BlogPostPage({ params }: PageProps) {
 				) : null}
 
 				<header className="flex flex-col gap-4">
-					<Heading level={1} size="h1" className="max-w-[22ch]">
+					<Heading
+						level={1}
+						size="h1"
+						className="max-w-[22ch]"
+						style={{ viewTransitionName: postTransitionName(post.slug) }}
+					>
 						{post.frontmatter.title}
 					</Heading>
 
