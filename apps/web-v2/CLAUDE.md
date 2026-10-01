@@ -22,10 +22,10 @@ The app itself is unchanged — same source, same content, same configs, same
   to the monorepo root, two levels up.
 - **`pnpm dev` and `pnpm start` serve on port 3001**, not 3000. `apps/web` holds
   3000. The E2E port (4319) is unchanged.
-- **`@types/react` and `@types/react-dom` are pinned to 19.2.18/19.2.4**, up from
-  19.0.7/19.0.3. Both apps must carry the same version or this one fails to
+- **`@types/react` and `@types/react-dom` are pinned to 19.3.0/19.3.0**, up from
+  19.0.7/19.0.3 (via 19.2.18/19.2.4). Both apps must carry the same version or this one fails to
   typecheck against two copies of the React types — the reason is in the root
-  `AGENTS.md`. **React itself is now 19.2.8**, matching `apps/web`, so the runtime
+  `AGENTS.md`. **React itself is now 19.3.0**, matching `apps/web`, so the runtime
   and its types are back in step.
 - **`@types/node` is pinned to 22.20.1 and stays on 22.x deliberately**, even
   though `apps/web` is on 26.x. `engines` requires Node `>=22.11 <23`; typing the
