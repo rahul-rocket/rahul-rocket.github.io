@@ -461,3 +461,80 @@
 .theme-switch[data-state="dark"]:active .theme-switch-knob {
   transform: translate(24px, -50%);
 }
+
+/* Hero "AI core" illustration — see components/sections/ai-core-illustration.tsx.
+   Transform/opacity/dashoffset only, so everything stays on the compositor.
+   The global reduced-motion rule above freezes these to a single frame. */
+@keyframes ai-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ai-pulse {
+  0% { stroke-dashoffset: 118; }
+  100% { stroke-dashoffset: -100; }
+}
+
+@keyframes ai-node {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.5); opacity: 1; }
+}
+
+@keyframes ai-breathe {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes ai-spark {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.08) rotate(8deg); }
+}
+
+@keyframes hero-rise {
+  from { opacity: 0; transform: translateY(24px); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+@keyframes hero-shine {
+  to { background-position: 200% center; }
+}
+
+.ai-spin-slow,
+.ai-spin-reverse,
+.ai-node,
+.ai-spark {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+/* The orbit groups rotate about the SVG centre, not their own bounding box. */
+.ai-spin-slow,
+.ai-spin-reverse {
+  transform-box: view-box;
+  transform-origin: 200px 200px;
+}
+
+.ai-spin-slow { animation: ai-spin 40s linear infinite; }
+.ai-spin-reverse { animation: ai-spin 28s linear infinite reverse; }
+.ai-pulse {
+  stroke-dasharray: 18 200;
+  animation: ai-pulse 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+.ai-node { animation: ai-node 2.8s ease-in-out infinite; }
+.ai-breathe { animation: ai-breathe 5s ease-in-out infinite; }
+.ai-spark { animation: ai-spark 4s ease-in-out infinite; }
+
+/* Staggered hero entrance. `--i` is the stagger slot. */
+.hero-rise {
+  animation: hero-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+
+/* Gradient text with a slow sweep. The gradient is symmetric so the 200%
+   tile wraps without a seam. */
+.text-shine {
+  background-image: linear-gradient(90deg, var(--color-spectrum-1), var(--color-spectrum-2), var(--color-spectrum-3), var(--color-spectrum-2), var(--color-spectrum-1));
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: hero-shine 6s linear infinite;
+}

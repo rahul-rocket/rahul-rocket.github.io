@@ -9,6 +9,7 @@ import { Text } from '@/components/ui/text'
 import { disciplines, heroHeading, heroLede, heroStatus } from '@/config/home'
 import { site } from '@/config/site'
 import { currentRoles, skills } from '@/lib/content/data'
+import { HeroMesh } from './hero-mesh'
 import {
 	actionHref,
 	actionLinkProps,
@@ -368,6 +369,7 @@ function HeroPanel({
 			  purely to carry a decorative gradient would be markup that exists for a
 			  paint.
 			*/}
+			<HeroMesh />
 			<dl className="flex flex-col divide-y divide-border">
 				{/*
 				  Availability. `<dt>`/`<dd>` because it is a labelled value, and the
