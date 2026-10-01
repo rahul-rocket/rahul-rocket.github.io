@@ -52,6 +52,10 @@ The app itself is unchanged — same source, same content, same configs, same
     `next build` and prefixes every site-absolute URL in the export. It is part
     of `pnpm build`. Without it, clicking "About" leaves this application and
     lands on the apex one, which is a *different site* — not a 404.
+    `next dev` never runs that script, so `next.config.mjs` adds a **dev-server-only**
+    307 from any unprefixed path to `/v2/...` (gated on `PHASE_DEVELOPMENT_SERVER`;
+    the export build carries no redirects). Open the app at
+    `http://localhost:3001/v2/`.
   - **The prefix is duplicated in four places and must not drift**: `basePath`
     in next.config.mjs, `site.basePath` in `src/config/site.ts`, and the
     `BASE_PATH` constants in `scripts/apply-base-path.mjs`,
