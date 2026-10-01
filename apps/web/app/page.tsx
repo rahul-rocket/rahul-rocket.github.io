@@ -1,11 +1,15 @@
-import { Hero } from '@/components/landing/hero'
-import { SelectedWork } from '@/components/landing/selected-work'
-import { Capabilities } from '@/components/landing/capabilities'
+import { HeroSection } from '@/components/sections/hero-section'
+import { StatsBand } from '@/components/landing/stats-band'
+import { AboutPreview } from '@/components/landing/about-preview'
+import { WhatIDo } from '@/components/landing/what-i-do'
+import { FeaturedProjects } from '@/components/landing/featured-projects'
 import { ExperiencePreview } from '@/components/landing/experience-preview'
 import { LatestPosts } from '@/components/landing/latest-posts'
-import { Contact } from '@/components/landing/contact'
+import { GitHubActivity } from '@/components/landing/github-activity'
 import { LINKEDIN_URL, X_URL } from '@/lib/contact-channels'
 import { GITHUB_URL } from '@/lib/github'
+import { GetInTouchSection } from '@/components/landing/get-in-touch-section'
+import { CtaBand } from '@/components/landing/cta-band'
 
 // JSON-LD for the homepage
 const homeJsonLd = {
@@ -63,17 +67,21 @@ export default function HomePage() {
 
       {/*
         The landing page is a teaser for the rest of the site: each block below
-        summarises a section and links to its own route (app/projects, app/skills,
-        app/experience, app/blog, app/contact). Content is pulled from the
+        summarises a section and links to its own route (app/about, app/skills,
+        app/experience, app/projects, app/contact). Content is pulled from the
         same modules those pages use, so the two cannot drift apart.
       */}
       <article>
-        <Hero />
-        <SelectedWork />
-        <Capabilities />
+        <HeroSection />
+        <StatsBand />
+        <AboutPreview />
+        <WhatIDo />
+        <FeaturedProjects />
+        <GitHubActivity />
         <ExperiencePreview />
         <LatestPosts />
-        <Contact />
+        <GetInTouchSection />
+        <CtaBand />
       </article>
     </>
   )
