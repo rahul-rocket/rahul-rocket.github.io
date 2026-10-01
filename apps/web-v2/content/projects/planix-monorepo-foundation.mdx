@@ -1,0 +1,65 @@
+---
+title: "Planix: a monorepo foundation built to stay layered"
+summary: "The groundwork for a self-hostable, multi-tenant project-management platform — with dependency direction enforced by tooling, not convention."
+role: "Architect and sole engineer"
+period:
+  from: 2026-07
+  to: 2026-08
+order: 1
+featured: true
+needsReview: false
+problem: "Large TypeScript monorepos rot when any package can import any other, and that rot is cheapest to prevent before the first feature."
+stack:
+  - typescript
+  - nextjs
+  - react
+  - tailwind
+  - nestjs
+  - postgres
+  - redis
+  - docker
+  - github-actions
+  - adrs
+  - system-design
+metrics:
+  - label: "Workspace packages under boundary rules"
+    after: "17"
+    method: "Counted in the repository's packages/ directory; the README documents downward-only dependencies enforced by turbo boundaries and eslint-plugin-boundaries"
+  - label: "Commits authored"
+    after: "252 of 263"
+    method: "git log on the default branch, filtered to the author's name and email"
+publishedAt: 2026-10-01
+---
+
+## Overview
+
+Planix is the foundation for a fast, keyboard-first, dark-mode-first
+project-management platform — self-hosted or SaaS, multi-tenant, aimed at the
+space Linear, Plane and Jira occupy. The foundation is deliberately
+feature-free: no auth, orgs, projects or tasks yet.
+
+## The Problem
+
+Product features are easy to add to a monorepo; structure is hard to add
+later. Without enforced rules, UI packages start importing the database,
+apps reach into each other, and every refactor becomes a migration.
+
+## The Decision
+
+Lock the architecture before the features, and write each locked decision as
+an ADR. Dependencies point downward only — app → feature → data-access/ui →
+sdk → util — and two tools enforce it: `turbo boundaries` tags and
+`eslint-plugin-boundaries`.
+
+## Architecture
+
+`apps/web` is Next.js 15 on React 19; `apps/api` is NestJS 11 exposing health
+and OpenAPI/Swagger; `apps/storybook` hosts the UI and design-system packages;
+`apps/web-e2e` holds end-to-end tests. Domain contracts are Zod schemas in an
+`sdk` package shared by web and API. Prisma on PostgreSQL, Redis, and per-app
+Dockerfiles built with `turbo prune` complete the stack.
+
+## Outcome
+
+A foundation where a layering violation is a failing lint, not a code-review
+comment — ready for the first business feature.
