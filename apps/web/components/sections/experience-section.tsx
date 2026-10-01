@@ -112,13 +112,13 @@ const ExperienceCard = ({
             {/* Achievements */}
             <div className="mb-4">
               <h4 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-3 flex items-center gap-2">
-                <Trophy className="h-4 w-4 text-yellow-500" />
+                <Trophy className="h-4 w-4 text-warning" />
                 Key Achievements
               </h4>
               <ul className="space-y-2">
                 {experience.achievements.map((achievement, idx) => (
                   <li key={idx} className="flex items-start gap-2 text-sm">
-                    <Rocket className="h-4 w-4 text-green-500 shrink-0 mt-0.5" />
+                    <Rocket className="h-4 w-4 text-success shrink-0 mt-0.5" />
                     <span className="text-foreground">{achievement}</span>
                   </li>
                 ))}

@@ -12,7 +12,7 @@ export interface Experience {
   responsibilities: string[]
   achievements: string[]
   technologies: string[]
-  /** Tailwind gradient stops, e.g. "from-violet-500 to-purple-500". */
+  /** Tailwind gradient stops, e.g. "from-spectrum-1 to-spectrum-2". */
   color: string
 }
 
@@ -40,7 +40,7 @@ export const experiences: Experience[] = [
       "Mentored 2 junior developers who were promoted to mid-level positions",
     ],
     technologies: ["React", "Next.js", "Node.js", "NestJS", "PostgreSQL", "Redis", "Docker", "AWS"],
-    color: "from-violet-500 to-purple-500",
+    color: "from-spectrum-1 to-spectrum-2",
   },
   {
     id: 2,
@@ -65,7 +65,7 @@ export const experiences: Experience[] = [
       "Received 'Developer of the Quarter' award for exceptional contributions",
     ],
     technologies: ["React", "Next.js", "TypeScript", "Node.js", "MongoDB", "PostgreSQL", "Tailwind CSS", "Vercel"],
-    color: "from-blue-500 to-cyan-500",
+    color: "from-spectrum-2 to-spectrum-3",
   },
   {
     id: 3,
@@ -90,7 +90,7 @@ export const experiences: Experience[] = [
       "Successfully delivered 15+ client projects with 100% client satisfaction",
     ],
     technologies: ["React", "JavaScript", "SASS", "Tailwind CSS", "Redux", "Webpack", "Figma", "Git"],
-    color: "from-emerald-500 to-green-500",
+    color: "from-spectrum-3 to-spectrum-1",
   },
   {
     id: 4,
@@ -115,6 +115,6 @@ export const experiences: Experience[] = [
       "Completed AWS Cloud Practitioner certification during tenure",
     ],
     technologies: ["HTML5", "CSS3", "JavaScript", "React", "Bootstrap", "Git", "Firebase", "Jira"],
-    color: "from-orange-500 to-amber-500",
+    color: "from-spectrum-1 to-spectrum-2",
   },
 ]

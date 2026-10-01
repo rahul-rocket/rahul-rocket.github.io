@@ -13,13 +13,20 @@ import {
 } from "lucide-react"
 
 // Skill categories with their technologies
+/** Hover tint for the tech grid, cycled by index. Literal strings so Tailwind can see them. */
+const TECH_HOVER = [
+  "hover:bg-spectrum-1/10 hover:border-spectrum-1/50",
+  "hover:bg-spectrum-2/10 hover:border-spectrum-2/50",
+  "hover:bg-spectrum-3/10 hover:border-spectrum-3/50",
+] as const
+
 const skillCategories = [
   {
     title: "Frontend",
     icon: Palette,
-    color: "from-blue-500 to-cyan-500",
-    bgColor: "bg-blue-500/10",
-    borderColor: "hover:border-blue-500/50",
+    color: "from-spectrum-1 to-spectrum-2",
+    bgColor: "bg-spectrum-1/10",
+    borderColor: "hover:border-spectrum-1/50",
     skills: [
       { name: "React", icon: "⚛️", level: 95 },
       { name: "Next.js", icon: "▲", level: 92 },
@@ -31,9 +38,9 @@ const skillCategories = [
   {
     title: "Backend",
     icon: Server,
-    color: "from-green-500 to-emerald-500",
-    bgColor: "bg-green-500/10",
-    borderColor: "hover:border-green-500/50",
+    color: "from-spectrum-2 to-spectrum-3",
+    bgColor: "bg-spectrum-2/10",
+    borderColor: "hover:border-spectrum-2/50",
     skills: [
       { name: "Node.js", icon: "🟢", level: 90 },
       { name: "NestJS", icon: "🐱", level: 85 },
@@ -43,9 +50,9 @@ const skillCategories = [
   {
     title: "Database",
     icon: Database,
-    color: "from-purple-500 to-pink-500",
-    bgColor: "bg-purple-500/10",
-    borderColor: "hover:border-purple-500/50",
+    color: "from-spectrum-3 to-spectrum-1",
+    bgColor: "bg-spectrum-3/10",
+    borderColor: "hover:border-spectrum-3/50",
     skills: [
       { name: "PostgreSQL", icon: "🐘", level: 88 },
       { name: "MongoDB", icon: "🍃", level: 85 },
@@ -55,9 +62,9 @@ const skillCategories = [
   {
     title: "DevOps & Tools",
     icon: GitBranch,
-    color: "from-orange-500 to-red-500",
-    bgColor: "bg-orange-500/10",
-    borderColor: "hover:border-orange-500/50",
+    color: "from-spectrum-1 to-spectrum-2",
+    bgColor: "bg-spectrum-1/10",
+    borderColor: "hover:border-spectrum-1/50",
     skills: [
       { name: "Git", icon: "📦", level: 95 },
       { name: "GitHub", icon: "🐙", level: 92 },
@@ -68,9 +75,9 @@ const skillCategories = [
   {
     title: "Cloud & Deployment",
     icon: Cloud,
-    color: "from-indigo-500 to-violet-500",
-    bgColor: "bg-indigo-500/10",
-    borderColor: "hover:border-indigo-500/50",
+    color: "from-spectrum-2 to-spectrum-3",
+    bgColor: "bg-spectrum-2/10",
+    borderColor: "hover:border-spectrum-2/50",
     skills: [
       { name: "Vercel", icon: "▲", level: 90 },
       { name: "Firebase", icon: "🔥", level: 85 },
@@ -206,32 +213,32 @@ export function SkillsSection() {
             <h3 className="text-2xl font-bold text-center mb-8">Technology Stack</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {[
-                { name: "React", icon: "⚛️", color: "hover:bg-blue-500/10 hover:border-blue-500/50" },
-                { name: "Next.js", icon: "▲", color: "hover:bg-gray-500/10 hover:border-gray-500/50" },
-                { name: "TypeScript", icon: "TS", color: "hover:bg-blue-600/10 hover:border-blue-600/50", isText: true },
-                { name: "Angular", icon: "🅰️", color: "hover:bg-red-500/10 hover:border-red-500/50" },
-                { name: "Tailwind", icon: "🎨", color: "hover:bg-cyan-500/10 hover:border-cyan-500/50" },
-                { name: "Node.js", icon: "🟢", color: "hover:bg-green-500/10 hover:border-green-500/50" },
-                { name: "NestJS", icon: "🐱", color: "hover:bg-red-600/10 hover:border-red-600/50" },
-                { name: "REST APIs", icon: "🔌", color: "hover:bg-purple-500/10 hover:border-purple-500/50" },
-                { name: "PostgreSQL", icon: "🐘", color: "hover:bg-blue-700/10 hover:border-blue-700/50" },
-                { name: "MongoDB", icon: "🍃", color: "hover:bg-green-600/10 hover:border-green-600/50" },
-                { name: "Supabase", icon: "⚡", color: "hover:bg-emerald-500/10 hover:border-emerald-500/50" },
-                { name: "Git", icon: "📦", color: "hover:bg-orange-500/10 hover:border-orange-500/50" },
-                { name: "GitHub", icon: "🐙", color: "hover:bg-gray-600/10 hover:border-gray-600/50" },
-                { name: "Docker", icon: "🐳", color: "hover:bg-blue-500/10 hover:border-blue-500/50" },
-                { name: "CI/CD", icon: "🔄", color: "hover:bg-yellow-500/10 hover:border-yellow-500/50" },
-                { name: "Vercel", icon: "▲", color: "hover:bg-gray-500/10 hover:border-gray-500/50" },
-                { name: "Firebase", icon: "🔥", color: "hover:bg-orange-500/10 hover:border-orange-500/50" },
-                { name: "AWS", icon: "☁️", color: "hover:bg-orange-600/10 hover:border-orange-600/50" },
-              ].map((tech) => (
+                { name: "React", icon: "⚛️" },
+                { name: "Next.js", icon: "▲" },
+                { name: "TypeScript", icon: "TS", isText: true },
+                { name: "Angular", icon: "🅰️" },
+                { name: "Tailwind", icon: "🎨" },
+                { name: "Node.js", icon: "🟢" },
+                { name: "NestJS", icon: "🐱" },
+                { name: "REST APIs", icon: "🔌" },
+                { name: "PostgreSQL", icon: "🐘" },
+                { name: "MongoDB", icon: "🍃" },
+                { name: "Supabase", icon: "⚡" },
+                { name: "Git", icon: "📦" },
+                { name: "GitHub", icon: "🐙" },
+                { name: "Docker", icon: "🐳" },
+                { name: "CI/CD", icon: "🔄" },
+                { name: "Vercel", icon: "▲" },
+                { name: "Firebase", icon: "🔥" },
+                { name: "AWS", icon: "☁️" },
+              ].map((tech, i) => (
                 <Card 
                   key={tech.name}
-                  className={`group cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:shadow-lg ${tech.color}`}
+                  className={`group cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:shadow-lg ${TECH_HOVER[i % TECH_HOVER.length]}`}
                 >
                   <CardContent className="p-4 flex flex-col items-center justify-center text-center gap-2">
                     {tech.isText ? (
-                      <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm group-hover:scale-110 transition-transform">
+                      <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-bold text-sm group-hover:scale-110 transition-transform">
                         {tech.icon}
                       </div>
                     ) : (

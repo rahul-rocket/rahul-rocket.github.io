@@ -168,10 +168,10 @@ function TechStackSection({ techStack }: { techStack: ProjectTechStack }) {
     icon: typeof Layers
     color: string
   }[] = [
-    { key: "frontend", label: "Frontend", icon: Layers, color: "text-blue-500" },
-    { key: "backend", label: "Backend", icon: Server, color: "text-green-500" },
-    { key: "services", label: "Services & APIs", icon: Cloud, color: "text-purple-500" },
-    { key: "devops", label: "DevOps", icon: Settings, color: "text-orange-500" },
+    { key: "frontend", label: "Frontend", icon: Layers, color: "text-spectrum-1" },
+    { key: "backend", label: "Backend", icon: Server, color: "text-spectrum-2" },
+    { key: "services", label: "Services & APIs", icon: Cloud, color: "text-spectrum-3" },
+    { key: "devops", label: "DevOps", icon: Settings, color: "text-spectrum-1" },
   ]
 
   return (
@@ -256,7 +256,7 @@ export function ProjectDetailClient({ project, relatedProjects }: ProjectDetailC
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-3">
                 <Badge>{project.category}</Badge>
-                <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">
+                <Badge variant="outline" className="bg-success/10 text-success border-success/20">
                   {project.status}
                 </Badge>
               </div>
@@ -338,10 +338,10 @@ export function ProjectDetailClient({ project, relatedProjects }: ProjectDetailC
           {/* Problem Statement */}
           <div>
             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <AlertCircle className="h-6 w-6 text-orange-500" />
+              <AlertCircle className="h-6 w-6 text-warning" />
               Problem Statement
             </h2>
-            <Card className="border-orange-500/20 bg-orange-500/5">
+            <Card className="border-warning/20 bg-warning/5">
               <CardContent className="p-6">
                 <p className="text-muted-foreground leading-relaxed">
                   {project.problemStatement}
@@ -353,7 +353,7 @@ export function ProjectDetailClient({ project, relatedProjects }: ProjectDetailC
           {/* Solution Approach */}
           <div>
             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <Lightbulb className="h-6 w-6 text-yellow-500" />
+              <Lightbulb className="h-6 w-6 text-warning" />
               Solution Approach
             </h2>
             <div className="space-y-3">
@@ -380,13 +380,13 @@ export function ProjectDetailClient({ project, relatedProjects }: ProjectDetailC
           {/* Key Features */}
           <div>
             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <CheckCircle2 className="h-6 w-6 text-green-500" />
+              <CheckCircle2 className="h-6 w-6 text-success" />
               Key Features
             </h2>
             <div className="grid sm:grid-cols-2 gap-3">
               {project.features.map((feature, index) => (
                 <div key={index} className="flex items-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
                   <span className="text-muted-foreground">{feature}</span>
                 </div>
               ))}
@@ -405,14 +405,14 @@ export function ProjectDetailClient({ project, relatedProjects }: ProjectDetailC
                   <CardContent className="p-6">
                     <div className="space-y-3">
                       <div>
-                        <span className="text-sm font-medium text-orange-500 uppercase tracking-wide">
+                        <span className="text-sm font-medium text-warning uppercase tracking-wide">
                           Challenge
                         </span>
                         <p className="font-medium mt-1">{item.challenge}</p>
                       </div>
                       <Separator />
                       <div>
-                        <span className="text-sm font-medium text-green-500 uppercase tracking-wide">
+                        <span className="text-sm font-medium text-success uppercase tracking-wide">
                           Solution
                         </span>
                         <p className="text-muted-foreground mt-1">{item.solution}</p>
@@ -427,15 +427,15 @@ export function ProjectDetailClient({ project, relatedProjects }: ProjectDetailC
           {/* Key Learnings */}
           <div>
             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <Lightbulb className="h-6 w-6 text-purple-500" />
+              <Lightbulb className="h-6 w-6 text-spectrum-3" />
               Key Learnings
             </h2>
-            <Card className="border-purple-500/20 bg-purple-500/5">
+            <Card className="border-spectrum-3/20 bg-spectrum-3/5">
               <CardContent className="p-6">
                 <ul className="space-y-3">
                   {project.learnings.map((learning, index) => (
                     <li key={index} className="flex gap-3">
-                      <span className="text-purple-500">•</span>
+                      <span className="text-spectrum-3">•</span>
                       <span className="text-muted-foreground">{learning}</span>
                     </li>
                   ))}
@@ -447,7 +447,7 @@ export function ProjectDetailClient({ project, relatedProjects }: ProjectDetailC
           {/* Results/Impact */}
           <div>
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <TrendingUp className="h-6 w-6 text-green-500" />
+              <TrendingUp className="h-6 w-6 text-success" />
               Results & Impact
             </h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">

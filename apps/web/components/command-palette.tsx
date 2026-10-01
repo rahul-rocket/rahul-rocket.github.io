@@ -47,11 +47,10 @@ const pageIcons: Record<string, React.ComponentType<{ className?: string }>> = {
 const EMAIL = "rahulrathore576@gmail.com"
 
 /**
- * This app's --accent token is the brand violet, not the muted surface shadcn
- * assumes, so the shared CommandItem's `data-[selected=true]:bg-accent` puts a
- * saturated violet behind the row while the secondary text stays slate --
- * roughly 1.5:1, i.e. invisible, in BOTH themes. Selecting on `secondary`
- * instead keeps every text token on the surface it was designed for.
+ * Selected rows sit on `secondary` rather than shadcn's default `bg-accent`.
+ * --accent was once the saturated brand color, which put slate text on it at
+ * roughly 1.5:1. It is a muted surface again now, but `secondary` is the
+ * surface every text token is asserted against, so the override stays.
  */
 const ITEM_CLASS =
   "group data-[selected=true]:bg-secondary data-[selected=true]:text-foreground"

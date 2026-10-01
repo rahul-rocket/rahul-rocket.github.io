@@ -27,8 +27,8 @@ export function Hero() {
       <div className="container mx-auto px-4 max-w-6xl pt-28 pb-20 md:pt-40 md:pb-28">
         <p className="flex items-center gap-3 text-sm text-muted-foreground animate-in fade-in duration-700">
           <span className="relative flex h-2 w-2" aria-hidden="true">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
           </span>
           Open to full-time roles and freelance projects
         </p>
