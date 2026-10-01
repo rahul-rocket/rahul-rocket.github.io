@@ -12,368 +12,635 @@ export function projectCoverPath(slug: string): string {
   return `/projects/${slug}/cover.png`
 }
 
+/**
+ * Every entry here is a real repository. Facts come from each repo's README and
+ * manifests; nothing is estimated. Private repositories carry no `github` link
+ * (it would 404 for visitors), and `results` stays empty until there is a
+ * measured number to put in it.
+ */
 export const projectsData: ProjectsData = {
-  "ecommerce-platform": {
-    id: "ecommerce-platform",
-    title: "E-Commerce Platform",
-    subtitle: "A full-featured online shopping experience",
-    category: "Full Stack",
-    status: "Live",
-    duration: "4 months",
-    role: "Lead Developer",
-    client: "RetailTech Inc.",
+  "ever-gauzy": {
+    id: "ever-gauzy",
+    title: "Ever Gauzy",
+    subtitle: "Open-source business management platform (ERP / CRM / HRM)",
+    category: "Open Source",
+    status: "Open source · Live",
+    role: "Core Contributor",
+    client: "Ever Co.",
+    year: "2026",
+    period: "2020 – 2026",
+    featured: true,
+    github: "https://github.com/ever-co/ever-gauzy",
+    demo: "https://app.gauzy.co",
+    links: [
+      { label: "Documentation", href: "https://docs.gauzy.co" },
+      { label: "My commits", href: "https://github.com/ever-co/ever-gauzy/commits/develop?author=rahul-rocket" },
+    ],
+    thumbnail: projectCoverPath("ever-gauzy"),
+    screenshots: [],
+    summary:
+      "Six years as a core contributor to a large open-source ERP/CRM/HRM platform — about 9,000 commits across the NestJS API, Angular apps, multi-database migrations, multi-tenancy and third-party integrations.",
+    overview:
+      "Ever Gauzy is an open business-management platform for collaborative, on-demand and sharing economies: HR with time tracking and performance monitoring, CRM, ERP, invoicing, payments and project management. It runs as web, desktop (Electron) and server apps over a headless API that other products — including Ever Teams — are built on.",
+    problemStatement:
+      "A platform used as both a product and a headless backend has to run on several databases, isolate many tenants in one deployment, integrate with the tools teams already use, and stay maintainable while dozens of contributors change it every week.",
+    solutionApproach: [
+      "Wrote and maintained database migrations for PostgreSQL, MySQL and SQLite side by side, so every schema change ships for all three.",
+      "Worked on the dual TypeORM / MikroORM data layer that lets the platform run on either ORM.",
+      "Built multi-tenant safeguards — tenant guards, tenant-scoped API keys and per-tenant custom SMTP.",
+      "Built and maintained integrations: GitHub (Octokit, webhook issue sync), Hubstaff and Upwork time-tracking sync, Zapier webhooks, and Wasabi/S3 file storage.",
+      "Added a global email service with template rendering, global API logging middleware, and plugin and integration packages.",
+      "Kept the codebase healthy at scale: DeepScan and cspell fixes, dependency upgrades, and Angular/Nx build maintenance.",
+    ],
+    techStack: {
+      frontend: ["Angular", "RxJS", "Nebular / ngx-admin", "Electron"],
+      backend: ["NestJS", "TypeScript", "TypeORM", "MikroORM", "Knex", "PostgreSQL", "MySQL", "SQLite"],
+      services: ["GitHub API (Octokit)", "Hubstaff", "Upwork", "Zapier", "Wasabi / S3", "SMTP"],
+      devops: ["Nx", "Lerna", "Docker", "Kubernetes", "GitHub Actions"],
+    },
+    contribution: {
+      stats: [
+        { label: "Commits", value: "9,000+" },
+        { label: "Share of all commits", value: "≈ 32%" },
+        { label: "Pull requests I merged", value: "2,000+" },
+        { label: "Years active", value: "2020 – 2026" },
+      ],
+      highlights: [
+        "Multi-database migrations (PostgreSQL, MySQL, SQLite) for core entities",
+        "Tenant guards, tenant API keys and per-tenant custom SMTP",
+        "GitHub ↔ Gauzy issue sync via webhooks and Octokit",
+        "Hubstaff and Upwork activity and screenshot sync",
+        "Zapier webhook subscriptions and Wasabi file storage provider",
+        "Global email/template service and API logging middleware",
+        "MikroORM support alongside TypeORM",
+        "Static-analysis and spelling cleanups across the monorepo (DeepScan, cspell)",
+      ],
+      source:
+        "git log on ever-co/ever-gauzy develop, counting commits under the author's names and emails (9,017 of 27,951).",
+    },
+    features: [
+      "Time tracking with desktop timer, screenshots and activity",
+      "Employee, team and project management",
+      "CRM, invoicing, estimates and payments",
+      "Multi-tenant, multi-organization deployments",
+      "Integrations with GitHub, Hubstaff, Upwork and Zapier",
+      "Headless APIs used by other Ever products",
+    ],
+    challenges: [
+      {
+        challenge: "Every schema change has to work on three databases",
+        solution:
+          "Database-specific migrations written for PostgreSQL, MySQL and SQLite for each change, rather than relying on ORM sync.",
+      },
+      {
+        challenge: "Many tenants sharing one deployment",
+        solution: "Tenant-scoped guards and API keys at the API layer, plus per-tenant configuration such as custom SMTP.",
+      },
+    ],
+    learnings: [],
+    results: [],
+    relatedProjects: ["ever-teams", "nestjs-multi-orm"],
+  },
+
+  "ever-teams": {
+    id: "ever-teams",
+    title: "Ever Teams",
+    subtitle: "Open-source work and project-management platform",
+    category: "Open Source",
+    status: "Open source · Live",
+    role: "Contributor (backend APIs)",
+    client: "Ever Co.",
     year: "2024",
-    
-    // Links
-    github: "https://github.com",
-    demo: "https://demo.example.com",
-    
-    // Images
-    thumbnail: projectCoverPath("ecommerce-platform"),
-    screenshots: [
-      {
-        url: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200&h=800&fit=crop",
-        caption: "Homepage with featured products and categories"
-      },
-      {
-        url: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=800&fit=crop",
-        caption: "Admin dashboard with analytics and inventory management"
-      },
-      {
-        url: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=1200&h=800&fit=crop",
-        caption: "Shopping cart and checkout flow"
-      },
-      {
-        url: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=800&fit=crop",
-        caption: "Order tracking and customer dashboard"
-      }
-    ],
-    
-    // Overview
-    overview: "A comprehensive e-commerce platform built from the ground up to handle high-traffic retail operations. The platform features real-time inventory management, secure payment processing, and an intuitive admin dashboard for store management.",
-    
-    // Problem Statement
-    problemStatement: "The client needed a modern, scalable e-commerce solution to replace their outdated system. The existing platform suffered from slow load times, poor mobile experience, limited payment options, and couldn't handle traffic spikes during sales events. They were losing an estimated 30% of potential customers due to cart abandonment caused by technical issues.",
-    
-    // Solution Approach
+    period: "2023 – 2024",
+    featured: false,
+    github: "https://github.com/ever-co/ever-teams",
+    demo: "https://app.ever.team",
+    links: [{ label: "Website", href: "https://ever.team" }],
+    thumbnail: projectCoverPath("ever-teams"),
+    screenshots: [],
+    summary:
+      "A Next.js and React Native work-management app built on Ever Gauzy's headless APIs. My part was on the API side: authentication and organization endpoints Teams depends on.",
+    overview:
+      "Ever Teams is an open work and project-management platform with web, mobile and browser-extension clients. It runs on top of the Ever Gauzy platform, using it as a headless backend.",
+    problemStatement:
+      "Ever Teams needs team-aware authentication and organization data from Gauzy's APIs, which were originally designed around Gauzy's own Angular app.",
     solutionApproach: [
-      "Implemented a headless architecture using Next.js for the frontend, enabling blazing-fast page loads with server-side rendering and static generation for product pages.",
-      "Built a robust Node.js backend with NestJS framework, implementing clean architecture principles for maintainability and scalability.",
-      "Integrated Stripe for secure payment processing with support for multiple payment methods including cards, wallets, and buy-now-pay-later options.",
-      "Designed a real-time inventory system using PostgreSQL with Redis caching to handle concurrent orders without overselling.",
-      "Created a comprehensive admin dashboard with analytics, order management, and inventory controls."
+      "Updated authentication APIs to include teams in the response.",
+      "Fixed the user-organization list API and missing backend relations Teams relied on.",
     ],
-    
-    // Tech Stack with categories
     techStack: {
-      frontend: ["Next.js", "TypeScript", "Tailwind CSS", "Redux Toolkit", "React Query"],
-      backend: ["Node.js", "NestJS", "PostgreSQL", "Redis", "Prisma ORM"],
-      services: ["Stripe", "AWS S3", "SendGrid", "Cloudinary"],
-      devops: ["Docker", "GitHub Actions", "Vercel", "AWS"]
+      frontend: ["Next.js", "React", "React Native (Expo)", "TypeScript"],
+      backend: ["Ever Gauzy APIs", "NestJS"],
+      services: [],
+      devops: ["Nx", "Docker"],
     },
-    
-    // Features
-    features: [
-      "Real-time inventory tracking and management",
-      "Secure checkout with multiple payment options",
-      "Advanced product search with filters and sorting",
-      "Customer accounts with order history and wishlist",
-      "Admin dashboard with sales analytics",
-      "Automated email notifications for orders",
-      "Mobile-responsive design",
-      "SEO optimized product pages"
-    ],
-    
-    // Challenges & Solutions
-    challenges: [
-      {
-        challenge: "Handling high traffic during flash sales",
-        solution: "Implemented Redis caching, database query optimization, and CDN for static assets. Added queue-based order processing to handle traffic spikes gracefully."
-      },
-      {
-        challenge: "Preventing inventory overselling",
-        solution: "Built a reservation system with database-level locking and real-time inventory sync across all channels using WebSockets."
-      },
-      {
-        challenge: "Complex product variants and pricing",
-        solution: "Designed a flexible schema supporting unlimited product variants with individual pricing, inventory, and images."
-      }
-    ],
-    
-    // Key Learnings
-    learnings: [
-      "The importance of database indexing for e-commerce queries - reduced average query time by 80%",
-      "Caching strategies are crucial for scalability - implemented multi-layer caching with Redis",
-      "Payment integration requires careful error handling and idempotency for reliability",
-      "Real-time features significantly improve user experience in e-commerce applications"
-    ],
-    
-    // Results/Impact
-    results: [
-      { metric: "Page Load Time", value: "< 1s", improvement: "70% faster" },
-      { metric: "Cart Abandonment", value: "18%", improvement: "40% reduction" },
-      { metric: "Mobile Conversions", value: "+45%", improvement: "vs. old site" },
-      { metric: "Monthly Active Users", value: "50K+", improvement: "Served reliably" }
-    ],
-    
-    // Related projects
-    relatedProjects: ["task-management-app", "real-estate-portal"]
+    contribution: {
+      stats: [
+        { label: "Commits in this repo", value: "6" },
+        { label: "Active", value: "2023 – 2024" },
+      ],
+      highlights: [
+        "Team-aware authentication APIs",
+        "User-organization list API fix",
+        "Missing backend relations (#2348)",
+      ],
+      source:
+        "git log on ever-co/ever-teams develop. Most backend work for Teams landed in the Ever Gauzy repository instead.",
+    },
+    features: ["Team task management", "Time tracking", "Web, mobile and browser-extension clients"],
+    challenges: [],
+    learnings: [],
+    results: [],
+    relatedProjects: ["ever-gauzy"],
   },
-  
-  "task-management-app": {
-    id: "task-management-app",
-    title: "TaskFlow - Project Management",
-    subtitle: "Collaborative project management for modern teams",
+
+  "iq-insights": {
+    id: "iq-insights",
+    title: "IQ Insights",
+    subtitle: "SaaS IQ and personality-test platform",
     category: "Full Stack",
-    status: "Live",
-    duration: "3 months",
-    role: "Full Stack Developer",
-    client: "Internal Project",
-    year: "2023",
-    
-    github: "https://github.com",
-    demo: "https://demo.example.com",
-    
-    thumbnail: projectCoverPath("task-management-app"),
-    screenshots: [
-      {
-        url: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=1200&h=800&fit=crop",
-        caption: "Kanban board with drag-and-drop functionality"
-      },
-      {
-        url: "https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?w=1200&h=800&fit=crop",
-        caption: "Task detail view with comments and attachments"
-      },
-      {
-        url: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&h=800&fit=crop",
-        caption: "Team dashboard and project overview"
-      }
-    ],
-    
-    overview: "A modern project management application inspired by tools like Trello and Asana. Features real-time collaboration, customizable workflows, and integrations with popular development tools.",
-    
-    problemStatement: "Remote teams struggle with project visibility and coordination. Existing tools were either too complex or lacked real-time collaboration features. The team needed a lightweight, intuitive solution that could integrate with their existing GitHub workflow.",
-    
+    status: "In development",
+    role: "Lead Engineer",
+    client: "RapidTechPlus",
+    year: "2026",
+    period: "2025 – 2026",
+    featured: true,
+    thumbnail: projectCoverPath("iq-insights"),
+    screenshots: [],
+    summary:
+      "A Turborepo monorepo with a Next.js 16 public site, a role-gated admin CMS and a NestJS 11 API on Supabase — adaptive tests, gamified progress, AI reports, Stripe + Razorpay billing and verifiable certificates.",
+    overview:
+      "IQ Insights is a SaaS assessment platform: users take adaptive IQ and personality tests, get instant scores and AI-generated cognitive reports, track progress with XP, badges and streaks, and download certificates that anyone can verify publicly.",
+    problemStatement:
+      "An assessment product touches auth, payments in two markets, content management, localisation and AI generation at once. Kept in one app, those concerns tangle; split across repos, shared types and schema drift apart.",
     solutionApproach: [
-      "Built a real-time collaborative platform using React and Socket.io for instant updates across all connected clients.",
-      "Implemented drag-and-drop kanban boards with optimistic UI updates for a smooth user experience.",
-      "Created a flexible permission system allowing teams to customize access levels and workflows.",
-      "Integrated with GitHub for automatic issue syncing and commit tracking."
+      "Turborepo + pnpm monorepo: apps/web (public site), apps/admin (CMS) and apps/api (NestJS), with shared @iqinsights/* packages consumed via workspace:*.",
+      "Supabase owns auth and Postgres; migrations own the schema and row-level security guards data access, with four context-specific Supabase clients.",
+      "Billing isolated in its own package behind one interface over Stripe and Razorpay; email isolated the same way over SendGrid.",
+      "AI report generation kept provider-agnostic behind a spec, so the model vendor is a configuration choice rather than a rewrite.",
     ],
-    
     techStack: {
-      frontend: ["React", "TypeScript", "Material-UI", "Redux", "React DnD"],
-      backend: ["Node.js", "Express", "MongoDB", "Socket.io"],
-      services: ["GitHub API", "Slack API", "AWS S3"],
-      devops: ["Docker", "Nginx", "DigitalOcean"]
+      frontend: ["Next.js 16", "React 19", "TypeScript", "Tailwind CSS v4", "next-intl", "shadcn/ui"],
+      backend: ["NestJS 11", "Supabase", "PostgreSQL", "Upstash Redis"],
+      services: ["Stripe", "Razorpay", "SendGrid"],
+      devops: ["Turborepo", "pnpm", "GitHub Actions"],
     },
-    
+    contribution: {
+      stats: [
+        { label: "Commits", value: "745" },
+        { label: "Share of all commits", value: "98%" },
+        { label: "Active", value: "2025 – 2026" },
+      ],
+      highlights: [],
+      source: "git log on the private repository's default branch, counting commits under the author's names and emails (745 of 764).",
+    },
     features: [
-      "Real-time kanban boards with drag-and-drop",
-      "Team collaboration with @mentions and comments",
-      "Custom workflows and task statuses",
-      "Time tracking and reporting",
-      "GitHub and Slack integrations",
-      "File attachments and sharing",
-      "Activity timeline and notifications"
+      "Multiple test types with adaptive questions and instant scoring",
+      "Dashboard with history, progress and gamification (XP, badges, streaks)",
+      "AI-generated cognitive insight reports",
+      "Supabase SSR auth with role-gated admin access",
+      "Stripe and Razorpay checkout and orders",
+      "Downloadable, shareable, publicly verifiable certificates",
+      "Localised routes under /[locale]/",
     ],
-    
-    challenges: [
-      {
-        challenge: "Real-time sync across multiple users",
-        solution: "Implemented operational transformation for conflict resolution and used Socket.io rooms for efficient broadcasting."
-      },
-      {
-        challenge: "Smooth drag-and-drop with many items",
-        solution: "Used virtualization for large lists and optimistic updates with rollback on failure."
-      }
-    ],
-    
-    learnings: [
-      "Real-time applications require careful consideration of conflict resolution",
-      "Optimistic UI updates significantly improve perceived performance",
-      "WebSocket connection management is crucial for reliability"
-    ],
-    
-    results: [
-      { metric: "Active Teams", value: "200+", improvement: "Using daily" },
-      { metric: "Tasks Managed", value: "50K+", improvement: "Per month" },
-      { metric: "User Satisfaction", value: "4.8/5", improvement: "Rating" }
-    ],
-    
-    relatedProjects: ["ecommerce-platform", "ai-content-generator"]
+    challenges: [],
+    learnings: [],
+    results: [],
+    relatedProjects: ["kidzorides", "brainboost"],
   },
-  
-  "ai-content-generator": {
-    id: "ai-content-generator",
-    title: "AI Content Studio",
-    subtitle: "AI-powered content generation platform",
+
+  planix: {
+    id: "planix",
+    title: "Planix",
+    subtitle: "Self-hostable project-management platform",
+    category: "Full Stack",
+    status: "Foundation",
+    role: "Architect",
+    client: "RapidTechPlus",
+    year: "2026",
+    period: "2026",
+    featured: true,
+    thumbnail: projectCoverPath("planix"),
+    screenshots: [],
+    summary:
+      "A multi-tenant, keyboard-first alternative to Linear and Jira. The monorepo foundation is built — Next.js 15, NestJS 11 with OpenAPI, Prisma, Storybook — with layered dependency rules enforced in CI.",
+    overview:
+      "Planix is the foundation for a long-term project-management product, self-hosted or SaaS. Business features (auth, orgs, projects, tasks) are next; every locked decision is an ADR.",
+    problemStatement: "Large monorepos rot when any package can import any other.",
+    solutionApproach: [
+      "Dependencies point downward only (app → feature → data-access/ui → sdk → util), enforced by turbo boundaries tags and eslint-plugin-boundaries.",
+      "Domain contracts in a Zod sdk package shared by web and API.",
+      "Per-app Dockerfiles built with turbo prune.",
+    ],
+    techStack: {
+      frontend: ["Next.js 15", "React 19", "Tailwind CSS", "shadcn/ui", "Radix", "Storybook 8"],
+      backend: ["NestJS 11", "Prisma", "PostgreSQL", "Redis", "Zod"],
+      services: ["OpenAPI / Swagger"],
+      devops: ["Turborepo", "pnpm", "Docker", "GitHub Actions"],
+    },
+    contribution: {
+      stats: [
+        { label: "Commits", value: "252" },
+        { label: "Share of all commits", value: "96%" },
+        { label: "Active", value: "2026" },
+      ],
+      highlights: [],
+      source: "git log on the private repository's default branch, counting commits under the author's names and emails (252 of 263).",
+    },
+    features: [],
+    challenges: [],
+    learnings: [],
+    results: [],
+    relatedProjects: ["kickstart"],
+  },
+
+  brainboost: {
+    id: "brainboost",
+    title: "BrainBoost",
+    subtitle: "A brain-training platform built for hundreds of games",
+    category: "Mobile",
+    status: "In development",
+    role: "Lead Engineer",
+    client: "RapidTechPlus",
+    year: "2026",
+    period: "2026",
+    featured: true,
+    thumbnail: projectCoverPath("brainboost"),
+    screenshots: [],
+    summary:
+      "One Flutter app hosting many memory, focus, logic and maths games over a shared engine, progression system and design system — designed so game #300 costs the same as game #3.",
+    overview:
+      "BrainBoost is a brain-training platform, not a collection of games. The Flutter app (Android, iOS and playable web) hosts every game through a plugin contract; a Next.js site handles marketing and SEO, and a NestJS API stores progress.",
+    problemStatement:
+      "Game catalogues usually scale linearly in cost: each game reimplements timers, scoring, lives, hints and save state, and the UI drifts. The goal was a structure where adding a game is a folder, not a project.",
+    solutionApproach: [
+      "A game_api package defines the plugin contract every game implements; game_engine supplies timer, score, lives, hints, difficulty and save state.",
+      "Shared core (entities, Result/Failure, config) and design_system packages keep every game consistent.",
+      "The Flutter/TypeScript split — Flutter for the product, Next.js for marketing — is settled in an ADR so it isn't re-argued per feature.",
+      "With hosted CI unavailable, a pre-push hook runs the cheap checks locally and prints which jobs still run nowhere, instead of implying a green build.",
+    ],
+    techStack: {
+      frontend: ["Flutter", "Dart", "Next.js"],
+      backend: ["NestJS", "Prisma", "PostgreSQL", "Redis"],
+      services: [],
+      devops: ["Turborepo", "pnpm", "Docker Compose", "Git hooks"],
+    },
+    contribution: {
+      stats: [
+        { label: "Commits", value: "239" },
+        { label: "Share of all commits", value: "98%" },
+        { label: "Active", value: "2026" },
+      ],
+      highlights: [],
+      source: "git log on the private repository's default branch, counting commits under the author's names and emails (239 of 244).",
+    },
+    features: [
+      "Games across memory, focus, logic, reaction speed, maths and creativity",
+      "Shared progression system",
+      "Plugin SDK for new games",
+      "Android, iOS and playable web from one codebase",
+    ],
+    challenges: [],
+    learnings: [],
+    results: [],
+    relatedProjects: ["iq-insights", "planix"],
+  },
+
+  "creator-os": {
+    id: "creator-os",
+    title: "CreatorOS",
+    subtitle: "Create once. Publish everywhere.",
     category: "AI/ML",
-    status: "Live",
-    duration: "2 months",
-    role: "Lead Developer",
-    client: "ContentAI Labs",
-    year: "2024",
-    
-    github: "https://github.com",
-    demo: "https://demo.example.com",
-    
-    thumbnail: projectCoverPath("ai-content-generator"),
-    screenshots: [
-      {
-        url: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&h=800&fit=crop",
-        caption: "AI content generation interface"
-      },
-      {
-        url: "https://images.unsplash.com/photo-1655720828018-edd2daec9349?w=1200&h=800&fit=crop",
-        caption: "Template selection and customization"
-      },
-      {
-        url: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=1200&h=800&fit=crop",
-        caption: "Content history and analytics"
-      }
-    ],
-    
-    overview: "An AI-powered content generation platform that helps marketers and content creators produce high-quality blog posts, social media content, and marketing copy in minutes instead of hours.",
-    
-    problemStatement: "Content creators spend hours writing and editing content. Marketing teams struggle to maintain consistent brand voice across multiple channels. There was a need for an AI tool that could generate quality content while maintaining brand guidelines.",
-    
+    status: "In development",
+    role: "Lead Engineer",
+    client: "RapidTechPlus",
+    year: "2026",
+    period: "2026",
+    featured: false,
+    thumbnail: projectCoverPath("creator-os"),
+    screenshots: [],
+    summary:
+      "An AI content operating system for generating, managing and publishing content across multiple AI providers — Next.js app, NestJS gateway, BullMQ workers and Stripe credit metering.",
+    overview:
+      "CreatorOS lets creators generate text, image, video and voice content through one interface, then manage and publish it. It is built sprint by sprint from a version-controlled engineering handbook.",
+    problemStatement: "Creators juggle a different AI tool per medium, with no shared library, billing or publishing flow.",
     solutionApproach: [
-      "Integrated OpenAI's GPT-4 API with custom prompting strategies for different content types.",
-      "Built a brand voice configuration system that learns from existing content.",
-      "Implemented a template system for common content formats with customizable parameters.",
-      "Created a collaborative editing interface with AI-assisted suggestions."
+      "An ai package abstracts providers per modality (text, image, video, voice, search).",
+      "Long-running generation runs in a BullMQ worker, not the request path.",
+      "Better Auth for sessions/JWT; Stripe subscriptions with credit metering in a billing package.",
+      "Local infra via Docker: Postgres, Redis and MinIO.",
     ],
-    
     techStack: {
-      frontend: ["Next.js", "TypeScript", "Tailwind CSS", "TipTap Editor"],
-      backend: ["Next.js API Routes", "Supabase", "PostgreSQL"],
-      services: ["OpenAI API", "Vercel AI SDK", "Stripe"],
-      devops: ["Vercel", "Supabase", "GitHub Actions"]
+      frontend: ["Next.js", "TypeScript"],
+      backend: ["NestJS", "BullMQ", "PostgreSQL", "Redis"],
+      services: ["Stripe", "Better Auth", "MinIO"],
+      devops: ["Turborepo", "pnpm", "Docker", "GitHub Actions"],
     },
-    
-    features: [
-      "Multiple content types (blogs, social, ads, emails)",
-      "Brand voice customization",
-      "Template library with customization",
-      "Collaborative editing",
-      "Content history and versioning",
-      "Export to multiple formats",
-      "Usage analytics and insights"
-    ],
-    
-    challenges: [
-      {
-        challenge: "Ensuring consistent output quality",
-        solution: "Developed sophisticated prompt engineering techniques and implemented output validation with fallback regeneration."
-      },
-      {
-        challenge: "Managing API costs at scale",
-        solution: "Implemented token usage optimization, caching for similar requests, and tiered pricing based on usage."
-      }
-    ],
-    
-    learnings: [
-      "Prompt engineering is crucial for consistent AI outputs",
-      "Users prefer guided experiences over blank canvas approaches",
-      "Streaming responses significantly improve perceived performance for AI applications"
-    ],
-    
-    results: [
-      { metric: "Content Generated", value: "100K+", improvement: "Pieces/month" },
-      { metric: "Time Saved", value: "75%", improvement: "Per piece" },
-      { metric: "User Retention", value: "85%", improvement: "Monthly" }
-    ],
-    
-    relatedProjects: ["task-management-app", "real-estate-portal"]
+    contribution: {
+      stats: [
+        { label: "Commits", value: "223" },
+        { label: "Share of all commits", value: "100%" },
+        { label: "Active", value: "2026" },
+      ],
+      highlights: [],
+      source: "git log on the private repository's default branch, counting commits under the author's names and emails (223 of 223).",
+    },
+    features: ["Multi-provider AI generation", "Background job processing", "Credit-metered subscriptions", "Admin console"],
+    challenges: [],
+    learnings: [],
+    results: [],
+    relatedProjects: ["blueprint-ai"],
   },
-  
-  "real-estate-portal": {
-    id: "real-estate-portal",
-    title: "PropertyHub - Real Estate Platform",
-    subtitle: "Modern property listing and search platform",
+
+  kidzorides: {
+    id: "kidzorides",
+    title: "KidzoRides",
+    subtitle: "Taking over and re-platforming an AI-generated booking product",
     category: "Full Stack",
-    status: "Live",
-    duration: "5 months",
-    role: "Full Stack Developer",
-    client: "PropertyHub Realty",
-    year: "2023",
-    
-    github: "https://github.com",
-    demo: "https://demo.example.com",
-    
-    thumbnail: projectCoverPath("real-estate-portal"),
-    screenshots: [
-      {
-        url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&h=800&fit=crop",
-        caption: "Property search with map integration"
-      },
-      {
-        url: "https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=1200&h=800&fit=crop",
-        caption: "Property detail page with virtual tour"
-      },
-      {
-        url: "https://images.unsplash.com/photo-1554995207-c18c203602cb?w=1200&h=800&fit=crop",
-        caption: "Agent dashboard and lead management"
-      }
-    ],
-    
-    overview: "A comprehensive real estate platform connecting buyers, sellers, and agents. Features advanced property search, virtual tours, mortgage calculators, and agent management tools.",
-    
-    problemStatement: "The real estate industry needed a modern platform that could handle complex property searches, provide immersive property viewing experiences, and streamline the connection between agents and potential buyers.",
-    
+    status: "Live · re-platforming",
+    role: "Lead Engineer",
+    client: "RapidTechPlus",
+    year: "2026",
+    period: "2025 – 2026",
+    featured: false,
+    thumbnail: projectCoverPath("kidzorides"),
+    screenshots: [],
+    summary:
+      "Rental bookings for birthday parties, school events and mall activations across India — a web booking wizard, WhatsApp booking, Razorpay payments and an operator console, mid-migration from MongoDB to Postgres.",
+    overview:
+      "The codebase was largely produced by an AI app builder; my work has been taking it over by hand — securing it, restructuring it and planning its re-platform. Customers browse a fleet of ride-on and electric toy cars, pick a date and duration, add extras and pay via Razorpay; the operator then handles delivery, setup and collection. WhatsApp is a first-class booking channel alongside the web wizard.",
+    problemStatement:
+      "The working product grew as 136 Next.js route handlers over raw MongoDB with hand-rolled auth. It shipped, but it carried unsigned admin tokens, hardcoded admin credentials and a double-booking race that a read-then-write availability check cannot close.",
     solutionApproach: [
-      "Built a powerful search engine with geographic filtering using PostGIS and Elasticsearch.",
-      "Integrated Google Maps API for interactive property exploration.",
-      "Implemented 3D virtual tours using Matterport integration.",
-      "Created agent dashboards with lead scoring and CRM features."
+      "Restructured into a Turborepo with apps/web (113 routes) and apps/admin (110 routes) on pnpm, with shared packages.",
+      "Closed the Phase 0 security issues: admin auth is now HS256 JWT via jose keyed on JWT_SECRET, and the first admin is seeded from environment variables.",
+      "Added an interim double-booking guard — a unique index on a discretised car|date|hour slot key — so the loser of a race gets a duplicate-key error instead of a second booking.",
+      "Planned the target: NestJS API and worker, PostgreSQL on Supabase with Prisma, Supabase Auth and Storage, and an EXCLUDE USING gist constraint as the real overlap fix.",
     ],
-    
     techStack: {
-      frontend: ["React", "Next.js", "TypeScript", "Mapbox GL"],
-      backend: ["Node.js", "NestJS", "PostgreSQL", "PostGIS", "Elasticsearch"],
-      services: ["Google Maps API", "Matterport", "AWS", "Twilio"],
-      devops: ["Docker", "Kubernetes", "AWS EKS"]
+      frontend: ["Next.js", "React", "TypeScript"],
+      backend: ["Next.js Route Handlers", "MongoDB", "NestJS (target)", "PostgreSQL / Prisma (target)"],
+      services: ["Razorpay", "WhatsApp", "Supabase (target)"],
+      devops: ["Turborepo", "pnpm", "Docker", "GitHub Actions"],
     },
-    
+    contribution: {
+      stats: [
+        { label: "Commits", value: "144" },
+        { label: "Share of all commits", value: "7%" },
+        { label: "Active", value: "2025 – 2026" },
+      ],
+      highlights: [],
+      source: "git log on the private repository's default branch, counting commits under the author's names and emails (144 of 2,054). The rest of the history came from an AI app builder.",
+    },
     features: [
-      "Advanced property search with map",
-      "Virtual property tours",
-      "Mortgage calculator",
-      "Save searches and favorites",
-      "Agent profiles and reviews",
-      "Lead management for agents",
-      "Property comparison tools"
+      "Fleet browsing with date, duration and add-on selection",
+      "Razorpay checkout",
+      "WhatsApp as a booking channel",
+      "OTP customer login with refresh tokens",
+      "Operator console for delivery, setup and collection",
+      "Coupons, expenses and user notifications",
     ],
-    
     challenges: [
       {
-        challenge: "Fast geographic search with many properties",
-        solution: "Used PostGIS with spatial indexing and Elasticsearch for full-text search, reducing search time from seconds to milliseconds."
+        challenge: "Two customers booking the same car for overlapping slots",
+        solution:
+          "A unique index on a discretised slot key makes the race fail loudly today; because overlapping ranges aren't equality, the permanent fix is a Postgres exclusion constraint — the main driver of the database migration.",
       },
       {
-        challenge: "Smooth map experience with many markers",
-        solution: "Implemented marker clustering and viewport-based loading to handle thousands of properties."
-      }
+        challenge: "Unsigned admin tokens and hardcoded admin credentials",
+        solution: "Replaced with signed HS256 JWTs and an environment-seeded first admin.",
+      },
     ],
-    
-    learnings: [
-      "Spatial databases are essential for location-based applications",
-      "Map performance requires careful optimization and clustering strategies",
-      "Real estate users expect rich media experiences"
+    learnings: [],
+    results: [],
+    relatedProjects: ["decorra", "iq-insights"],
+  },
+
+  hisaab: {
+    id: "hisaab",
+    title: "Hisaab",
+    subtitle: "Shared money. Sorted.",
+    category: "Mobile",
+    status: "Planning",
+    role: "Architect",
+    client: "RapidTechPlus",
+    year: "2026",
+    period: "2026",
+    featured: false,
+    thumbnail: projectCoverPath("hisaab"),
+    screenshots: [],
+    summary:
+      "A mobile-first shared-expense and settlement app. Architecture settled in ADRs before code: integer-paise money, guest-first membership via WhatsApp links, and a pure, exhaustively tested settlement engine.",
+    overview:
+      "Groups — trips, flats, events, families — record who paid for what; Hisaab computes each person's fair share, net balance and the shortest practical set of payments that settles everyone up.",
+    problemStatement: "Splitting apps fail on rounding, on forcing every friend to sign up, and on settlement plans with too many transfers.",
+    solutionApproach: [
+      "Money is integer paise — never floats, never rupees (ADR-0006).",
+      "Guests join from a WhatsApp link by typing a name; no account required (ADR-0009).",
+      "Splitting, balances and settlement live in a framework-free domain package, ported from a tested prototype core.",
+      "Planned stack: Expo / React Native app, NestJS API, Prisma, with dependency direction enforced by turbo boundaries.",
     ],
-    
-    results: [
-      { metric: "Properties Listed", value: "10K+", improvement: "Active listings" },
-      { metric: "Monthly Searches", value: "500K+", improvement: "Queries" },
-      { metric: "Agent Leads", value: "+60%", improvement: "Conversion rate" }
+    techStack: {
+      frontend: ["Expo", "React Native", "TypeScript"],
+      backend: ["NestJS", "Prisma", "PostgreSQL"],
+      services: ["Supabase (prototype)"],
+      devops: ["Turborepo", "pnpm", "Husky", "commitlint"],
+    },
+    contribution: {
+      stats: [
+        { label: "Commits", value: "67" },
+        { label: "Share of all commits", value: "100%" },
+        { label: "Active", value: "2026" },
+      ],
+      highlights: [],
+      source: "git log on the private repository's default branch, counting commits under the author's names and emails (67 of 67).",
+    },
+    features: ["Group expenses", "Fair-share and net-balance calculation", "Minimal settlement plan", "Guest participation"],
+    challenges: [],
+    learnings: [],
+    results: [],
+    relatedProjects: ["iq-insights"],
+  },
+
+  "blueprint-ai": {
+    id: "blueprint-ai",
+    title: "BlueprintAI",
+    subtitle: "AI software-engineering platform — idea to starter repo",
+    category: "AI/ML",
+    status: "Design phase",
+    role: "Architect",
+    client: "RapidTechPlus",
+    year: "2026",
+    period: "2026",
+    featured: false,
+    thumbnail: projectCoverPath("blueprint-ai"),
+    screenshots: [],
+    summary:
+      "Models requirements, architecture, tech decisions, docs and scaffolding as a compiler pipeline over one canonical project model, so every generated artifact traces back to one source of truth.",
+    overview:
+      "Idea → Requirements → Architecture → Technology Decisions → Validation → Documentation → Scaffolding → AI Context → Starter Repository. The specification and ADRs gate implementation.",
+    problemStatement: "Architecture and stack choices are ad-hoc human work whose documents drift from the code they describe.",
+    solutionApproach: [
+      "One canonical project model; every stage is a pass over it.",
+      "Planned apps: web, api, worker and a sandbox runner; a module-boundary linter and matrix CI in tools/.",
+      "Design reviewed against a working sibling codebase (CreatorOS) to re-cut priorities.",
     ],
-    
-    relatedProjects: ["ecommerce-platform", "ai-content-generator"]
-  }
+    techStack: {
+      frontend: ["TypeScript"],
+      backend: ["Node.js"],
+      services: [],
+      devops: ["Turborepo", "pnpm", "gitleaks", "GitHub Actions"],
+    },
+    contribution: {
+      stats: [
+        { label: "Commits", value: "40" },
+        { label: "Share of all commits", value: "91%" },
+        { label: "Active", value: "2026" },
+      ],
+      highlights: [],
+      source: "git log on the private repository's default branch, counting commits under the author's names and emails (40 of 44).",
+    },
+    features: [],
+    challenges: [],
+    learnings: [],
+    results: [],
+    relatedProjects: ["creator-os", "kickstart"],
+  },
+
+  decorra: {
+    id: "decorra",
+    title: "Decorra",
+    subtitle: "Event-decoration and experiences booking platform",
+    category: "Full Stack",
+    status: "In development",
+    role: "Lead Engineer",
+    client: "RapidTechPlus",
+    year: "2026",
+    period: "2026",
+    featured: false,
+    thumbnail: projectCoverPath("decorra"),
+    screenshots: [],
+    summary:
+      "Customer website, Expo mobile app, operations console and NestJS API in one monorepo, sharing a five-palette theme engine and typed domain models.",
+    overview:
+      "An original marketplace for celebration decor and experiences. Every app consumes the same design tokens and domain types (Experience, Booking, City…).",
+    problemStatement: "Web and mobile apps that define their own themes and models drift apart visually and in data shape.",
+    solutionApproach: [
+      "Five switchable palettes defined once in a themes package — CSS variables with a no-flash boot script on the web, a React context over the same tokens on mobile.",
+      "Shared domain types served by a NestJS catalog API.",
+      "Fluid clamp()-based type scale with Fraunces and Plus Jakarta Sans.",
+    ],
+    techStack: {
+      frontend: ["Next.js 16", "React 19", "Tailwind CSS v4", "Expo SDK 53", "React Native"],
+      backend: ["NestJS 11"],
+      services: [],
+      devops: ["Turborepo", "pnpm", "Husky"],
+    },
+    contribution: {
+      stats: [
+        { label: "Commits", value: "38" },
+        { label: "Share of all commits", value: "100%" },
+        { label: "Active", value: "2026" },
+      ],
+      highlights: [],
+      source: "git log on the private repository's default branch, counting commits under the author's names and emails (38 of 38).",
+    },
+    features: ["Multi-theme engine", "City selector, search and mega-nav", "Catalog of experiences, add-ons and bookings", "Operations console"],
+    challenges: [],
+    learnings: [],
+    results: [],
+    relatedProjects: ["kidzorides"],
+  },
+
+  kickstart: {
+    id: "kickstart",
+    title: "Kickstart",
+    subtitle: "CLI that scaffolds production-ready repositories",
+    category: "Developer Tools",
+    status: "Active",
+    role: "Author",
+    client: "RapidTechPlus",
+    year: "2026",
+    period: "2026",
+    featured: false,
+    thumbnail: projectCoverPath("kickstart"),
+    screenshots: [],
+    summary:
+      "npx create-kickstart — wraps official generators (create-next-app, create-vite, create-turbo, create-nx-workspace, nest new) and applies one consistent repository structure, interactively or fully by flags.",
+    overview:
+      "Framework-friendly rather than framework-specific: Kickstart delegates to official tooling, then layers on a consistent structure and optional tooling for single apps or Turborepo/Nx monorepos.",
+    problemStatement: "Every new repo starts with the same hour of generator commands and structure decisions, done slightly differently each time.",
+    solutionApproach: [
+      "Commander for flags, Inquirer for prompts — any omitted flag is asked interactively.",
+      "One generator module per scaffolding step; execa runs the official CLIs.",
+      "--dry-run prints the commands instead of running them.",
+      "Built with tsup and tested with Vitest; a single verify script is the pre-push gate.",
+    ],
+    techStack: {
+      frontend: [],
+      backend: ["Node.js", "TypeScript", "Commander", "Inquirer", "execa"],
+      services: [],
+      devops: ["tsup", "Vitest", "GitHub Actions"],
+    },
+    contribution: {
+      stats: [
+        { label: "Commits", value: "21" },
+        { label: "Share of all commits", value: "100%" },
+        { label: "Active", value: "2026" },
+      ],
+      highlights: [],
+      source: "git log on the private repository's default branch, counting commits under the author's names and emails (21 of 21).",
+    },
+    features: [
+      "Next.js, Vite React or Angular frontends",
+      "NestJS, Express or Laravel backends",
+      "Turborepo or Nx workspaces with an optional admin app",
+      "pnpm, npm or yarn",
+      "Dry-run mode",
+    ],
+    challenges: [],
+    learnings: [],
+    results: [],
+    relatedProjects: ["planix"],
+  },
+
+  "nestjs-multi-orm": {
+    id: "nestjs-multi-orm",
+    title: "NestJS Multi-ORM",
+    subtitle: "TypeORM and MikroORM side by side in one NestJS app",
+    category: "Backend",
+    status: "Open source",
+    role: "Author",
+    client: "Personal",
+    year: "2024",
+    featured: false,
+    github: "https://github.com/rahul-rocket/nestjs-multi-orm",
+    thumbnail: projectCoverPath("nestjs-multi-orm"),
+    screenshots: [],
+    summary:
+      "A NestJS module that integrates TypeORM and MikroORM so a project can use either — or both — behind a repository pattern and custom injection decorators.",
+    overview:
+      "A small reference project on PostgreSQL that isolates the dual-ORM pattern into one reusable module.",
+    problemStatement: "Migrating between ORMs, or supporting both, usually forces every service to know which ORM it is talking to.",
+    solutionApproach: [
+      "Repository pattern abstracts database operations away from the ORM.",
+      "Custom decorators inject the right repository for the configured ORM.",
+      "Independent configuration per ORM, including MikroORM migrations and soft delete.",
+    ],
+    techStack: {
+      frontend: [],
+      backend: ["NestJS 10", "TypeScript", "TypeORM", "MikroORM", "PostgreSQL"],
+      services: [],
+      devops: ["Jest", "ESLint"],
+    },
+    features: ["Dual ORM integration", "Per-ORM configuration", "Repository pattern", "Injection decorators"],
+    challenges: [],
+    learnings: [],
+    results: [],
+    relatedProjects: ["ever-gauzy", "planix"],
+  },
 }
 
-// Get all project slugs for static generation
 export function getAllProjectSlugs(): string[] {
   return Object.keys(projectsData)
 }

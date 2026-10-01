@@ -50,8 +50,8 @@ export const site = {
 	 *
 	 * The export is continuously published to the real URL, so a crawler can
 	 * reach it. Parts of the content layer are drafted rather than verified —
-	 * `content/experience.ts` and `content/journey.ts` carry the notice, and two
-	 * of the three case studies are marked `needsReview` — and a drafted record
+	 * `content/experience.ts` and `content/journey.ts` carry the notice (the case
+	 * studies are now drawn from real repositories) — and a drafted record
 	 * indexed under a real person's name outlives the deployment that produced
 	 * it.
 	 *

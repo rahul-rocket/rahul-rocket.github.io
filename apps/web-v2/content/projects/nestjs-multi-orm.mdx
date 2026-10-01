@@ -1,0 +1,43 @@
+---
+title: "NestJS Multi-ORM: TypeORM and MikroORM side by side"
+summary: "An open-source NestJS module that lets one project use TypeORM, MikroORM, or both, behind a repository pattern and injection decorators."
+role: "Author"
+period:
+  from: 2024-03
+  to: 2024-04
+order: 5
+featured: false
+needsReview: false
+problem: "Supporting or migrating between two ORMs usually forces every service to know which ORM it is talking to."
+stack:
+  - typescript
+  - nodejs
+  - nestjs
+  - postgres
+  - data-modelling
+  - migrations
+metrics:
+  - label: "ORMs behind one repository interface"
+    after: "2 (TypeORM, MikroORM)"
+    method: "Both are dependencies of the published repository and are injected through its custom repository decorators on PostgreSQL"
+links:
+  - label: "Repository"
+    href: "https://github.com/rahul-rocket/nestjs-multi-orm"
+publishedAt: 2026-10-01
+---
+
+## Overview
+
+A NestJS module that integrates TypeORM and MikroORM so a project can use
+either — or both in the same codebase.
+
+## Architecture
+
+A repository pattern abstracts database operations away from the ORM; custom
+decorators inject the right repository for the configured ORM; each ORM keeps
+its own configuration, including MikroORM migrations and soft delete.
+
+## Outcome
+
+Services depend on a repository, not on an ORM, so moving between the two is a
+configuration decision rather than a rewrite.

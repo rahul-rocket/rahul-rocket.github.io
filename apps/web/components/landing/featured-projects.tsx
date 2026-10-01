@@ -8,9 +8,9 @@ import { SectionHeading } from "@/components/landing/section-heading"
 import { ImageWithSkeleton } from "@/components/optimized-image"
 import { projectsData } from "@/lib/projects-data"
 
-// The three most recent projects; /projects has the rest.
+// The first three flagged projects; /projects has the rest.
 const featured = Object.entries(projectsData)
-  .sort(([, a], [, b]) => Number(b.year) - Number(a.year))
+  .filter(([, project]) => project.featured)
   .slice(0, 3)
 
 export function FeaturedProjects() {

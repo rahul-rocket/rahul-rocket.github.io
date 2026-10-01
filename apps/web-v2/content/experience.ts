@@ -66,7 +66,7 @@ export const experience: Experience[] = [
 			'adrs',
 			'observability',
 		],
-		caseStudies: ['order-fulfilment-boundary'],
+		caseStudies: [],
 	},
 	{
 		id: 'lead-engineer-fintech',
@@ -98,7 +98,7 @@ export const experience: Experience[] = [
 			'ci-cd',
 			'testing',
 		],
-		caseStudies: ['settlement-reconciliation-rebuild'],
+		caseStudies: [],
 	},
 	{
 		id: 'senior-engineer-logistics',
