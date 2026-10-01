@@ -33,7 +33,7 @@ export function Hero() {
           Open to full-time roles and freelance projects
         </p>
 
-        <h1 className="font-display mt-8 text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-[0.95] tracking-tight text-balance animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <h1 className="font-bold mt-8 text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-[0.95] tracking-tight text-balance animate-in fade-in slide-in-from-bottom-4 duration-700">
           Rahul builds web products{" "}
           <em className="text-primary">end to end</em>
           <span className="text-muted-foreground"> — interface, API, and the pipeline that ships them.</span>
@@ -66,7 +66,7 @@ export function Hero() {
               <dt className="text-xs uppercase tracking-wider text-muted-foreground mt-1">
                 {stat.label}
               </dt>
-              <dd className="font-display text-4xl md:text-5xl">{stat.value}</dd>
+              <dd className="font-bold text-4xl md:text-5xl">{stat.value}</dd>
             </div>
           ))}
         </dl>

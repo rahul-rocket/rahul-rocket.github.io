@@ -33,7 +33,7 @@ export function Contact() {
         <div>
           <a
             href={`mailto:${EMAIL}`}
-            className="font-display text-3xl sm:text-4xl md:text-5xl break-all underline decoration-border decoration-1 underline-offset-8 hover:decoration-primary transition-colors"
+            className="font-bold text-3xl sm:text-4xl md:text-5xl break-all underline decoration-border decoration-1 underline-offset-8 hover:decoration-primary transition-colors"
           >
             {EMAIL}
           </a>

@@ -13,13 +13,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* `font-display` -- the variable is set on <html> by next/font in layout.tsx. */
 @theme inline {
-  --font-display: var(--font-instrument-serif), ui-serif, Georgia, serif;
-  --font-sans: var(--ui-font-text);
-  --font-mono: var(--ui-font-mono);
-  --font-heading: var(--ui-font-grotesque);
-
   /* V2's spectrum, for decorative gradients and glows only. */
   --color-spectrum-1: var(--spectrum-1);
   --color-spectrum-2: var(--spectrum-2);

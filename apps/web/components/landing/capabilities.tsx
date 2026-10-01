@@ -34,7 +34,7 @@ export function Capabilities() {
       <ul className="grid md:grid-cols-3 gap-px bg-border border border-border rounded-lg overflow-hidden">
         {capabilities.map((item) => (
           <li key={item.title} className="bg-background p-8 flex flex-col">
-            <h3 className="font-display text-2xl">{item.title}</h3>
+            <h3 className="font-bold text-2xl">{item.title}</h3>
             <p className="text-muted-foreground leading-relaxed mt-4 flex-1">{item.description}</p>
             <p className="mt-6 text-sm text-muted-foreground">{item.highlights.join(" · ")}</p>
           </li>

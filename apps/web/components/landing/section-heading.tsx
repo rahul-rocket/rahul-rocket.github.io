@@ -3,7 +3,7 @@ import { ArrowRight } from "lucide-react"
 
 /**
  * The heading row every landing-page section shares: a numbered eyebrow, a
- * serif title, and an optional "see all" link aligned to the right on wide
+ * bold title, and an optional "see all" link aligned to the right on wide
  * screens. Keeping it in one place holds the page's rhythm steady.
  */
 export function SectionHeading({
@@ -27,7 +27,7 @@ export function SectionHeading({
           <span aria-hidden="true"> / </span>
           {eyebrow}
         </p>
-        <h2 className="font-display text-4xl md:text-5xl lg:text-6xl leading-[1.05] tracking-tight mt-4">
+        <h2 className="font-bold text-4xl md:text-5xl lg:text-6xl leading-[1.05] tracking-tight mt-4">
           {title}
         </h2>
         {description ? (

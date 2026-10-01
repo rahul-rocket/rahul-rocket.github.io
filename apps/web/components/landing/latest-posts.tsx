@@ -40,7 +40,7 @@ export async function LatestPosts() {
                   day: "numeric",
                 })}
               </time>
-              <h3 className="font-display text-2xl group-hover:text-primary transition-colors">
+              <h3 className="font-bold text-2xl group-hover:text-primary transition-colors">
                 {post.title}
               </h3>
               <span className="text-sm text-muted-foreground">

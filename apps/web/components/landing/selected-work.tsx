@@ -34,7 +34,7 @@ export function SelectedWork() {
                 <p className="text-xs uppercase tracking-wider text-muted-foreground">
                   {project.category} · {project.year}
                 </p>
-                <h3 className="font-display text-3xl md:text-4xl mt-2 flex items-start gap-2">
+                <h3 className="font-bold text-3xl md:text-4xl mt-2 flex items-start gap-2">
                   <span className="group-hover:text-primary transition-colors">{project.title}</span>
                   <ArrowUpRight className="h-6 w-6 shrink-0 mt-1 opacity-0 -translate-x-1 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
                 </h3>
