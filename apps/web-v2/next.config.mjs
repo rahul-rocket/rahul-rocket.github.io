@@ -1,4 +1,5 @@
 import createMDX from '@next/mdx'
+import { PHASE_DEVELOPMENT_SERVER } from 'next/constants.js'
 import { rehypePlugins, remarkPlugins } from './src/lib/mdx/plugins.mjs'
 
 /**
@@ -83,4 +84,38 @@ const withMDX = createMDX({
 	options: { remarkPlugins, rehypePlugins },
 })
 
-export default withMDX(nextConfig)
+/**
+ * Dev-only: send unprefixed URLs into the base path.
+ *
+ * Navigation is plain `<a href="/projects/">` (see apply-base-path.mjs), and
+ * the post-build pass that prefixes it never runs under `next dev`. Without
+ * this, clicking "Projects" on http://localhost:3001/v2/ lands on
+ * http://localhost:3001/projects/, which `next dev` 404s because basePath
+ * mounts the app only at /v2. A 307 back to /v2/... is the dev-server analogue
+ * of the root mount in scripts/serve-preview.mjs.
+ *
+ * Gated on the dev-server phase on purpose: `output: 'export'` cannot carry
+ * redirects (Next warns and drops them), and the export must stay exactly what
+ * apply-base-path.mjs and check-links.mjs verify. `basePath: false` makes the
+ * source match outside /v2; `_next` and `__nextjs*` are Next's own dev
+ * endpoints and must never be redirected.
+ *
+ * @type {import('next').NextConfig['redirects']}
+ */
+const devBasePathRedirects = async () => [
+	{
+		source: '/:path((?!v2(?:/|$)|_next/|__nextjs).*)',
+		destination: '/v2/:path',
+		basePath: false,
+		permanent: false,
+	},
+]
+
+/** @param {string} phase */
+export default function config(phase) {
+	return withMDX(
+		phase === PHASE_DEVELOPMENT_SERVER
+			? { ...nextConfig, redirects: devBasePathRedirects }
+			: nextConfig,
+	)
+}
