@@ -166,22 +166,21 @@ function TechStackSection({ techStack }: { techStack: ProjectTechStack }) {
     key: keyof ProjectTechStack
     label: string
     icon: typeof Layers
-    color: string
   }[] = [
-    { key: "frontend", label: "Frontend", icon: Layers, color: "text-spectrum-1" },
-    { key: "backend", label: "Backend", icon: Server, color: "text-spectrum-2" },
-    { key: "services", label: "Services & APIs", icon: Cloud, color: "text-spectrum-3" },
-    { key: "devops", label: "DevOps", icon: Settings, color: "text-spectrum-1" },
+    { key: "frontend", label: "Frontend", icon: Layers },
+    { key: "backend", label: "Backend", icon: Server },
+    { key: "services", label: "Services & APIs", icon: Cloud },
+    { key: "devops", label: "DevOps", icon: Settings },
   ]
 
   return (
     <div className="grid sm:grid-cols-2 gap-4">
-      {categories.map(({ key, label, icon: Icon, color }) => (
+      {categories.map(({ key, label, icon: Icon }) => (
         techStack[key] && techStack[key].length > 0 && (
           <Card key={key}>
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Icon className={`h-5 w-5 ${color}`} />
+                <Icon className="h-5 w-5 text-primary" />
                 <h4 className="font-semibold">{label}</h4>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -427,7 +426,7 @@ export function ProjectDetailClient({ project, relatedProjects }: ProjectDetailC
           {/* Key Learnings */}
           <div>
             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <Lightbulb className="h-6 w-6 text-spectrum-3" />
+              <Lightbulb className="h-6 w-6 text-primary" />
               Key Learnings
             </h2>
             <Card className="border-spectrum-3/20 bg-spectrum-3/5">
@@ -435,7 +434,7 @@ export function ProjectDetailClient({ project, relatedProjects }: ProjectDetailC
                 <ul className="space-y-3">
                   {project.learnings.map((learning, index) => (
                     <li key={index} className="flex gap-3">
-                      <span className="text-spectrum-3">•</span>
+                      <span className="text-primary">•</span>
                       <span className="text-muted-foreground">{learning}</span>
                     </li>
                   ))}
