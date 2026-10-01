@@ -38,7 +38,7 @@ export function HeroSection() {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#8882_1px,transparent_1px),linear-gradient(to_bottom,#8882_1px,transparent_1px)] bg-size-[14px_24px] mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
 
       <div className="container mx-auto px-4 py-20 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
           {/* Left Content */}
           <div
             className={`space-y-8 text-center lg:text-left transition-all duration-1000 ${
@@ -202,7 +202,7 @@ export function HeroSection() {
                     <circle cx="200" cy="120" r="50" className="fill-amber-200 dark:fill-amber-300" />
 
                     {/* Hair */}
-                    <path d="M150 120 Q150 70 200 70 Q250 70 250 120 Q250 100 230 95 Q200 85 170 95 Q150 100 150 120" className="fill-gray-800 dark:fill-gray-900" />
+                    <path d="M150 120 Q150 70 200 70 Q250 70 250 120 Q250 100 230 95 Q200 85 170 95 Q150 100 150 120" className="fill-gray-800 dark:fill-gray-700" />
 
                     {/* Face */}
                     <ellipse cx="180" cy="115" rx="5" ry="6" className="fill-gray-800" />
