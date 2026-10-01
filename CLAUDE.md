@@ -109,4 +109,7 @@ crosses the boundary: both must pin the **same `@types/react`/`@types/react-dom`
 - **`apps/web` has no API routes.** A static export cannot accept a POST, so `/api/contact`,
   `/api/posts` and `lib/rate-limit.ts` are gone. The contact form POSTs to a third-party
   endpoint (`NEXT_PUBLIC_CONTACT_ENDPOINT`) and falls back to a prefilled `mailto:` when that
-  is unset. Do not add a `route.ts` here without also removing `output: 'export'`.
+  is unset. Do not add a request-time `route.ts` here without also removing `output: 'export'`.
+  The one shape the export does support is a build-time GET (`dynamic = 'force-static'` plus
+  `generateStaticParams`), written to `out/` as a plain file — that is how
+  `app/projects/[slug]/cover.png/route.tsx` produces each project's cover/OG image.

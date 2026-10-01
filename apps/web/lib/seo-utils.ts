@@ -79,7 +79,7 @@ export function generateProjectJsonLd(project: Project) {
     name: project.title,
     description: project.overview,
     url: `${baseUrl}/projects/${project.id}`,
-    image: project.thumbnail,
+    image: `${baseUrl}${project.thumbnail}`,
     author: {
       "@type": "Person",
       name: "Rahul",
