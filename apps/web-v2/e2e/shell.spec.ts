@@ -249,6 +249,11 @@ test.describe('responsive shell', () => {
 
 	test('the palette panel fits the viewport at 320px', async ({ page }) => {
 		await page.goto('/')
+		// Hydration first: the trigger is visible before React attaches its
+		// click handler (see gotoReady in command-palette.spec.ts).
+		await page
+			.locator('[data-testid="palette-trigger"][data-palette-ready]')
+			.waitFor({ state: 'attached' })
 		await page.getByTestId('palette-trigger').click()
 
 		const input = page.getByTestId('palette-input')

@@ -120,12 +120,16 @@ export default async function CaseStudyPage({ params }: PageProps) {
 			<article className="flex flex-col gap-12">
 				<CaseStudyHeader study={study} stack={stack} />
 
+				{/* The ONLY copy of this notice. It is driven by the flag so it goes
+				    away when the flag does; a second, hand-written copy in the MDX
+				    used to sit directly under it and would have outlived it. */}
 				{study.frontmatter.needsReview ? (
 					<Callout variant="warning" title="Drafted, pending review">
 						<p>
 							This case study is written to the site's documented standard but
 							has not yet been checked against the author's own records. Treat
-							its numbers as illustrative.
+							its numbers as illustrative until they are replaced with figures
+							whose measurement method the author can reproduce.
 						</p>
 					</Callout>
 				) : null}

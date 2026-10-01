@@ -1,6 +1,7 @@
 import { getAllProjectSlugs } from "@/lib/projects-data"
 import { getPublishedPosts } from "@/lib/posts"
 import { legalItems } from "@/lib/search-index"
+import { site } from "@/lib/site"
 
 /**
  * `output: export` requires every metadata route to declare that it is
@@ -12,7 +13,7 @@ export const dynamic = "force-static"
 export default async function sitemap() {
   // The apex of the Pages site. `apps/web-v2` publishes its own sitemap at
   // /v2/sitemap.xml and its routes are deliberately absent from this one.
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://rahul-rocket.github.io"
+  const baseUrl = site.url
   
   // Get all project slugs
   const projectSlugs = getAllProjectSlugs()

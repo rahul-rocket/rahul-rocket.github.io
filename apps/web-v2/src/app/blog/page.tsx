@@ -31,7 +31,7 @@ export default function BlogIndexPage() {
 	const posts = getPosts()
 
 	return (
-		<PageContainer tone="writing" width="reading">
+		<PageContainer tone="writing" width="page">
 			<JsonLdScript
 				data={graph(
 					pageSchema({

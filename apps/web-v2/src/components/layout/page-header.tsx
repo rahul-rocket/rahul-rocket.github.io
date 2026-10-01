@@ -44,6 +44,7 @@ export function PageHeader({
 	meta,
 	id = 'page-title',
 	size = 'display',
+	titleTransitionName,
 	className,
 }: {
 	title: ReactNode
@@ -60,8 +61,20 @@ export function PageHeader({
 	 * case studies, whose titles are sentences.
 	 */
 	size?: 'display' | 'h1'
+	/**
+	 * A `view-transition-name` for the `<h1>`, so a link's text elsewhere can
+	 * morph into it on navigation. This is the one sanctioned motion on the
+	 * title, and it does not break the rule above: the browser animates a
+	 * snapshot in a pseudo-element layer, and the real element is painted in
+	 * its final state underneath it.
+	 */
+	titleTransitionName?: string
 	className?: string
 }) {
+	const titleStyle = titleTransitionName
+		? { viewTransitionName: titleTransitionName }
+		: undefined
+
 	return (
 		<header className={cn('flex flex-col gap-5', className)}>
 			{eyebrow ? <Eyebrow>{eyebrow}</Eyebrow> : null}
@@ -82,11 +95,18 @@ export function PageHeader({
 					size="display"
 					gradient
 					className="max-w-[16ch]"
+					style={titleStyle}
 				>
 					{title}
 				</Heading>
 			) : (
-				<Heading id={id} level={1} size="h1" className="max-w-[24ch]">
+				<Heading
+					id={id}
+					level={1}
+					size="h1"
+					className="max-w-[24ch]"
+					style={titleStyle}
+				>
 					{title}
 				</Heading>
 			)}

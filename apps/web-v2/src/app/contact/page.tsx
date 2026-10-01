@@ -7,7 +7,12 @@ import { MailIcon } from '@/components/ui/icons'
 import { Section } from '@/components/ui/section'
 import { Stack } from '@/components/ui/stack'
 import { Text } from '@/components/ui/text'
-import { contactEmail, mailtoHref, site } from '@/config/site'
+import {
+	contactEmail,
+	contactFormEndpoints,
+	mailtoHref,
+	site,
+} from '@/config/site'
 import { ContactForm } from '@/features/contact'
 import { pageMetadata } from '@/lib/seo/metadata'
 import { graph, pageSchema, personSchema } from '@/lib/seo/structured-data'
@@ -16,7 +21,7 @@ import { graph, pageSchema, personSchema } from '@/lib/seo/structured-data'
  * `/contact` — C-01, C-02, C-11. docs/WEBSITE_STRUCTURE.md §4.12.
  *
  * THE FORM IS ALWAYS RENDERED, WHICH IT DID NOT USE TO BE. The old arrangement
- * showed a `mailto:` link instead whenever `site.formspreeEndpoint` was empty,
+ * showed a `mailto:` link instead whenever no form endpoint was configured,
  * because a form that posts to nowhere silently discards a message. That risk is
  * real and it has not been accepted — it has been removed: with no endpoint the
  * form is a composer that hands the finished message to the reader's own mail
@@ -69,7 +74,8 @@ export default function ContactPage() {
 			<div className="flex flex-col gap-16 lg:flex-row lg:items-start lg:gap-16">
 				<div className="flex min-w-0 flex-1 flex-col gap-8">
 					<ContactForm
-						endpoint={site.formspreeEndpoint}
+						endpoint={contactFormEndpoints().action}
+						ajaxEndpoint={contactFormEndpoints().ajax}
 						fallbackHref={fallback}
 						subject={SUBJECT}
 					/>
@@ -90,7 +96,7 @@ export default function ContactPage() {
 							Write to {contactEmail()}
 						</a>
 						<Text size="sm" tone="muted">
-							That link opens your mail client with the questions on the right
+							That link opens your mail client with the questions from this page
 							already in the body.
 						</Text>
 					</Stack>

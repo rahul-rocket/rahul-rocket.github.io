@@ -299,8 +299,14 @@ Nineteen consequences that read as bugs if you do not know them:
   Freshness is answered by the `verify` job in `deploy-pages.yml`, which fails
   when the live site is not serving the deployed commit — not by a line that
   reads as abandonment the first month nothing changes.
+- **The contact form posts to FormSubmit, a form-to-email relay** —
+  `contactFormEndpoints()` in `src/config/site.ts`. Still no server or database
+  of our own. FormSubmit answers 200 with `success: "false"` until the owner
+  clicks its one-time activation email, so success is read from the body
+  (`features/contact/lib/relay.ts`), never from the status code alone. The
+  composer mode below remains for an empty endpoint.
 - **The contact form renders with no endpoint configured, and is a composer
-  then.** `site.formspreeEndpoint` empty means submitting hands the finished
+  then.** An empty endpoint means submitting hands the finished
   message to the reader's own mail client rather than POSTing it: nothing is
   transmitted by the page, so nothing can be silently discarded by it. The
   button says "Compose this message" and is `data-js-only` in that mode only,

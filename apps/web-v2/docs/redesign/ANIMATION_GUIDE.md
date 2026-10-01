@@ -172,7 +172,7 @@ a cut for its own sake:
 | Command palette | Still Motion's, at L-13 |
 | Filter reflow | Still Motion's, at A-04 / P-05 — `layout` is the one thing CSS genuinely cannot do here |
 | ~~Mobile sheet~~ | Native `<dialog>` at M4. The browser animates it; no library involved |
-| ~~Page cross-fade~~ | Impossible. Navigation is a document load — [ROUTING_PLAN.md](./ROUTING_PLAN.md) §5 |
+| ~~Page cross-fade~~ | Not Motion's. Navigation is a document load ([ROUTING_PLAN.md](./ROUTING_PLAN.md) §5), so it is done with **cross-document View Transitions** in pure CSS — 0 KB, no JS, ignored by unsupporting browsers. Root cross-fade, a pinned header, and card title → detail-page `<h1>` morph on project and blog cards. See "PAGE TRANSITIONS" in `src/styles/motion.css` |
 
 Motion is **not installed**, and with two remaining uses — both dynamic, both on
 routes that do not exist yet — it should not be until one of them is actually

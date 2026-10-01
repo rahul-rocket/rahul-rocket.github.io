@@ -5,13 +5,18 @@ import { Stack } from '@/components/ui/stack'
 import { Text } from '@/components/ui/text'
 import type { Skill } from '@/lib/content/records'
 import type { CaseStudy } from '@/lib/content/schemas'
-import { ProjectCard } from './project-card'
+import {
+	ProjectCard,
+	projectGridClass,
+	projectGridItemClass,
+} from './project-card'
 
 /**
  * P-04/P-05 — the `/projects` index. docs/WEBSITE_STRUCTURE.md §4.6.
  *
- * DELIBERATELY NOT A UNIFORM GRID. §4.6: the top project gets a wide feature
- * row and the rest use a 2-up layout from 1024px. The asymmetry is the point —
+ * DELIBERATELY NOT A UNIFORM GRID. §4.6: the top project gets the large
+ * tile of a bento grid (`projectGridClass`) and the next two stack beside it
+ * from 1024px. The asymmetry is the point —
  * a uniform card grid says the entries are interchangeable, and they are not;
  * the first one is the one to read.
  *
@@ -34,8 +39,6 @@ export function ProjectsIndex({
 	/** Resolved skills, so the filter shows "TypeScript" rather than an id. */
 	skills: readonly Skill[]
 }) {
-	const [feature, ...rest] = studies
-
 	const skillName = new Map(skills.map((skill) => [skill.id, skill.name]))
 	const counts = new Map<string, number>()
 	for (const study of studies) {
@@ -88,41 +91,26 @@ export function ProjectsIndex({
 					/>
 				) : null}
 
-				<ul id={LIST_ID} className="flex list-none flex-col gap-8 p-0">
-					{feature ? (
+				{/* One flat grid — the bento shape lives in `projectGridClass`. Each
+				    study is its own `<li>`, so the filter can hide any of them and
+				    the rest reflow; no nested list or `display: contents` needed. */}
+				<ul id={LIST_ID} className={projectGridClass}>
+					{studies.map((study, index) => (
 						<li
+							key={study.slug}
 							data-filter-item=""
-							data-filter-tokens={feature.frontmatter.stack.join(' ')}
-							data-filter-text={filterText(feature)}
+							data-filter-tokens={study.frontmatter.stack.join(' ')}
+							data-filter-text={filterText(study)}
+							className={projectGridItemClass(index === 0)}
 						>
-							<ProjectCard study={feature} level={3} featured />
+							<ProjectCard
+								study={study}
+								level={3}
+								featured={index === 0}
+								className="flex-1"
+							/>
 						</li>
-					) : null}
-
-					{rest.length > 0 ? (
-						<li className="contents">
-							{/*
-							  `contents` on the wrapper keeps the grid's children as the
-							  real grid items while the outer element stays an `<li>` — so
-							  the list semantics survive the layout. A `<div>` here would
-							  be a non-`<li>` child of a `<ul>`, which is invalid and which
-							  axe flags.
-							*/}
-							<ul className="grid list-none grid-cols-1 gap-8 p-0 lg:grid-cols-2">
-								{rest.map((study) => (
-									<li
-										key={study.slug}
-										data-filter-item=""
-										data-filter-tokens={study.frontmatter.stack.join(' ')}
-										data-filter-text={filterText(study)}
-										className="flex"
-									>
-										<ProjectCard study={study} level={3} className="flex-1" />
-									</li>
-								))}
-							</ul>
-						</li>
-					) : null}
+					))}
 
 					{/*
 					  X-03 — the empty state, in the HTML from the start and hidden
@@ -130,7 +118,7 @@ export function ProjectsIndex({
 					  one state nobody sees in review is also the one that has never
 					  been rendered.
 					*/}
-					<li data-filter-empty="" hidden className="list-none">
+					<li data-filter-empty="" hidden className="list-none lg:col-span-5">
 						<Text tone="muted">
 							No projects match those filters. Clear them to see all{' '}
 							{studies.length}.

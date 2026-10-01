@@ -1,4 +1,19 @@
-import { expect, test } from '@playwright/test'
+import { expect, type Page, test } from '@playwright/test'
+
+/**
+ * Load a page and wait until the palette's shortcut listener is attached.
+ *
+ * The listener is added in an effect, after hydration, and a key pressed before
+ * then is simply dropped — that race was this spec's flakiness (about half of
+ * immediate presses opened nothing). `data-palette-ready` is set in the same
+ * effect, so this waits for exactly the condition the shortcut needs.
+ */
+async function gotoReady(page: Page, path = '/') {
+	await page.goto(path)
+	await page
+		.locator('[data-testid="palette-trigger"][data-palette-ready]')
+		.waitFor({ state: 'attached' })
+}
 
 /**
  * L-13 acceptance — the command palette.
@@ -17,7 +32,7 @@ test.describe('command palette', () => {
 	test('opens on the shortcut, closes on Escape, and restores focus', async ({
 		page,
 	}) => {
-		await page.goto('/')
+		await gotoReady(page)
 
 		const palette = page.getByTestId('command-palette')
 		await expect(palette).toBeHidden()
@@ -36,7 +51,7 @@ test.describe('command palette', () => {
 	})
 
 	test('toggles closed on a second press of the shortcut', async ({ page }) => {
-		await page.goto('/')
+		await gotoReady(page)
 
 		await page.keyboard.press('ControlOrMeta+k')
 		await expect(page.getByTestId('command-palette')).toBeVisible()
@@ -50,13 +65,13 @@ test.describe('command palette', () => {
 	test('opens from the visible trigger, for readers who do not know the shortcut', async ({
 		page,
 	}) => {
-		await page.goto('/')
+		await gotoReady(page)
 		await page.getByTestId('palette-trigger').click()
 		await expect(page.getByTestId('command-palette')).toBeVisible()
 	})
 
 	test('filters as you type and offers real links', async ({ page }) => {
-		await page.goto('/')
+		await gotoReady(page)
 		await page.keyboard.press('ControlOrMeta+k')
 
 		const palette = page.getByTestId('command-palette')
@@ -81,7 +96,7 @@ test.describe('command palette', () => {
 	})
 
 	test('Enter on the search box follows the top result', async ({ page }) => {
-		await page.goto('/')
+		await gotoReady(page)
 		await page.keyboard.press('ControlOrMeta+k')
 
 		await page.getByTestId('palette-input').fill('blog')
@@ -94,7 +109,7 @@ test.describe('command palette', () => {
 	test('ArrowDown moves focus from the input into the results', async ({
 		page,
 	}) => {
-		await page.goto('/')
+		await gotoReady(page)
 		await page.keyboard.press('ControlOrMeta+k')
 
 		await page.keyboard.press('ArrowDown')
@@ -111,7 +126,7 @@ test.describe('command palette', () => {
 	test('the theme action changes the theme and keeps the header toggle honest', async ({
 		page,
 	}) => {
-		await page.goto('/')
+		await gotoReady(page)
 
 		const before = await page.evaluate(() =>
 			document.documentElement.getAttribute('data-theme'),
@@ -145,6 +160,8 @@ test.describe('command palette', () => {
 		// so the footer site map has to carry every route the palette lists.
 		const context = await browser.newContext({ javaScriptEnabled: false })
 		const page = await context.newPage()
+		// Plain `goto`, not `gotoReady`: with JavaScript off the palette never
+		// hydrates, so its ready signal is never set — which is the point here.
 		await page.goto('/')
 
 		await expect(

@@ -68,8 +68,13 @@ export const site = {
 	 * that regex for `mailto:` in source, which is the entire realistic threat
 	 * model for a personal site. `contactEmail()` below is the only reader.
 	 */
-	emailUser: 'hello',
-	emailDomain: 'rahulrocket.dev',
+	//
+	// The address the author actually reads. It was `hello@rahulrocket.dev`,
+	// a domain with no DNS records, so every contact path on the site — the
+	// composer, the mail button, the résumé, the feeds — sent mail that
+	// bounced. It is also the address `apps/web` already publishes.
+	emailUser: 'rahulrathore576',
+	emailDomain: 'gmail.com',
 
 	/**
 	 * This site's own source, which is a different destination from the profile
@@ -83,13 +88,6 @@ export const site = {
 	social: {
 		github: 'https://github.com/rahul-rocket',
 	},
-
-	/**
-	 * C-01 — the form endpoint. Empty until the author creates one, and the
-	 * contact form falls back to `mailto:` when it is, which is the same path a
-	 * reader without JavaScript takes. See `features/contact`.
-	 */
-	formspreeEndpoint: '',
 } as const
 
 export type Site = typeof site
@@ -121,6 +119,27 @@ export function absoluteUrl(path: string): string {
  */
 export function contactEmail(): string {
 	return `${site.emailUser}@${site.emailDomain}`
+}
+
+/**
+ * C-01 — where the contact form posts. FormSubmit (formsubmit.co): a
+ * form-to-email relay, so the site still has no server and no database of its
+ * own, and the author needs no account or key — the endpoint is the address.
+ *
+ * Two URLs because there are two submit paths. `action` is the plain endpoint
+ * a no-JavaScript POST lands on (FormSubmit answers with its own thank-you
+ * page); `ajax` is the JSON variant the enhanced form fetches.
+ *
+ * ACTIVATION: the first message to a new address is held, and FormSubmit
+ * emails the owner a one-time link to confirm the form. Until that link is
+ * clicked every submission reports failure — see `relayAccepted`.
+ */
+export function contactFormEndpoints(): { action: string; ajax: string } {
+	const email = encodeURIComponent(contactEmail())
+	return {
+		action: `https://formsubmit.co/${email}`,
+		ajax: `https://formsubmit.co/ajax/${email}`,
+	}
 }
 
 /**

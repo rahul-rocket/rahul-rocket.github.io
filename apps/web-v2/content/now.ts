@@ -15,10 +15,9 @@ import type { Now } from '@/lib/content/records'
 export const now: Now = {
 	updated: new Date('2026-08-01'),
 
-	intro:
-		'A snapshot of what I am working on, reading, and available for. Updated ' +
-		'by hand, and the date above is the date I last touched it rather than ' +
-		'the date this site was last deployed.',
+	// The "edited by hand, dated when touched" point is made once, by the page's
+	// meta line right under this — which is also where the date actually is.
+	intro: 'A snapshot of what I am working on, reading, and available for.',
 
 	sections: [
 		{

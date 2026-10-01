@@ -145,3 +145,12 @@
 	outline-offset: 2px;
 	border-radius: inherit;
 }
+
+/* The ONE exception, and it relocates the ring rather than dropping it: an
+   input whose container draws the indicator itself (the command palette's
+   search row, a 2px `--ui-focus` underline on `:has(input:focus-visible)`).
+   Unlayered like the rule above — a Tailwind utility cannot beat it. Add this
+   class only alongside a container that draws its own indicator. */
+.u-focus-in-row:focus-visible {
+	outline: none;
+}

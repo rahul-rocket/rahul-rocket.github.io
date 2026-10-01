@@ -37,10 +37,15 @@
  * transition in this block and there must not be one.
  * ============================================================== */
 
+/* PREFIXED FIRST, STANDARD LAST, and the order is load-bearing. The build's
+   minifier (Lightning CSS) treats the pair as one property and keeps only the
+   LAST declaration. Written the other way round, the shipped CSS carried
+   `-webkit-backdrop-filter` alone, which Chrome, Edge and Firefox ignore, so
+   the glass had no blur anywhere but Safari. */
 .u-glass {
-	backdrop-filter: blur(var(--ui-glass-blur)) saturate(var(--ui-glass-saturate));
 	-webkit-backdrop-filter: blur(var(--ui-glass-blur))
 		saturate(var(--ui-glass-saturate));
+	backdrop-filter: blur(var(--ui-glass-blur)) saturate(var(--ui-glass-saturate));
 }
 
 /* The fallback is a complete design, not a degradation: an opaque raised
@@ -175,9 +180,10 @@
  * ============================================================== */
 
 .u-glass-panel {
-	backdrop-filter: blur(var(--ui-glass-panel-blur))
-		saturate(var(--ui-glass-saturate));
+	/* Prefixed first — see `.u-glass`. */
 	-webkit-backdrop-filter: blur(var(--ui-glass-panel-blur))
+		saturate(var(--ui-glass-saturate));
+	backdrop-filter: blur(var(--ui-glass-panel-blur))
 		saturate(var(--ui-glass-saturate));
 }
 

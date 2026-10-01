@@ -28,18 +28,31 @@ export function Timeline({ milestones }: { milestones: readonly Milestone[] }) {
 		<div className="relative">
 			<TimelineSpine />
 
-			<ol className="relative flex list-none flex-col gap-16 p-0">
+			{/*
+			  STAGGERED, NOT ALTERNATING ROWS. At `lg` this is a two-column grid in
+			  which every milestone spans TWO row tracks and the right-hand ones
+			  start one track lower, so each entry begins beside the middle of the
+			  previous one. Entries on the same side never share a track, which is
+			  what makes overlap impossible whatever their heights — a negative
+			  margin would have overlapped the first time a short milestone sat
+			  between two long ones. The alternating version left half of every
+			  row empty and made the page roughly twice as tall as its content.
+			  Below `lg` the grid properties are inert and this is one column.
+			*/}
+			<ol className="relative flex list-none flex-col gap-16 p-0 lg:grid lg:grid-cols-2 lg:gap-x-0 lg:gap-y-6">
 				{milestones.map((milestone, index) => {
 					const onRight = index % 2 === 1
 
 					return (
 						<li
 							key={milestone.id}
+							style={{
+								gridRow: `${index + 1} / span 2`,
+								gridColumn: onRight ? 2 : 1,
+							}}
 							className={cn(
 								'relative pl-10',
-								onRight
-									? 'lg:ml-auto lg:w-1/2 lg:pl-16'
-									: 'lg:w-1/2 lg:pr-16 lg:pl-0',
+								onRight ? 'lg:pl-16' : 'lg:pr-16 lg:pl-0',
 							)}
 						>
 							{/*

@@ -4,8 +4,8 @@ import { expect, test } from '@playwright/test'
  * C-01/C-02 — the contact surface. docs/TESTING.md §4,
  * docs/WEBSITE_STRUCTURE.md §4.12.
  *
- * THE PAGE HAS TWO SHAPES AND BOTH ARE CORRECT. With `site.formspreeEndpoint`
- * set, the form POSTs to that endpoint. With it empty, the same form is a
+ * THE PAGE HAS TWO SHAPES AND BOTH ARE CORRECT. With an endpoint configured
+ * (`contactFormEndpoints()`, FormSubmit), the form POSTs to it. With it empty, the same form is a
  * composer: it validates identically and hands the finished message to the
  * reader's own mail client, so nothing typed here can go nowhere. Either way
  * the pre-filled `mailto:` is on the page beside it.
@@ -102,14 +102,14 @@ test.describe('contact', () => {
 		page,
 	}) => {
 		await page.goto('/contact/')
-		const honeypot = page.locator('input[name="website"]')
+		const honeypot = page.locator('input[name="_honey"]')
 
 		// A screen-reader user must never meet a field they are required to leave
 		// empty. `aria-hidden` on the wrapper AND `tabIndex={-1}` on the input are
 		// both required — either alone leaves it reachable.
 		await expect(honeypot).toHaveAttribute('tabindex', '-1')
 		await expect(
-			page.locator('[aria-hidden="true"] input[name="website"]'),
+			page.locator('[aria-hidden="true"] input[name="_honey"]'),
 		).toHaveCount(1)
 	})
 })

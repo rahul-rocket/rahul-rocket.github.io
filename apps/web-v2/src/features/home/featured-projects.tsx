@@ -2,11 +2,14 @@ import { SectionIntro } from '@/components/layout/section-intro'
 import { Reveal } from '@/components/motion/reveal'
 import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/container'
-import { Grid } from '@/components/ui/grid'
 import { ArrowRightIcon } from '@/components/ui/icons'
 import { Section } from '@/components/ui/section'
 import { Stack } from '@/components/ui/stack'
-import { ProjectCard } from '@/features/projects'
+import {
+	ProjectCard,
+	projectGridClass,
+	projectGridItemClass,
+} from '@/features/projects'
 import type { CaseStudy } from '@/lib/content/schemas'
 
 /**
@@ -43,8 +46,6 @@ export function FeaturedProjects({
 	// and `footerNavGroups` apply.
 	if (studies.length === 0) return null
 
-	const [feature, ...rest] = studies
-
 	return (
 		<Section labelledBy={HEADING_ID}>
 			<Container>
@@ -73,38 +74,29 @@ export function FeaturedProjects({
 					</Reveal>
 
 					{/*
-					  A list of things is a list (UI_GUIDELINES §4). `Stack as="ul"` and
-					  `Grid as="ul"` rather than bare elements so `role="list"` arrives
-					  through a spread: Safari drops list semantics from a
+					  A list of things is a list (UI_GUIDELINES §4), and `role="list"`
+					  arrives through a spread: Safari drops list semantics from a
 					  `list-style: none` ul — which Preflight applies to every one — but
 					  Biome's `noRedundantRoles` reads the JSX literally and rejects the
 					  role written on the element. `SelectedWriting` resolves the same
 					  conflict the same way; the alternative is suppressing an
 					  accessibility rule in order to keep an accessibility fix.
 					*/}
-					<Stack as="ul" role="list" gap={8}>
-						{feature ? (
-							<li>
-								<ProjectCard study={feature} level={3} featured />
+					<ul {...{ role: 'list' }} className={projectGridClass}>
+						{studies.map((study, index) => (
+							<li
+								key={study.slug}
+								className={projectGridItemClass(index === 0)}
+							>
+								<ProjectCard
+									study={study}
+									level={3}
+									featured={index === 0}
+									className="flex-1"
+								/>
 							</li>
-						) : null}
-
-						{rest.length > 0 ? (
-							// `contents` so the nested grid's items participate in the row
-							// below without this wrapper becoming a box of its own — the
-							// list structure is what carries the semantics, the grid only
-							// carries the layout.
-							<li className="contents">
-								<Grid as="ul" cols={2} gap={8}>
-									{rest.map((study) => (
-										<li key={study.slug} className="flex">
-											<ProjectCard study={study} level={3} className="flex-1" />
-										</li>
-									))}
-								</Grid>
-							</li>
-						) : null}
-					</Stack>
+						))}
+					</ul>
 				</Stack>
 			</Container>
 		</Section>

@@ -1,3 +1,5 @@
+import { site } from "@/lib/site"
+
 /**
  * `output: export` requires every metadata route to declare that it is
  * static. These read `process.env` at module scope, which is enough for Next to
@@ -14,7 +16,7 @@ export const dynamic = "force-static"
  * because a crawler reads only the robots.txt at the origin root.
  */
 export default function robots() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://rahul-rocket.github.io"
+  const baseUrl = site.url
 
   return {
     rules: [
