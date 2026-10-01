@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+  <defs>
+    <linearGradient id="ring" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0%" stop-color="#e040fb"/>
+      <stop offset="50%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="flame" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f43f5e"/>
+    </linearGradient>
+  </defs>
+  <circle cx="20" cy="20" r="18" fill="#0a0a0f"/>
+  <circle cx="20" cy="20" r="18" fill="none" stroke="url(#ring)" stroke-width="3.5"/>
+  <g transform="rotate(-40 20 20)">
+    <path d="M20 9.5c2.9 2.9 4.3 6.3 4.3 9.4v3.4h-8.6v-3.4c0-3.1 1.4-6.5 4.3-9.4Z" fill="#f8fafc"/>
+    <circle cx="20" cy="16.4" r="1.9" fill="#0a0a0f"/>
+    <path d="M15.7 18.9 12.6 23.4l3.1-1.1Z" fill="#cbd5e1"/>
+    <path d="M24.3 18.9l3.1 4.5-3.1-1.1Z" fill="#cbd5e1"/>
+    <path d="M17.9 23.1h4.2l-2.1 5.4Z" fill="url(#flame)"/>
+  </g>
+</svg>

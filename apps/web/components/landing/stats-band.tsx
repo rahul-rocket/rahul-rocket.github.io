@@ -42,18 +42,19 @@ export function StatsBand() {
       <div className="container mx-auto px-4 py-10 md:py-12">
         <dl className="grid grid-cols-2 lg:grid-cols-4 gap-8">
           {stats.map((stat) => (
-            <div key={stat.label} className="text-center">
-              <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary mb-4">
-                <stat.icon className="h-6 w-6" />
-              </div>
-              {/* Reversed so the term still precedes its definition in the
-                  DOM while the number reads first on screen. */}
-              <div className="flex flex-col-reverse">
-                <dt className="text-sm text-muted-foreground mt-1">{stat.label}</dt>
-                <dd className="text-3xl md:text-4xl font-bold text-gradient">
+            /* One wrapping <div> per group is all a <dl> allows, so the icon
+               lives in the <dd> (decorative, hidden) and the reversed column
+               puts the number above its term on screen. */
+            <div key={stat.label} className="flex flex-col-reverse items-center text-center">
+              <dt className="text-sm text-muted-foreground mt-1">{stat.label}</dt>
+              <dd className="flex flex-col items-center">
+                <span className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary mb-4">
+                  <stat.icon className="h-6 w-6" aria-hidden="true" />
+                </span>
+                <span className="text-3xl md:text-4xl font-bold text-gradient">
                   {stat.value}
-                </dd>
-              </div>
+                </span>
+              </dd>
             </div>
           ))}
         </dl>

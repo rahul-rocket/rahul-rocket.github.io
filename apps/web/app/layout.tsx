@@ -100,19 +100,6 @@ export const metadata: Metadata = {
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
-    other: [
-      { rel: "mask-icon", url: "/safari-pinned-tab.svg", color: "#7c3aed" },
-    ],
-  },
-
-  // Verification
-  verification: {
-    google: "google-site-verification-code",
-    yandex: "yandex-verification-code",
-    // Next has no first-class `bing` key; it goes through `other` as a raw meta tag.
-    other: {
-      "msvalidate.01": "bing-verification-code",
-    },
   },
 
   // App-specific

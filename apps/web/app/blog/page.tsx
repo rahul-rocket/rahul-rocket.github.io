@@ -60,9 +60,11 @@ export default async function BlogPage() {
                     </span>
                   </div>
                   <CardTitle className="text-2xl group-hover:text-primary transition-colors">
-                    <Link href={`/blog/${post.slug}`}>
-                      {post.title}
-                    </Link>
+                    <h2>
+                      <Link href={`/blog/${post.slug}`}>
+                        {post.title}
+                      </Link>
+                    </h2>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -80,6 +82,7 @@ export default async function BlogPage() {
                     <Button variant="ghost" className="group/btn" asChild>
                       <Link href={`/blog/${post.slug}`}>
                         Read More
+                        <span className="sr-only">: {post.title}</span>
                         <ArrowRight className="h-4 w-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
                       </Link>
                     </Button>
