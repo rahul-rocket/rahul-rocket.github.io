@@ -469,7 +469,7 @@ export function ProjectDetailClient({ project, relatedProjects }: ProjectDetailC
 
           {/* CTA Section */}
           <div className="text-center py-8">
-            <Card className="bg-linear-to-br from-primary/5 via-background to-purple-500/5 border-primary/20">
+            <Card className="bg-linear-to-br from-primary/5 via-background to-spectrum-3/5 border-primary/20">
               <CardContent className="p-8">
                 <h3 className="text-xl font-bold mb-3">Interested in this project?</h3>
                 <p className="text-muted-foreground mb-6">

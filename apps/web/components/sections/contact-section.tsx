@@ -385,7 +385,7 @@ export function ContactSection() {
               </Card>
 
               {/* Availability Card */}
-              <Card className="bg-linear-to-br from-primary/5 to-purple-500/5 border-primary/20">
+              <Card className="bg-linear-to-br from-primary/5 to-spectrum-3/5 border-primary/20">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-3">
                     <div className="relative">

@@ -528,7 +528,7 @@ export function ProjectsSection() {
 
           {/* GitHub CTA */}
           <div className={`mt-16 text-center transition-all duration-700 delay-500 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}>
-            <Card className="bg-linear-to-br from-primary/5 via-background to-purple-500/5 border-primary/20 inline-block max-w-2xl">
+            <Card className="bg-linear-to-br from-primary/5 via-background to-spectrum-3/5 border-primary/20 inline-block max-w-2xl">
               <CardContent className="p-8">
                 <Github className="h-12 w-12 mx-auto mb-4" />
                 <h3 className="text-xl font-bold mb-3">Want to See More?</h3>
