@@ -1,7 +1,11 @@
 version: 2
 
 updates:
-  # Root workspace: shared tooling (turbo, typescript, prettier).
+  # One entry for the whole pnpm workspace. Run from the root, Dependabot updates
+  # every workspace package (apps/*, packages/*) *and* the single root
+  # pnpm-lock.yaml. Per-directory entries cannot see that lockfile, so their PRs
+  # changed package.json alone and failed `pnpm install --frozen-lockfile` in
+  # the deploy. Do not add per-directory npm entries back.
   - package-ecosystem: npm
     directory: "/"
     schedule:
@@ -10,49 +14,40 @@ updates:
     open-pull-requests-limit: 10
     labels: ["dependencies"]
     groups:
-      dev-tooling:
-        patterns: ["turbo", "typescript", "prettier", "eslint*", "@typescript-eslint/*"]
-        update-types: ["minor", "patch"]
-
-  - package-ecosystem: npm
-    directory: "/apps/web"
-    schedule:
-      interval: weekly
-      day: monday
-    open-pull-requests-limit: 10
-    labels: ["dependencies", "apps/web"]
-    groups:
-      next:
-        patterns: ["next", "eslint-config-next", "@next/*"]
+      # React and its types move together across both apps: AGENTS.md requires
+      # web and web-v2 to pin the same @types/react / @types/react-dom.
       react:
         patterns: ["react", "react-dom", "@types/react", "@types/react-dom"]
-      minor-and-patch:
-        patterns: ["*"]
-        update-types: ["minor", "patch"]
-
-  - package-ecosystem: npm
-    directory: "/packages/ui"
-    schedule:
-      interval: weekly
-      day: monday
-    open-pull-requests-limit: 10
-    labels: ["dependencies", "packages/ui"]
-    groups:
+      next:
+        patterns: ["next", "eslint-config-next", "@next/*"]
       radix:
         patterns: ["@radix-ui/*"]
       minor-and-patch:
         patterns: ["*"]
         update-types: ["minor", "patch"]
-
-  - package-ecosystem: npm
-    directory: "/packages/eslint-config"
-    schedule:
-      interval: weekly
-      day: monday
-    labels: ["dependencies"]
-    groups:
-      lint-tooling:
-        patterns: ["*"]
+    ignore:
+      # Held deliberately -- see AGENTS.md and apps/web-v2/CLAUDE.md before lifting.
+      # ESLint stays on 8 until packages/eslint-config moves to flat config;
+      # eslint-config-next 16 requires ESLint >= 9, so it is held with it.
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "eslint-config-next"
+        update-types: ["version-update:semver-major"]
+      # web-v2 runs on Node 22 (engines), so its @types/node stays on 22.x.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # Pinned to the dev container's Chromium build; bump by hand with it.
+      - dependency-name: "@playwright/test"
+      # Major upgrades are migrations, done by hand: Next 16 for web-v2,
+      # TypeScript 7, Vite 8.
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@next/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "vite"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: "/"
