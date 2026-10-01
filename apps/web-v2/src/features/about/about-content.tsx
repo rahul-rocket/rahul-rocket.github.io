@@ -93,10 +93,24 @@ export function AboutContent({
 						  a screen-reader user can move between principles without
 						  reading every example.
 						*/}
-						<dl className="flex flex-col gap-10">
-							{principles.map((principle) => (
-								<div key={principle.title} className="flex flex-col gap-3">
-									<dt className="font-heading text-h3 text-text leading-heading tracking-heading">
+						<dl className="flex flex-col gap-4">
+							{principles.map((principle, index) => (
+								<div
+									key={principle.title}
+									className="u-hairline relative flex flex-col gap-3 rounded-lg border border-border bg-surface p-6 sm:p-8"
+								>
+									{/* The ordinal sits INSIDE the <dt>: a <dl> may only hold
+									    <dt>/<dd> or one <div> level wrapping them, and axe's
+									    `definition-list` rule fails anything deeper. It is
+									    decoration — the list order already is the order — so
+									    the accessibility tree never sees it. */}
+									<dt className="flex items-baseline gap-4 font-heading text-h3 text-text leading-heading tracking-heading">
+										<span
+											aria-hidden="true"
+											className="u-gradient-text shrink-0 font-mono"
+										>
+											{String(index + 1).padStart(2, '0')}
+										</span>
 										{principle.title}
 									</dt>
 									<dd className="max-w-reading text-body text-text-muted leading-body">
@@ -115,7 +129,11 @@ export function AboutContent({
 						</Heading>
 						<ul className="flex max-w-reading flex-col gap-3">
 							{learning.map((item) => (
-								<li key={item} className="text-text-muted">
+								<li key={item} className="flex gap-3 text-text-muted">
+									<span
+										aria-hidden="true"
+										className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
+									/>
 									{item}
 								</li>
 							))}

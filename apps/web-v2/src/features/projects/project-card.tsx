@@ -4,6 +4,7 @@ import { ArrowRightIcon } from '@/components/ui/icons'
 import { Stack } from '@/components/ui/stack'
 import { Text } from '@/components/ui/text'
 import { cn } from '@/lib/cn'
+import { getSkill } from '@/lib/content/data'
 import type { CaseStudy } from '@/lib/content/schemas'
 import { formatPeriod } from './lib/format-period'
 
@@ -99,7 +100,10 @@ export function ProjectCard({
 					    being scannable, and the case study lists the full stack. */}
 					{frontmatter.stack.slice(0, 4).map((id) => (
 						<li key={id}>
-							<Badge>{id}</Badge>
+							{/* The display name, not the id — "Next.js", not "nextjs" —
+							    matching the filter above. The id is the fallback only
+							    for a stack entry that is not a skill record. */}
+							<Badge>{getSkill(id)?.name ?? id}</Badge>
 						</li>
 					))}
 					{frontmatter.stack.length > 4 ? (
