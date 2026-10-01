@@ -1,8 +1,6 @@
 import type React from 'react'
 import type { Metadata, Viewport } from 'next'
 
-import { Instrument_Serif } from 'next/font/google'
-
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Navbar } from '@/components/navbar'
@@ -11,18 +9,6 @@ import { LINKEDIN_URL, X_URL } from '@/lib/contact-channels'
 import { GITHUB_URL } from '@/lib/github'
 import { getPublishedPosts } from '@/lib/posts'
 import type { SearchItem } from '@/lib/search-index'
-
-/**
- * Display face for headings (`font-display`). Self-hosted by next/font at
- * build time, so the static export makes no request to Google at runtime.
- */
-const displayFont = Instrument_Serif({
-  subsets: ['latin'],
-  weight: '400',
-  style: ['normal', 'italic'],
-  display: 'swap',
-  variable: '--font-instrument-serif',
-})
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://rahul.dev"
 
@@ -197,7 +183,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }))
 
   return (
-    <html lang="en" className={displayFont.variable} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Preconnect to external domains for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
