@@ -1,0 +1,76 @@
+# Pull-request checks.
+#
+# deploy-pages.yml only runs on push to develop, and it publishes. Without this
+# workflow the first automated check of any change is the production deploy.
+# This runs the same gates as that workflow's `build` job (plus lint) on every
+# PR into develop, and never deploys: it has read-only permissions and no
+# upload or Pages steps.
+#
+# Keep the setup steps (pnpm and Node versions, frozen install) in step with
+# deploy-pages.yml, or a PR can pass here and still fail the deploy.
+name: CI
+
+on:
+  pull_request:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A new push to the same PR supersedes the run in progress. Safe here, unlike
+# in the deploy workflow: nothing is published.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install pnpm
+        # Pinned to `packageManager` in the root package.json, as in deploy-pages.yml.
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v7
+        with:
+          # Must match deploy-pages.yml: apps/web-v2 requires Node 22.x.
+          node-version: 22.11.0
+          cache: pnpm
+
+      - name: Install dependencies
+        # Fails a PR that changes package.json without updating pnpm-lock.yaml,
+        # which is exactly what the deploy would fail on.
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm check-types
+
+      - name: Lint
+        # ESLint in apps/web and packages/*, Biome in apps/web-v2.
+        run: pnpm lint
+
+      - name: Build V1 (apps/web)
+        # No secrets on PRs: /blog falls back to the seeded posts, the contact
+        # form to mailto:, and the contribution graph is omitted. All three are
+        # supported build modes, so this still proves the export builds.
+        run: pnpm web:build
+        env:
+          NEXT_PUBLIC_BASE_URL: https://rahul-rocket.github.io
+
+      - name: Build V2 (apps/web-v2)
+        run: pnpm web-v2:build
+
+      - name: Gate V2 export
+        run: pnpm web-v2:verify
+
+      - name: Test V2
+        run: pnpm web-v2:test
+
+      - name: Assemble the Pages artifact
+        # Runs the same layout assertions as the deploy, without uploading anything.
+        run: pnpm pages:assemble
