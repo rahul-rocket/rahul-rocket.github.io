@@ -6,6 +6,7 @@ import { Github, Linkedin } from "@/components/brand-icons"
 import { Button } from "@portfolio/ui/button"
 import { Badge } from "@portfolio/ui/badge"
 import Link from "next/link"
+import { GITHUB_URL } from "@/lib/github"
 
 const techStack = [
   { name: "React", color: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20" },
@@ -127,7 +128,7 @@ export function HeroSection() {
               }`}
             >
               <a
-                href="https://github.com"
+                href={GITHUB_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-3 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-all hover:scale-110 hover:-translate-y-1"

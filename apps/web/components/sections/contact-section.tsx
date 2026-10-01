@@ -20,6 +20,7 @@ import { Input } from "@portfolio/ui/input"
 import { Textarea } from "@portfolio/ui/textarea"
 import { Label } from "@portfolio/ui/label"
 import { Badge } from "@portfolio/ui/badge"
+import { GITHUB_URL } from "@/lib/github"
 
 // Contact information
 const contactInfo = [
@@ -58,9 +59,9 @@ const socialLinks = [
   {
     name: "GitHub",
     icon: Github,
-    href: "https://github.com",
+    href: GITHUB_URL,
     color: "hover:bg-gray-800 hover:text-white",
-    username: "@rahul",
+    username: "@rahul-rocket",
   },
   {
     name: "LinkedIn",
