@@ -6,48 +6,11 @@ import { FeaturedProjects } from '@/components/landing/featured-projects'
 import { ExperiencePreview } from '@/components/landing/experience-preview'
 import { LatestPosts } from '@/components/landing/latest-posts'
 import { GitHubActivity } from '@/components/landing/github-activity'
-import { LINKEDIN_URL, X_URL } from '@/lib/contact-channels'
-import { GITHUB_URL } from '@/lib/github'
+import { JsonLdScript } from '@/components/json-ld'
+import { graph, profilePageSchema } from '@/lib/structured-data'
 import { GetInTouchSection } from '@/components/landing/get-in-touch-section'
 import { CtaBand } from '@/components/landing/cta-band'
 
-// JSON-LD for the homepage
-const homeJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "ProfilePage",
-  mainEntity: {
-    "@type": "Person",
-    name: "Rahul",
-    jobTitle: "Software Developer",
-    description: "Professional Software Developer based in Ahmedabad, India. Specializing in React, Next.js, Node.js, and modern web technologies.",
-    url: process.env.NEXT_PUBLIC_BASE_URL || "https://rahul.dev",
-    email: "rahulrathore576@gmail.com",
-    telephone: "+91-8264110143",
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: "Ahmedabad",
-      addressRegion: "Gujarat",
-      addressCountry: "India",
-    },
-    sameAs: [
-      GITHUB_URL,
-      LINKEDIN_URL,
-      X_URL,
-    ],
-    knowsAbout: [
-      "JavaScript",
-      "TypeScript",
-      "React",
-      "Next.js",
-      "Node.js",
-      "NestJS",
-      "PostgreSQL",
-      "MongoDB",
-      "Tailwind CSS",
-      "Web Development",
-    ],
-  },
-}
 
 /**
  * `LatestPosts` reads Postgres, which on a static export happens once during
@@ -59,11 +22,8 @@ export const dynamic = "force-static"
 export default function HomePage() {
   return (
     <>
-      {/* JSON-LD Structured Data for homepage */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd) }}
-      />
+      {/* The Person itself is in the layout's graph; this points at it. */}
+      <JsonLdScript data={graph(profilePageSchema())} />
 
       {/*
         The landing page is a teaser for the rest of the site: each block below
