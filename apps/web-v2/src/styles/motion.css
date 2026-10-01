@@ -900,3 +900,80 @@ html.lenis body {
 .u-sweep:not(:hover):not(:focus-visible)::after {
 	transform-origin: right;
 }
+
+/*
+ * ==============================================================
+ * PAGE TRANSITIONS — cross-document View Transitions.
+ * docs/redesign/ANIMATION_GUIDE.md §4
+ *
+ * Navigation here is a full document load (plain `<a href>`, ROUTING_PLAN §5),
+ * which used to make a page cross-fade impossible. Cross-document View
+ * Transitions remove that limit with ZERO JavaScript: both documents opt in
+ * with the at-rule below, and the browser snapshots the old page, paints the
+ * new one, and animates between them in a pseudo-element layer.
+ *
+ * Three things are named:
+ *   root           — everything else; a short cross-fade with a 6px rise.
+ *   site-header    — present on both pages, so it holds still instead of
+ *                    fading out and back in, which is what makes it read as
+ *                    "the same site" rather than "a new page".
+ *   case-study-*   — a project card's title and that study's `<h1>`
+ *                    (features/projects/lib/transition-name.ts). The browser
+ *                    morphs one into the other, position and size.
+ *
+ * PROGRESSIVE BY CONSTRUCTION. A browser without support ignores the at-rule
+ * and navigates exactly as before; there is no fallback path to maintain.
+ *
+ * REDUCED MOTION OPTS OUT AT THE SOURCE. The at-rule is inside the media
+ * query, so under reduced motion no transition is ever started — this does not
+ * rely on the themes.css backstop shortening one.
+ *
+ * NEVER ON THE CRITICAL PATH. The new page is fully rendered before the
+ * animation starts, and the duration is the `base` token (250ms), the fast end
+ * of law 2's budget. A navigation that feels slower than before is a bug.
+ * ============================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+	@view-transition {
+		navigation: auto;
+	}
+
+	#site-header {
+		view-transition-name: site-header;
+	}
+
+	::view-transition-group(*) {
+		animation-duration: var(--duration-base);
+		animation-timing-function: var(--ui-ease-out-quint);
+	}
+
+	::view-transition-old(root) {
+		animation: vt-fade-out var(--duration-fast) var(--ui-ease-out-quint) both;
+	}
+
+	::view-transition-new(root) {
+		animation: vt-rise-in var(--duration-base) var(--ui-ease-out-quint) both;
+	}
+
+	/* A morphing title changes size, so the two snapshots have different
+	   aspect ratios. Without this the default `fill` stretch distorts the
+	   text mid-flight; `height: 100%` with auto width scales it uniformly. */
+	::view-transition-old(*),
+	::view-transition-new(*) {
+		height: 100%;
+		width: auto;
+	}
+}
+
+@keyframes vt-fade-out {
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes vt-rise-in {
+	from {
+		opacity: 0;
+		transform: translate3d(0, 6px, 0);
+	}
+}

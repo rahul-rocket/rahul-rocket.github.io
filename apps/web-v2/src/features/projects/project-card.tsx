@@ -6,6 +6,7 @@ import { Text } from '@/components/ui/text'
 import { cn } from '@/lib/cn'
 import type { CaseStudy } from '@/lib/content/schemas'
 import { formatPeriod } from './lib/format-period'
+import { caseStudyTransitionName } from './lib/transition-name'
 
 /**
  * P-04 — a case-study entry on `/projects` and on Home.
@@ -83,7 +84,15 @@ export function ProjectCard({
 					) : null}
 				</Stack>
 
-				<Heading level={level} size={featured ? 'h2' : 'h3'}>
+				{/* Named so the title morphs into the case study's `<h1>` on
+				    navigation — see "PAGE TRANSITIONS" in motion.css. On the
+				    heading, not the anchor: an inline box that wraps to two lines
+				    cannot carry a transition name. */}
+				<Heading
+					level={level}
+					size={featured ? 'h2' : 'h3'}
+					style={{ viewTransitionName: caseStudyTransitionName(study.slug) }}
+				>
 					<a
 						href={study.href}
 						className="text-text no-underline after:absolute after:inset-0 after:content-[''] hover:text-accent"

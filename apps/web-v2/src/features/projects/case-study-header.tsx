@@ -7,6 +7,7 @@ import { Text } from '@/components/ui/text'
 import type { Skill } from '@/lib/content/records'
 import type { CaseStudy } from '@/lib/content/schemas'
 import { formatPeriod, periodDuration } from './lib/format-period'
+import { caseStudyTransitionName } from './lib/transition-name'
 import { MetricList } from './metric-list'
 
 /**
@@ -36,6 +37,7 @@ export function CaseStudyHeader({
 				eyebrow="Case study"
 				title={frontmatter.title}
 				lede={frontmatter.summary}
+				titleTransitionName={caseStudyTransitionName(study.slug)}
 			/>
 
 			<dl className="grid grid-cols-1 gap-6 border-border border-y py-6 sm:grid-cols-3">
