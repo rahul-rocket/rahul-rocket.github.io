@@ -1,11 +1,10 @@
 "use client"
 
+import Link from "next/link"
 import { useEffect, useState, useRef } from "react"
 import {
   ExternalLink,
   Folder,
-  Star,
-  GitFork,
   Filter,
   X,
   Search,
@@ -16,153 +15,47 @@ import { Card, CardContent, CardHeader } from "@portfolio/ui/card"
 import { Badge } from "@portfolio/ui/badge"
 import { Button } from "@portfolio/ui/button"
 import { Input } from "@portfolio/ui/input"
+import { projectsData } from "@/lib/projects-data"
+import type { Project } from "@/lib/types"
 import { ProjectCover } from "./project-cover"
 
-// Featured projects with detailed info
-const featuredProjects = [
-  {
-    id: "ecommerce-platform",
-    title: "E-Commerce Platform",
-    description: "A full-featured e-commerce platform with real-time inventory management, secure payment processing via Stripe, and an intuitive admin dashboard. Features include product search, filters, cart management, and order tracking.",
-    longDescription: "Built a scalable e-commerce solution serving 50,000+ monthly active users with features like real-time inventory sync, multi-payment gateway support, and comprehensive analytics dashboard.",
-    technologies: ["Next.js", "TypeScript", "Node.js", "PostgreSQL", "Stripe", "Tailwind CSS"],
-    category: "Full Stack",
-    github: "https://github.com",
-    demo: "https://demo.example.com",
-    featured: true,
-    stats: { stars: 128, forks: 34 },
-  },
-  {
-    id: "task-management-app",
-    title: "TaskFlow - Project Management",
-    description: "A collaborative project management tool with real-time updates, drag-and-drop kanban boards, team collaboration features, and automated workflow management.",
-    longDescription: "Developed a Trello-like project management application with real-time collaboration, custom workflows, and integrations with Slack and GitHub.",
-    technologies: ["React", "Node.js", "Socket.io", "MongoDB", "Redux", "Material-UI"],
-    category: "Full Stack",
-    github: "https://github.com",
-    demo: "https://demo.example.com",
-    featured: true,
-    stats: { stars: 89, forks: 21 },
-  },
-  {
-    id: "ai-content-generator",
-    title: "AI Content Studio",
-    description: "An AI-powered content generation platform that helps create blog posts, social media content, marketing copy, and product descriptions using advanced language models.",
-    longDescription: "Built an AI content platform leveraging OpenAI GPT models for generating high-quality marketing content with tone customization and brand voice settings.",
-    technologies: ["Next.js", "TypeScript", "OpenAI", "Supabase", "Tailwind CSS", "Vercel"],
-    category: "AI/ML",
-    github: "https://github.com",
-    demo: "https://demo.example.com",
-    featured: true,
-    stats: { stars: 256, forks: 67 },
-  },
-  {
-    id: "real-estate-portal",
-    title: "PropertyHub - Real Estate",
-    description: "A modern real estate listing platform with advanced search filters, map integration, virtual tours, and mortgage calculator. Features agent dashboards and lead management.",
-    longDescription: "Developed a comprehensive real estate platform with Google Maps integration, 3D virtual tours, and AI-powered property recommendations.",
-    technologies: ["React", "Next.js", "Node.js", "PostgreSQL", "Google Maps", "AWS"],
-    category: "Full Stack",
-    github: "https://github.com",
-    demo: "https://demo.example.com",
-    featured: true,
-    stats: { stars: 67, forks: 18 },
-  },
-]
+/** Card shape for this section, derived from the single source in projects-data. */
+interface ProjectListing {
+  id: string
+  title: string
+  description: string
+  technologies: string[]
+  category: string
+  github?: string
+  demo?: string
+}
 
-// Other notable projects
-const otherProjects = [
-  {
-    id: "weather-dashboard",
-    title: "Weather Dashboard",
-    description: "Real-time weather application with 7-day forecasts, interactive maps, and location-based alerts.",
-    technologies: ["React", "TypeScript", "Weather API", "Chart.js"],
-    github: "https://github.com",
-    demo: "https://demo.example.com",
-    category: "Frontend",
-  },
-  {
-    id: "blog-cms",
-    title: "Headless Blog CMS",
-    description: "A headless CMS for managing blog content with markdown support, image optimization, and SEO tools.",
-    technologies: ["Next.js", "Sanity", "GraphQL", "Vercel"],
-    github: "https://github.com",
-    demo: "https://demo.example.com",
-    category: "Full Stack",
-  },
-  {
-    id: "fitness-tracker",
-    title: "FitTrack Pro",
-    description: "Mobile-first fitness tracking app with workout plans, progress charts, and social challenges.",
-    technologies: ["React Native", "Firebase", "Redux", "Node.js"],
-    github: "https://github.com",
-    category: "Mobile",
-  },
-  {
-    id: "chat-application",
-    title: "ChatConnect",
-    description: "Real-time messaging application with video calls, file sharing, and end-to-end encryption.",
-    technologies: ["React", "Socket.io", "WebRTC", "Node.js", "MongoDB"],
-    github: "https://github.com",
-    demo: "https://demo.example.com",
-    category: "Full Stack",
-  },
-  {
-    id: "expense-tracker",
-    title: "ExpenseWise",
-    description: "Personal finance management app with budget tracking, expense categorization, and visual reports.",
-    technologies: ["Next.js", "Prisma", "PostgreSQL", "Chart.js"],
-    github: "https://github.com",
-    demo: "https://demo.example.com",
-    category: "Full Stack",
-  },
-  {
-    id: "portfolio-template",
-    title: "DevFolio Template",
-    description: "Open-source developer portfolio template with dark mode, animations, and easy customization.",
-    technologies: ["Next.js", "TypeScript", "Tailwind CSS", "Framer Motion"],
-    github: "https://github.com",
-    demo: "https://demo.example.com",
-    category: "Frontend",
-  },
-  {
-    id: "api-gateway",
-    title: "API Gateway Service",
-    description: "Microservices API gateway with rate limiting, authentication, and request routing.",
-    technologies: ["Node.js", "NestJS", "Redis", "Docker", "Kubernetes"],
-    github: "https://github.com",
-    category: "Backend",
-  },
-  {
-    id: "code-snippet-manager",
-    title: "SnippetVault",
-    description: "Developer tool for organizing, searching, and sharing code snippets with syntax highlighting.",
-    technologies: ["React", "Node.js", "MongoDB", "Prism.js"],
-    github: "https://github.com",
-    demo: "https://demo.example.com",
-    category: "Developer Tools",
-  },
-]
+const toListing = (project: Project): ProjectListing => ({
+  id: project.id,
+  title: project.title,
+  description: project.summary,
+  technologies: [...project.techStack.frontend, ...project.techStack.backend],
+  category: project.category,
+  github: project.github,
+  demo: project.demo,
+})
+
+const allProjects = Object.values(projectsData)
+const featuredProjects = allProjects.filter((p) => p.featured).map(toListing)
+const otherProjects = allProjects.filter((p) => !p.featured).map(toListing)
 
 // All unique technologies for filtering
-const allTechnologies = [...new Set([
-  ...featuredProjects.flatMap(p => p.technologies),
-  ...otherProjects.flatMap(p => p.technologies)
-])].sort()
+const allTechnologies = [...new Set(allProjects.flatMap((p) => toListing(p).technologies))].sort()
 
-// Categories for filtering
-const categories = ["All", "Full Stack", "Frontend", "Backend", "Mobile", "AI/ML", "Developer Tools"]
-
-// Featured Project Card Component
-type FeaturedProject = (typeof featuredProjects)[number]
-type OtherProject = (typeof otherProjects)[number]
+// Categories for filtering — only those that actually have projects
+const categories = ["All", ...new Set(allProjects.map((p) => p.category))]
 
 const FeaturedProjectCard = ({
   project,
   index,
   isVisible,
 }: {
-  project: FeaturedProject
+  project: ProjectListing
   index: number
   isVisible: boolean
 }) => {
@@ -197,10 +90,10 @@ const FeaturedProjectCard = ({
               </Button>
             )}
             <Button size="lg" variant="outline" asChild className="gap-2 bg-background/10 border-white text-white hover:bg-white hover:text-primary">
-              <a href={project.github} target="_blank" rel="noopener noreferrer">
-                <Github className="h-4 w-4" />
-                Code
-              </a>
+              <Link href={`/projects/${project.id}`}>
+                Case Study
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
             </Button>
           </div>
         </div>
@@ -220,20 +113,6 @@ const FeaturedProjectCard = ({
           {project.description}
         </p>
 
-        {/* Stats */}
-        {project.stats && (
-          <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Star className="h-4 w-4 text-warning" />
-              {project.stats.stars}
-            </span>
-            <span className="flex items-center gap-1">
-              <GitFork className="h-4 w-4" />
-              {project.stats.forks}
-            </span>
-          </div>
-        )}
-
         {/* Technologies */}
         <div className="flex flex-wrap gap-2 mb-6">
           {project.technologies.map((tech, idx) => (
@@ -246,19 +125,27 @@ const FeaturedProjectCard = ({
         {/* Links */}
         <div className="flex gap-3">
           {project.demo && (
-            <Button asChild className="gap-2">
+            <Button variant="outline" asChild className="gap-2">
               <a href={project.demo} target="_blank" rel="noopener noreferrer">
-                View Project
+                Live Demo
                 <ArrowUpRight className="h-4 w-4" />
               </a>
             </Button>
           )}
-          <Button variant="outline" asChild className="gap-2">
-            <a href={project.github} target="_blank" rel="noopener noreferrer">
-              <Github className="h-4 w-4" />
-              Source Code
-            </a>
+          <Button asChild className="gap-2">
+            <Link href={`/projects/${project.id}`}>
+              Read Case Study
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
           </Button>
+          {project.github && (
+            <Button variant="outline" asChild className="gap-2">
+              <a href={project.github} target="_blank" rel="noopener noreferrer">
+                <Github className="h-4 w-4" />
+                Source Code
+              </a>
+            </Button>
+          )}
         </div>
       </div>
     </div>
@@ -271,13 +158,13 @@ const ProjectCard = ({
   isVisible,
   delay,
 }: {
-  project: OtherProject
+  project: ProjectListing
   isVisible: boolean
   delay: number
 }) => {
   return (
     <Card 
-      className={`group h-full hover:shadow-xl transition-all duration-500 hover:-translate-y-2 hover:border-primary/50 overflow-hidden ${
+      className={`group relative h-full hover:shadow-xl transition-all duration-500 hover:-translate-y-2 hover:border-primary/50 overflow-hidden ${
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
       }`}
       style={{ transitionDelay: `${delay}ms` }}
@@ -293,7 +180,7 @@ const ProjectCard = ({
                 href={project.github} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="p-2 rounded-full hover:bg-secondary transition-colors"
+                className="relative z-10 p-2 rounded-full hover:bg-secondary transition-colors"
                 aria-label="GitHub Repository"
               >
                 <Github className="h-5 w-5 text-muted-foreground hover:text-foreground" />
@@ -304,7 +191,7 @@ const ProjectCard = ({
                 href={project.demo} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="p-2 rounded-full hover:bg-secondary transition-colors"
+                className="relative z-10 p-2 rounded-full hover:bg-secondary transition-colors"
                 aria-label="Live Demo"
               >
                 <ExternalLink className="h-5 w-5 text-muted-foreground hover:text-foreground" />
@@ -318,7 +205,9 @@ const ProjectCard = ({
           {project.category}
         </Badge>
         <h4 className="font-bold text-lg mb-2 group-hover:text-primary transition-colors">
-          {project.title}
+          <Link href={`/projects/${project.id}`} className="after:absolute after:inset-0">
+            {project.title}
+          </Link>
         </h4>
         <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
           {project.description}
@@ -366,7 +255,7 @@ export function ProjectsSection() {
   }, [])
 
   // Filter projects based on category, technology, and search
-  const filterProjects = <T extends FeaturedProject | OtherProject>(projects: T[]): T[] => {
+  const filterProjects = (projects: ProjectListing[]): ProjectListing[] => {
     return projects.filter(project => {
       const matchesCategory = selectedCategory === "All" || project.category === selectedCategory
       const matchesTech = !selectedTech || project.technologies.includes(selectedTech)

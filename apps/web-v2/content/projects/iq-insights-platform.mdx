@@ -1,0 +1,66 @@
+---
+title: "IQ Insights: one monorepo for an assessment SaaS"
+summary: "Adaptive IQ and personality tests, AI reports, two payment gateways and verifiable certificates — kept coherent in one Turborepo on Supabase."
+role: "Lead engineer — monorepo architecture, API, platform packages"
+period:
+  from: 2025-07
+order: 2
+featured: true
+needsReview: false
+problem: "Auth, two payment gateways, a CMS, localisation and AI generation in one product tangle fast unless the boundaries are drawn first."
+stack:
+  - typescript
+  - nextjs
+  - react
+  - tailwind
+  - nestjs
+  - postgres
+  - redis
+  - auth
+  - system-design
+  - github-actions
+metrics:
+  - label: "Payment gateways behind one billing package"
+    after: "2 (Stripe, Razorpay)"
+    method: "@iqinsights/billing in the repository's packages/ directory; apps call the package, never a gateway SDK directly"
+  - label: "Apps sharing workspace packages"
+    after: "3"
+    method: "apps/web (public site), apps/admin (CMS) and apps/api (NestJS 11), each consuming @iqinsights/* packages via workspace:*"
+publishedAt: 2026-10-01
+---
+
+## Overview
+
+IQ Insights is a SaaS assessment platform. Users take adaptive IQ and
+personality tests, get instant scores and AI-generated cognitive reports,
+track progress through XP, badges and streaks, and download certificates that
+anyone can verify publicly.
+
+## The Problem
+
+Every feature touches a different external system: Supabase for auth and data,
+Stripe and Razorpay for payments, SendGrid for email, an AI provider for
+reports, and `next-intl` for localised routes. Built as one app, those
+concerns leak into each other; split across repositories, shared types and the
+database schema drift.
+
+## Architecture
+
+A Turborepo + pnpm monorepo. `apps/web` is the Next.js 16 public site with
+routes under `/[locale]/`; `apps/admin` is a role-gated Next.js CMS on
+shadcn/ui; `apps/api` is a standalone NestJS 11 service with
+`class-validator` DTOs and Upstash Redis. Supabase migrations own the schema
+and row-level security guards access, through four context-specific clients.
+Billing and email are packages with one interface each, and AI generation is
+provider-agnostic behind a written spec.
+
+## Outcome
+
+Swapping a payment gateway or an AI vendor is a package change, not an app
+change, and the three apps cannot disagree about a type because they import
+the same one.
+
+## What I'd Do Differently
+
+Write the AI-features spec before the first prompt rather than after the
+second provider.

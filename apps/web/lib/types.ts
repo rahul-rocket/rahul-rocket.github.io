@@ -29,26 +29,34 @@ export interface Project {
   subtitle: string
   category: string
   status: string
-  duration: string
+  /** Omitted when the timeline isn't known precisely; never guessed. */
+  duration?: string
   role: string
   client: string
   year: string
+  /** Shown in the large "featured" layout on /projects. */
+  featured: boolean
 
-  github: string
-  demo: string
+  /** Public source only — private repositories would 404 for visitors. */
+  github?: string
+  demo?: string
 
   thumbnail: string
   screenshots: ProjectScreenshot[]
 
+  /** Short card blurb for listings. */
+  summary: string
   overview: string
   problemStatement: string
   solutionApproach: string[]
 
   techStack: ProjectTechStack
 
+  /** Every list below may be empty; the detail page hides empty sections. */
   features: string[]
   challenges: ProjectChallenge[]
   learnings: string[]
+  /** Measured outcomes only — leave empty rather than estimate. */
   results: ProjectResult[]
 
   relatedProjects: string[]

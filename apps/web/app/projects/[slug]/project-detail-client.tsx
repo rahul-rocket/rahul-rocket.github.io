@@ -282,10 +282,12 @@ export function ProjectDetailClient({ project, relatedProjects }: ProjectDetailC
                   <Calendar className="h-4 w-4" />
                   {project.year}
                 </span>
-                <span className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  {project.duration}
-                </span>
+                {project.duration && (
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-4 w-4" />
+                    {project.duration}
+                  </span>
+                )}
               </div>
 
               {/* Action buttons */}
@@ -298,12 +300,14 @@ export function ProjectDetailClient({ project, relatedProjects }: ProjectDetailC
                     </a>
                   </Button>
                 )}
-                <Button size="lg" variant="outline" asChild>
-                  <a href={project.github} target="_blank" rel="noopener noreferrer">
-                    <Github className="h-4 w-4 mr-2" />
-                    View Source
-                  </a>
-                </Button>
+                {project.github && (
+                  <Button size="lg" variant="outline" asChild>
+                    <a href={project.github} target="_blank" rel="noopener noreferrer">
+                      <Github className="h-4 w-4 mr-2" />
+                      View Source
+                    </a>
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -315,13 +319,15 @@ export function ProjectDetailClient({ project, relatedProjects }: ProjectDetailC
         <div className="max-w-4xl mx-auto space-y-16">
           
           {/* Screenshots Gallery */}
-          <div>
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <span className="w-8 h-1 bg-primary rounded-full" />
-              Screenshots
-            </h2>
-            <ScreenshotGallery screenshots={project.screenshots} />
-          </div>
+          {project.screenshots.length > 0 && (
+            <div>
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                <span className="w-8 h-1 bg-primary rounded-full" />
+                Screenshots
+              </h2>
+              <ScreenshotGallery screenshots={project.screenshots} />
+            </div>
+          )}
 
           {/* Project Overview */}
           <div>
@@ -377,94 +383,102 @@ export function ProjectDetailClient({ project, relatedProjects }: ProjectDetailC
           </div>
 
           {/* Key Features */}
-          <div>
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <CheckCircle2 className="h-6 w-6 text-success" />
-              Key Features
-            </h2>
-            <div className="grid sm:grid-cols-2 gap-3">
-              {project.features.map((feature, index) => (
-                <div key={index} className="flex items-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">{feature}</span>
-                </div>
-              ))}
+          {project.features.length > 0 && (
+            <div>
+              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <CheckCircle2 className="h-6 w-6 text-success" />
+                Key Features
+              </h2>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {project.features.map((feature, index) => (
+                  <div key={index} className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
+                    <span className="text-muted-foreground">{feature}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Challenges & Solutions */}
-          <div>
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <span className="w-8 h-1 bg-primary rounded-full" />
-              Challenges & Solutions
-            </h2>
-            <div className="space-y-4">
-              {project.challenges.map((item, index) => (
-                <Card key={index}>
-                  <CardContent className="p-6">
-                    <div className="space-y-3">
-                      <div>
-                        <span className="text-sm font-medium text-warning uppercase tracking-wide">
-                          Challenge
-                        </span>
-                        <p className="font-medium mt-1">{item.challenge}</p>
+          {project.challenges.length > 0 && (
+            <div>
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                <span className="w-8 h-1 bg-primary rounded-full" />
+                Challenges & Solutions
+              </h2>
+              <div className="space-y-4">
+                {project.challenges.map((item, index) => (
+                  <Card key={index}>
+                    <CardContent className="p-6">
+                      <div className="space-y-3">
+                        <div>
+                          <span className="text-sm font-medium text-warning uppercase tracking-wide">
+                            Challenge
+                          </span>
+                          <p className="font-medium mt-1">{item.challenge}</p>
+                        </div>
+                        <Separator />
+                        <div>
+                          <span className="text-sm font-medium text-success uppercase tracking-wide">
+                            Solution
+                          </span>
+                          <p className="text-muted-foreground mt-1">{item.solution}</p>
+                        </div>
                       </div>
-                      <Separator />
-                      <div>
-                        <span className="text-sm font-medium text-success uppercase tracking-wide">
-                          Solution
-                        </span>
-                        <p className="text-muted-foreground mt-1">{item.solution}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Key Learnings */}
-          <div>
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <Lightbulb className="h-6 w-6 text-primary" />
-              Key Learnings
-            </h2>
-            <Card className="border-spectrum-3/20 bg-spectrum-3/5">
-              <CardContent className="p-6">
-                <ul className="space-y-3">
-                  {project.learnings.map((learning, index) => (
-                    <li key={index} className="flex gap-3">
-                      <span className="text-primary">•</span>
-                      <span className="text-muted-foreground">{learning}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
+          {project.learnings.length > 0 && (
+            <div>
+              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <Lightbulb className="h-6 w-6 text-primary" />
+                Key Learnings
+              </h2>
+              <Card className="border-spectrum-3/20 bg-spectrum-3/5">
+                <CardContent className="p-6">
+                  <ul className="space-y-3">
+                    {project.learnings.map((learning, index) => (
+                      <li key={index} className="flex gap-3">
+                        <span className="text-primary">•</span>
+                        <span className="text-muted-foreground">{learning}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           {/* Results/Impact */}
-          <div>
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <TrendingUp className="h-6 w-6 text-success" />
-              Results & Impact
-            </h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {project.results.map((result, index) => (
-                <Card key={index} className="text-center">
-                  <CardContent className="p-6">
-                    <div className="text-3xl font-bold text-primary mb-1">
-                      {result.value}
-                    </div>
-                    <div className="font-medium text-sm">{result.metric}</div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {result.improvement}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+          {project.results.length > 0 && (
+            <div>
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                <TrendingUp className="h-6 w-6 text-success" />
+                Results & Impact
+              </h2>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {project.results.map((result, index) => (
+                  <Card key={index} className="text-center">
+                    <CardContent className="p-6">
+                      <div className="text-3xl font-bold text-primary mb-1">
+                        {result.value}
+                      </div>
+                      <div className="font-medium text-sm">{result.metric}</div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {result.improvement}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* CTA Section */}
           <div className="text-center py-8">
@@ -472,8 +486,9 @@ export function ProjectDetailClient({ project, relatedProjects }: ProjectDetailC
               <CardContent className="p-8">
                 <h3 className="text-xl font-bold mb-3">Interested in this project?</h3>
                 <p className="text-muted-foreground mb-6">
-                  Feel free to check out the live demo or explore the source code.
-                  If you have questions, don't hesitate to reach out!
+                  {project.github || project.demo
+                    ? "Explore the live demo or the source code — and if you have questions, reach out."
+                    : "The source is private, but I'm happy to walk through the architecture — reach out."}
                 </p>
                 <div className="flex flex-wrap justify-center gap-4">
                   {project.demo && (
@@ -484,12 +499,14 @@ export function ProjectDetailClient({ project, relatedProjects }: ProjectDetailC
                       </a>
                     </Button>
                   )}
-                  <Button variant="outline" asChild>
-                    <a href={project.github} target="_blank" rel="noopener noreferrer">
-                      <Github className="h-4 w-4 mr-2" />
-                      View on GitHub
-                    </a>
-                  </Button>
+                  {project.github && (
+                    <Button variant="outline" asChild>
+                      <a href={project.github} target="_blank" rel="noopener noreferrer">
+                        <Github className="h-4 w-4 mr-2" />
+                        View on GitHub
+                      </a>
+                    </Button>
+                  )}
                   <Button variant="secondary" asChild>
                     <Link href="/contact">
                       Contact Me
