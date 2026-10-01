@@ -6,6 +6,8 @@ import { FeaturedProjects } from '@/components/landing/featured-projects'
 import { ExperiencePreview } from '@/components/landing/experience-preview'
 import { LatestPosts } from '@/components/landing/latest-posts'
 import { GitHubActivity } from '@/components/landing/github-activity'
+import { LINKEDIN_URL, X_URL } from '@/lib/contact-channels'
+import { GITHUB_URL } from '@/lib/github'
 import { GetInTouchSection } from '@/components/landing/get-in-touch-section'
 import { CtaBand } from '@/components/landing/cta-band'
 
@@ -28,9 +30,9 @@ const homeJsonLd = {
       addressCountry: "India",
     },
     sameAs: [
-      "https://github.com/rahul",
-      "https://linkedin.com/in/rahul",
-      "https://twitter.com/rahul",
+      GITHUB_URL,
+      LINKEDIN_URL,
+      X_URL,
     ],
     knowsAbout: [
       "JavaScript",

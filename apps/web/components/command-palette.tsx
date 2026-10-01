@@ -29,6 +29,8 @@ import {
   CommandShortcut,
 } from "@portfolio/ui/command"
 import { DialogTitle } from "@portfolio/ui/dialog"
+import { LINKEDIN_URL } from "@/lib/contact-channels"
+import { GITHUB_URL } from "@/lib/github"
 
 import { pageItems, projectItems, type SearchItem } from "@/lib/search-index"
 
@@ -227,7 +229,7 @@ export function CommandPalette({ posts = [] }: { posts?: SearchItem[] }) {
               value="GitHub"
               keywords={["source", "code", "repositories"]}
               onSelect={() =>
-                runCommand(() => window.open("https://github.com", "_blank", "noopener"))
+                runCommand(() => window.open(GITHUB_URL, "_blank", "noopener"))
               }
             >
               <Github className="mr-2 h-4 w-4 text-muted-foreground" />
@@ -238,7 +240,7 @@ export function CommandPalette({ posts = [] }: { posts?: SearchItem[] }) {
               value="LinkedIn"
               keywords={["profile", "professional", "network"]}
               onSelect={() =>
-                runCommand(() => window.open("https://linkedin.com", "_blank", "noopener"))
+                runCommand(() => window.open(LINKEDIN_URL, "_blank", "noopener"))
               }
             >
               <Linkedin className="mr-2 h-4 w-4 text-muted-foreground" />

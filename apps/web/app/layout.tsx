@@ -5,6 +5,8 @@ import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
+import { LINKEDIN_URL, X_URL } from '@/lib/contact-channels'
+import { GITHUB_URL } from '@/lib/github'
 import { getPublishedPosts } from '@/lib/posts'
 import type { SearchItem } from '@/lib/search-index'
 
@@ -142,9 +144,9 @@ const jsonLd = {
   url: baseUrl,
   image: `${baseUrl}/profile.jpg`,
   sameAs: [
-    "https://github.com/rahul",
-    "https://linkedin.com/in/rahul",
-    "https://twitter.com/rahul",
+    GITHUB_URL,
+    LINKEDIN_URL,
+    X_URL,
   ],
   jobTitle: "Software Developer",
   worksFor: {

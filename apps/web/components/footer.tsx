@@ -7,6 +7,8 @@ import { Button } from "@portfolio/ui/button"
 
 import { Logo } from "@/components/logo"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { LINKEDIN_URL } from "@/lib/contact-channels"
+import { GITHUB_URL } from "@/lib/github"
 import { legalItems } from "@/lib/search-index"
 
 /** First year of public work -- the rahul-rocket GitHub account dates to 2018. */
@@ -112,7 +114,7 @@ export function Footer() {
             </p>
             <div className="flex gap-3">
               <a
-                href="https://github.com"
+                href={GITHUB_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-3 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-all hover:scale-110"
@@ -121,7 +123,7 @@ export function Footer() {
                 <Github className="h-5 w-5" />
               </a>
               <a
-                href="https://linkedin.com"
+                href={LINKEDIN_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-3 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-all hover:scale-110"
