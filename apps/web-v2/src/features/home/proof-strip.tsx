@@ -61,16 +61,16 @@ export function ProofStrip({ points }: { points: readonly ProofPoint[] }) {
 					data-spotlight
 					className="u-edge u-spotlight overflow-hidden p-2"
 				>
-					{/*
-					  `divide-*` rather than a border on each cell: four cells with
-					  `border-l` gives the first one a rule against the panel edge, and
-					  the fix people reach for is `first:border-l-0`, which is wrong again
-					  at the breakpoint where the grid becomes two columns. `divide`
-					  places the rule BETWEEN items in whatever arrangement the grid
-					  currently has, so the two-up and four-up layouts are both correct
-					  from one declaration.
-					*/}
-					<dl className="grid grid-cols-2 divide-border sm:divide-x lg:grid-cols-4">
+					{/* TWO FIXES TO THE RULES, BOTH VISIBLE ON A REAL SCREEN.
+					    1. No radius on the cells: a rule is the cell's own border, so
+					       a rounded cell bent it around its corners and the four rules
+					       read as four nested boxes.
+					    2. `divide-x` only when four-up. In Tailwind v4 it is a RIGHT
+					       border on every cell but the last (v3 used a left border on
+					       every cell but the first), so in the two-column layout the
+					       end of row one drew a rule against the panel's own edge. The
+					       two-up layout rules only its left-hand cells instead. */}
+					<dl className="grid grid-cols-2 divide-border lg:grid-cols-4 lg:divide-x">
 						{points.map((point) => (
 							// The label is above the value in the DOM *and* on the screen.
 							// Putting the big number first visually would need `order`,
@@ -80,7 +80,7 @@ export function ProofStrip({ points }: { points: readonly ProofPoint[] }) {
 							// nothing to trade.
 							<div
 								key={point.label}
-								className="group flex flex-col gap-3 rounded-xl px-5 py-7 transition-colors duration-base hover:bg-surface-hover sm:px-6"
+								className="group flex flex-col gap-3 border-border px-5 py-7 transition-colors duration-base hover:bg-surface-hover sm:px-6 sm:max-lg:odd:border-r"
 							>
 								{/*
 								  `min-h` on the label, not on the figure. The four labels are

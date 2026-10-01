@@ -69,20 +69,29 @@ export function PostList({
 				// `gap-5`, not zero: the entries are cards now rather than rows
 				// separated by rules, so the space between them is what does the
 				// separating. See the note on `PostCard`.
-				<ol id={LIST_ID} className="flex list-none flex-col gap-4 p-0">
+				// Two-up from `lg`, on the page grid — the same shape as the
+				// projects index. This list used to sit in the 72ch reading column,
+				// centred, which made /blog the one index on the site not aligned
+				// to the header; widening it to one column instead would have run
+				// each summary out to ~1300px.
+				<ol
+					id={LIST_ID}
+					className="grid list-none grid-cols-1 gap-4 p-0 lg:grid-cols-2"
+				>
 					{posts.map((post) => (
 						<li
 							key={post.slug}
 							data-filter-item=""
 							data-filter-tokens={post.frontmatter.tags.join(' ')}
 							data-filter-text={`${post.frontmatter.title} ${post.frontmatter.summary} ${post.frontmatter.tags.join(' ')}`}
+							className="flex"
 						>
-							<PostCard post={post} level={3} />
+							<PostCard post={post} level={3} className="flex-1" />
 						</li>
 					))}
 
 					{/* X-03 — in the HTML from the start, hidden until it is needed. */}
-					<li data-filter-empty="" hidden className="py-8">
+					<li data-filter-empty="" hidden className="py-8 lg:col-span-2">
 						<Text tone="muted">
 							Nothing matches those filters. Clear them to see all{' '}
 							{posts.length}.

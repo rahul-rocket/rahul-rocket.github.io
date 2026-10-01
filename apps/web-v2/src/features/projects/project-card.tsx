@@ -4,6 +4,7 @@ import { ArrowRightIcon } from '@/components/ui/icons'
 import { Stack } from '@/components/ui/stack'
 import { Text } from '@/components/ui/text'
 import { cn } from '@/lib/cn'
+import { resolveSkills } from '@/lib/content/data'
 import type { CaseStudy } from '@/lib/content/schemas'
 import { caseStudyTransitionName } from '@/lib/view-transition'
 import { formatPeriod } from './lib/format-period'
@@ -43,6 +44,13 @@ export function ProjectCard({
 }) {
 	const { frontmatter } = study
 	const headline = frontmatter.metrics[0]
+	// Names, not ids — the same resolution the case-study header does, so a
+	// card and its page cannot label one technology two ways ("nodejs" here,
+	// "Node.js" in the filter chips above it).
+	const stack = resolveSkills(
+		frontmatter.stack,
+		`content/projects/${study.slug}.mdx`,
+	)
 
 	return (
 		<article
@@ -106,14 +114,14 @@ export function ProjectCard({
 				<Stack direction="row" gap={2} wrap as="ul" className="list-none p-0">
 					{/* Four, not all twelve. A badge row long enough to wrap twice stops
 					    being scannable, and the case study lists the full stack. */}
-					{frontmatter.stack.slice(0, 4).map((id) => (
-						<li key={id}>
-							<Badge>{id}</Badge>
+					{stack.slice(0, 4).map((skill) => (
+						<li key={skill.id}>
+							<Badge>{skill.name}</Badge>
 						</li>
 					))}
-					{frontmatter.stack.length > 4 ? (
+					{stack.length > 4 ? (
 						<li>
-							<Badge tone="neutral">+{frontmatter.stack.length - 4}</Badge>
+							<Badge tone="neutral">+{stack.length - 4}</Badge>
 						</li>
 					) : null}
 				</Stack>

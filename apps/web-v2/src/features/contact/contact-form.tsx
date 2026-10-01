@@ -287,8 +287,9 @@ export function ContactForm({
 					// is a real submit and must survive without JavaScript; without one
 					// its entire behaviour is the `window.location` assignment above, so
 					// with scripting off it would be a control that does nothing — and
-					// the direct link beside it is then the whole offer, which is what
-					// the no-JavaScript reader saw before this form existed.
+					// the page's own "Write to …" button under the form is then the
+					// whole offer, which is what the no-JavaScript reader saw before
+					// this form existed.
 					data-js-only={isComposer ? '' : undefined}
 					// The same treatment `Button variant="primary"` carries, written out
 					// rather than imported: this is a Client Component, and `Button`
@@ -306,10 +307,10 @@ export function ContactForm({
 							? 'Compose this message'
 							: 'Send message'}
 				</button>
-
-				<a href={fallbackHref} className="text-sm">
-					Or write to me directly
-				</a>
+				{/* No "or write to me directly" link here: the page renders that
+				    path as its own button right under the form (it is the no-JS
+				    path e2e/contact.spec.ts asserts), so a second copy beside the
+				    submit button was the same `mailto:` offered twice. */}
 			</div>
 
 			{/*

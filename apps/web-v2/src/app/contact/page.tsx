@@ -90,7 +90,7 @@ export default function ContactPage() {
 							Write to {contactEmail()}
 						</a>
 						<Text size="sm" tone="muted">
-							That link opens your mail client with the questions on the right
+							That link opens your mail client with the questions from this page
 							already in the body.
 						</Text>
 					</Stack>

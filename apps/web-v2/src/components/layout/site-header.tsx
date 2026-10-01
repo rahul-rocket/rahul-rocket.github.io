@@ -100,7 +100,11 @@ export function SiteHeader() {
 				  order and the tab order (CLAUDE.md §8: CSS may not reorder reading
 				  sequence). The grid places, it does not reorder.
 				*/}
-				<div className="mx-auto grid h-full max-w-page grid-cols-[1fr_auto_1fr] items-center gap-6 px-gutter">
+				{/* Two columns until the nav exists. Below `md` the nav is
+				    `display: none`, so a three-column template auto-placed the
+				    controls into the MIDDLE track — they sat mid-header on every
+				    phone with a gap to their right. */}
+				<div className="mx-auto grid h-full max-w-page grid-cols-[1fr_auto] items-center gap-6 px-gutter md:grid-cols-[1fr_auto_1fr]">
 					{/*
 					  The wordmark, not an <h1>. Every page has exactly one <h1> and it
 					  belongs to that page's subject; a site name repeated in the header
