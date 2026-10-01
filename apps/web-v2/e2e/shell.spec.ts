@@ -149,7 +149,7 @@ test.describe('breadcrumb', () => {
 		// and not on top-level ones.
 		await expect(trail.getByRole('link', { name: 'Writing' })).toHaveAttribute(
 			'href',
-			'/blog/',
+			'/v2/blog/',
 		)
 
 		// The terminus is `aria-current="page"` and is NOT a link. A trail that
