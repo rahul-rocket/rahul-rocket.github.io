@@ -108,10 +108,20 @@ export function CommandPalette({ posts = [] }: { posts?: SearchItem[] }) {
         <Search className="h-5 w-5" />
       </button>
 
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      {/*
+        Centred (the dialog's own default) and wider than shadcn's 512px, with a
+        FIXED list height: a centred box whose list shrinks as you type moves
+        its input on every keystroke, which is the thing you are typing into.
+        The list scrolls instead.
+      */}
+      <CommandDialog
+        open={open}
+        onOpenChange={setOpen}
+        className="max-w-[calc(100%-2rem)] rounded-xl shadow-2xl sm:max-w-2xl sm:rounded-xl"
+      >
         <DialogTitle className="sr-only">Search</DialogTitle>
         <CommandInput placeholder="Search pages, projects and posts…" />
-        <CommandList>
+        <CommandList className="h-[min(26rem,60dvh)] max-h-none">
           <CommandEmpty>No results found.</CommandEmpty>
 
           <CommandGroup heading="Pages">

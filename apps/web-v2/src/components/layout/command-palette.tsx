@@ -248,13 +248,22 @@ export function CommandPalette({ commands }: { commands: readonly Command[] }) {
 				// scrim over it still leaves shapes competing with the result rows.
 				className="m-0 h-full max-h-none w-full max-w-none bg-transparent p-0 text-text backdrop:bg-bg/70 backdrop:backdrop-blur-sm"
 			>
-				<div className="pointer-events-none mx-auto flex h-full w-full max-w-2xl flex-col px-gutter pt-16 pb-16 sm:pt-24">
+				{/* CENTRED, AND A FIXED HEIGHT TO MAKE CENTRING SAFE. A centred panel
+				    whose height follows its results moves the input on every
+				    keystroke — the field being typed into. The panel is a fixed
+				    34rem (capped by the viewport) and the list scrolls inside it. */}
+				<div className="pointer-events-none mx-auto flex h-full w-full max-w-3xl flex-col justify-center px-gutter py-8">
 					{/* `u-glass` and the glass panel role, so the palette is the same
 					    material as the header it opens from rather than a second,
 					    unrelated surface treatment. `shadow-overlay` is what separates
 					    it from the blurred page behind. */}
-					<div className="pointer-events-auto flex min-h-0 flex-col overflow-hidden rounded-xl border border-glass-border bg-glass-panel shadow-overlay u-glass">
-						<div className="flex items-center gap-3 border-glass-border border-b px-4 py-3.5">
+					<div className="pointer-events-auto flex h-[min(34rem,100%)] min-h-0 flex-col overflow-hidden rounded-2xl border border-glass-border bg-glass-panel shadow-overlay u-glass">
+						{/* THE FOCUS INDICATOR MOVES TO THE ROW; IT IS NOT REMOVED. The
+						    global 2px outline drew a hard rectangle inside the rounded
+						    panel around a field that always holds focus here. The row
+						    carries it instead as a 2px `--ui-focus` underline, shown
+						    exactly when the input is focus-visible. */}
+						<div className="flex items-center gap-3 border-glass-border border-b px-4 py-3.5 has-[input:focus-visible]:shadow-[inset_0_-2px_0_var(--ui-focus)]">
 							<SearchIcon size="sm" className="text-text-muted" />
 							<input
 								ref={inputRef}
@@ -277,7 +286,7 @@ export function CommandPalette({ commands }: { commands: readonly Command[] }) {
 								// No `outline-none`. The focus ring is a hard blocker to remove
 								// (CLAUDE.md §8) and this is the first focused element in the
 								// dialog, so it is the one ring most likely to be needed.
-								className="w-full bg-transparent text-text placeholder:text-text-muted"
+								className="u-focus-in-row w-full bg-transparent text-lg text-text placeholder:text-text-muted"
 							/>
 						</div>
 
@@ -297,7 +306,7 @@ export function CommandPalette({ commands }: { commands: readonly Command[] }) {
 							/* The query is echoed back. "No matches." alone leaves the
 							   reader unsure whether the box registered what they typed —
 							   which is exactly the moment they are already unsure. */
-							<p className="px-4 py-10 text-center text-sm text-text-muted">
+							<p className="flex-1 px-4 py-10 text-center text-sm text-text-muted">
 								No matches for{' '}
 								<span className="text-text">“{query.trim()}”</span>. Try a page
 								name, a post title, or “theme”.
@@ -310,7 +319,7 @@ export function CommandPalette({ commands }: { commands: readonly Command[] }) {
 							   the wrapper's `h-full` minus its padding already is the
 							   available height, and hard-coding a `vh` would be a second,
 							   competing answer to the same question. */
-							<div ref={listRef} className="overflow-y-auto p-2">
+							<div ref={listRef} className="min-h-0 flex-1 overflow-y-auto p-2">
 								{groups.map(({ group, commands: rowsInGroup }) => (
 									<div key={group}>
 										{/*
