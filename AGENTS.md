@@ -177,7 +177,7 @@ from the v1 repository. What follows is only what changed by moving it into this
   there rather than from the workspace that imported them. With two versions installed, one
   program ends up with two `React.Ref` / `VoidOrUndefinedOnly` types of the same name and every
   prop spread onto an intrinsic element fails to typecheck — nine errors in components that are
-  correct. `web-v2` arrived pinned to 19.0.7/19.0.3 and was moved onto `web`'s 19.2.18/19.2.4
+  correct. `web-v2` arrived pinned to 19.0.7/19.0.3 and was moved onto `web`'s version (now 19.3.0/19.3.0)
   for exactly this reason. Bump them together or not at all.
 - **Biome formats and lints `apps/web-v2`; Prettier and ESLint do not touch it.** Tabs, single
   quotes, 80 columns, semicolons as needed. `apps/web-v2` is listed in `.prettierignore` — the

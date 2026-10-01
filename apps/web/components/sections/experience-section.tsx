@@ -112,13 +112,13 @@ const ExperienceCard = ({
             {/* Achievements */}
             <div className="mb-4">
               <h4 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-3 flex items-center gap-2">
-                <Trophy className="h-4 w-4 text-yellow-500" />
+                <Trophy className="h-4 w-4 text-warning" />
                 Key Achievements
               </h4>
               <ul className="space-y-2">
                 {experience.achievements.map((achievement, idx) => (
                   <li key={idx} className="flex items-start gap-2 text-sm">
-                    <Rocket className="h-4 w-4 text-green-500 shrink-0 mt-0.5" />
+                    <Rocket className="h-4 w-4 text-success shrink-0 mt-0.5" />
                     <span className="text-foreground">{achievement}</span>
                   </li>
                 ))}
@@ -235,7 +235,7 @@ export function ExperienceSection() {
 
           {/* Bottom CTA */}
           <div className={`mt-16 text-center transition-all duration-700 delay-500 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}>
-            <Card className="bg-linear-to-br from-primary/5 via-background to-purple-500/5 border-primary/20 inline-block max-w-2xl">
+            <Card className="bg-linear-to-br from-primary/5 via-background to-spectrum-3/5 border-primary/20 inline-block max-w-2xl">
               <CardContent className="p-8">
                 <h3 className="text-xl font-bold mb-3">Want to Work Together?</h3>
                 <p className="text-muted-foreground mb-6">

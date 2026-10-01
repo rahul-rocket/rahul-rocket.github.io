@@ -1,0 +1,69 @@
+/*
+ * DESIGN TOKENS — primitive layer, mirrored from apps/web-v2.
+ *
+ * Source of truth: apps/web-v2/src/styles/tokens.css (primitives) and
+ * apps/web-v2/src/styles/themes.css (role assignments). The two apps share no
+ * packages by design, so the values are copied rather than imported. When a
+ * primitive changes in V2, change it here in the same commit, or the two
+ * halves of the site drift apart.
+ *
+ * Only primitives live here. globals.css assigns them to shadcn's semantic
+ * roles (--background, --primary, ...) per theme, which is the vocabulary
+ * @portfolio/ui consumes.
+ *
+ * Named `--ui-*`/`--ink-*` for the same reason as V2: anything in a Tailwind
+ * owned namespace (--color-*, --font-*, --radius-*) would resolve to itself
+ * once bridged through `@theme inline`.
+ */
+
+:root {
+  /* Ink — the cool neutral ramp. Chroma rises as lightness falls so the
+     darkest steps read as blue-ink rather than a switched-off display. */
+  --ink-50: oklch(97.5% 0.004 264);
+  --ink-100: oklch(94% 0.005 264);
+  --ink-200: oklch(87% 0.007 264);
+  --ink-300: oklch(82% 0.01 264);
+  --ink-400: oklch(72% 0.012 264);
+  --ink-500: oklch(55% 0.013 264);
+  --ink-600: oklch(45% 0.014 264);
+  --ink-700: oklch(35% 0.014 264);
+  --ink-800: oklch(27% 0.017 264);
+  --ink-850: oklch(22% 0.017 264);
+  --ink-900: oklch(18% 0.016 264);
+  --ink-950: oklch(14% 0.015 264);
+  --ink-1000: oklch(10.5% 0.016 264);
+
+  /* Accent — one hue. -500 is the dark-theme accent, -700 the light one. */
+  --teal-300: oklch(90% 0.08 195);
+  --teal-500: oklch(84% 0.125 195);
+  --teal-600: oklch(70% 0.115 197);
+  --teal-700: oklch(45% 0.076 205);
+  --teal-800: oklch(39% 0.064 205);
+
+  /* Spectrum — decorative light only (gradients, glows). Never text. */
+  --indigo-500: oklch(72% 0.135 265);
+  --indigo-600: oklch(62% 0.15 265);
+  --violet-500: oklch(74% 0.125 305);
+  --violet-600: oklch(64% 0.14 305);
+
+  --success-500: oklch(84% 0.16 152);
+  --success-700: oklch(44% 0.11 152);
+  --warning-500: oklch(87% 0.13 86);
+  --warning-700: oklch(45% 0.1 62);
+  --danger-500: oklch(78% 0.12 25);
+  --danger-700: oklch(45% 0.17 25);
+
+  --ui-font-grotesque:
+    'Neue Haas Grotesk Display', 'Inter Tight', 'Inter', ui-sans-serif,
+    system-ui, sans-serif;
+  --ui-font-text:
+    'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --ui-font-mono:
+    'Berkeley Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo,
+    monospace;
+
+  /* V2's card radius (`--ui-radius-md`). shadcn derives sm/lg from it. */
+  --ui-radius: 10px;
+
+  --ui-ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+}

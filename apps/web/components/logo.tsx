@@ -95,7 +95,7 @@ export function Logo({
         id={id}
         className="transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-6"
       />
-      <span className="bg-linear-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+      <span className="bg-linear-to-r from-primary to-spectrum-3 bg-clip-text text-transparent">
         Rahul
       </span>
     </Link>

@@ -226,7 +226,7 @@ const FeaturedProjectCard = ({
         {project.stats && (
           <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Star className="h-4 w-4 text-yellow-500" />
+              <Star className="h-4 w-4 text-warning" />
               {project.stats.stars}
             </span>
             <span className="flex items-center gap-1">
@@ -528,7 +528,7 @@ export function ProjectsSection() {
 
           {/* GitHub CTA */}
           <div className={`mt-16 text-center transition-all duration-700 delay-500 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}>
-            <Card className="bg-linear-to-br from-primary/5 via-background to-purple-500/5 border-primary/20 inline-block max-w-2xl">
+            <Card className="bg-linear-to-br from-primary/5 via-background to-spectrum-3/5 border-primary/20 inline-block max-w-2xl">
               <CardContent className="p-8">
                 <Github className="h-12 w-12 mx-auto mb-4" />
                 <h3 className="text-xl font-bold mb-3">Want to See More?</h3>

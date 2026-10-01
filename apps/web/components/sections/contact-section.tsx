@@ -299,10 +299,10 @@ export function ContactSection() {
   const getInputClassName = (fieldName: ContactFormField) => {
     const baseClass = "transition-colors"
     if (touched[fieldName] && errors[fieldName]) {
-      return `${baseClass} border-red-500 focus-visible:ring-red-500`
+      return `${baseClass} border-destructive focus-visible:ring-destructive`
     }
     if (touched[fieldName] && !errors[fieldName] && formData[fieldName]) {
-      return `${baseClass} border-green-500 focus-visible:ring-green-500`
+      return `${baseClass} border-success focus-visible:ring-success`
     }
     return baseClass
   }
@@ -385,14 +385,14 @@ export function ContactSection() {
               </Card>
 
               {/* Availability Card */}
-              <Card className="bg-linear-to-br from-primary/5 to-purple-500/5 border-primary/20">
+              <Card className="bg-linear-to-br from-primary/5 to-spectrum-3/5 border-primary/20">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-3">
                     <div className="relative">
                       <MessageSquare className="h-8 w-8 text-primary" />
                       <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-success"></span>
                       </span>
                     </div>
                     <div>
@@ -419,10 +419,10 @@ export function ContactSection() {
                 <CardContent>
                   {/* Success Message */}
                   {submitStatus === "success" && (
-                    <div className="mb-6 p-4 rounded-lg bg-green-500/10 border border-green-500/20 flex items-start gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <div className="mb-6 p-4 rounded-lg bg-success/10 border border-success/20 flex items-start gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-medium text-green-600 dark:text-green-400">
+                        <p className="font-medium text-success">
                           Message sent successfully!
                         </p>
                         <p className="text-sm text-muted-foreground mt-1">
@@ -457,10 +457,10 @@ export function ContactSection() {
 
                   {/* Rate Limited Message */}
                   {submitStatus === "rate-limited" && (
-                    <div className="mb-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-start gap-3">
-                      <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                    <div className="mb-6 p-4 rounded-lg bg-warning/10 border border-warning/20 flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-medium text-amber-600 dark:text-amber-400">
+                        <p className="font-medium text-warning">
                           Too many messages
                         </p>
                         <p className="text-sm text-muted-foreground mt-1">
@@ -473,10 +473,10 @@ export function ContactSection() {
 
                   {/* Error Message */}
                   {submitStatus === "error" && (
-                    <div className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/20 flex items-start gap-3">
-                      <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+                    <div className="mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/20 flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-medium text-red-600 dark:text-red-400">
+                        <p className="font-medium text-destructive">
                           Failed to send message
                         </p>
                         <p className="text-sm text-muted-foreground mt-1">
@@ -491,7 +491,7 @@ export function ContactSection() {
                     <div className="space-y-2">
                       <Label htmlFor="name" className="flex items-center gap-1">
                         Name
-                        <span className="text-red-500">*</span>
+                        <span className="text-destructive">*</span>
                       </Label>
                       <Input
                         id="name"
@@ -507,7 +507,7 @@ export function ContactSection() {
                         disabled={isSubmitting}
                       />
                       {touched.name && errors.name && (
-                        <p id="name-error" className="text-sm text-red-500 flex items-center gap-1">
+                        <p id="name-error" className="text-sm text-destructive flex items-center gap-1">
                           <AlertCircle className="h-4 w-4" />
                           {errors.name}
                         </p>
@@ -518,7 +518,7 @@ export function ContactSection() {
                     <div className="space-y-2">
                       <Label htmlFor="email" className="flex items-center gap-1">
                         Email
-                        <span className="text-red-500">*</span>
+                        <span className="text-destructive">*</span>
                       </Label>
                       <Input
                         id="email"
@@ -534,7 +534,7 @@ export function ContactSection() {
                         disabled={isSubmitting}
                       />
                       {touched.email && errors.email && (
-                        <p id="email-error" className="text-sm text-red-500 flex items-center gap-1">
+                        <p id="email-error" className="text-sm text-destructive flex items-center gap-1">
                           <AlertCircle className="h-4 w-4" />
                           {errors.email}
                         </p>
@@ -545,7 +545,7 @@ export function ContactSection() {
                     <div className="space-y-2">
                       <Label htmlFor="message" className="flex items-center gap-1">
                         Message
-                        <span className="text-red-500">*</span>
+                        <span className="text-destructive">*</span>
                       </Label>
                       <Textarea
                         id="message"
@@ -562,7 +562,7 @@ export function ContactSection() {
                       />
                       <div className="flex justify-between items-center">
                         {touched.message && errors.message ? (
-                          <p id="message-error" className="text-sm text-red-500 flex items-center gap-1">
+                          <p id="message-error" className="text-sm text-destructive flex items-center gap-1">
                             <AlertCircle className="h-4 w-4" />
                             {errors.message}
                           </p>
