@@ -215,14 +215,20 @@ html.lenis body {
 	transform: scaleY(1);
 }
 
-@supports (animation-timeline: view()) {
-	.u-timeline-spine {
-		animation: u-timeline-spine linear both;
-		animation-timeline: view(block);
-		/* Complete when the container's end is one viewport-height from the top,
-		   so the line is drawn by the time the last milestone is read rather than
-		   when the container leaves the screen entirely. */
-		animation-range: cover 0% cover 85%;
+/* Gated on reduced motion HERE, not left to the themes.css backstop: that
+   backstop shortens `animation-duration`, which a scroll timeline ignores, so
+   without this query a reader who asked for reduced motion still got a line
+   drawing itself as they scrolled — the same trap `.u-drift` documents. */
+@media (prefers-reduced-motion: no-preference) {
+	@supports (animation-timeline: view()) {
+		.u-timeline-spine {
+			animation: u-timeline-spine linear both;
+			animation-timeline: view(block);
+			/* Complete when the container's end is one viewport-height from the
+			   top, so the line is drawn by the time the last milestone is read
+			   rather than when the container leaves the screen entirely. */
+			animation-range: cover 0% cover 85%;
+		}
 	}
 }
 
@@ -975,5 +981,60 @@ html.lenis body {
 	from {
 		opacity: 0;
 		transform: translate3d(0, 6px, 0);
+	}
+}
+
+/*
+ * ==============================================================
+ * SHEEN — one pass of light across the hero's gradient words.
+ *
+ * The hero <h1> is the LCP element, and the rule stands: it is never hidden,
+ * moved or revealed. This does none of those. It animates `background-position`
+ * on a text-clipped background — a paint property — so every glyph is present
+ * and at its final colour from the first frame, and the sweep only brightens a
+ * band of it for ~1.4s. Nothing here can register a later LCP candidate.
+ *
+ * One shot (law 4): no iteration count, so it plays once as the page paints.
+ * Reduced motion opts out at the source rather than relying on the backstop.
+ * The highlight layer sits on top of `--ui-gradient-text`, so where the
+ * animation does not run the layer rests off-screen and the text is exactly
+ * the plain gradient.
+ * ============================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+	@supports (background-clip: text) or (-webkit-background-clip: text) {
+		.u-gradient-text.u-sheen {
+			background-image:
+				linear-gradient(
+					105deg,
+					transparent 42%,
+					oklch(100% 0 0 / 0.7) 50%,
+					transparent 58%
+				),
+				var(--ui-gradient-text);
+			background-size:
+				250% 100%,
+				100% 100%;
+			background-repeat: no-repeat;
+			background-position:
+				100% 0,
+				0 0;
+			animation: u-sheen 1.4s var(--ui-ease-out-quint) 0.6s both;
+		}
+	}
+}
+
+/* 100% → 0% moves the band from just off the left edge to just off the right:
+   the layer is 2.5× the box, so its centre travels from -0.25 to 1.25 widths. */
+@keyframes u-sheen {
+	from {
+		background-position:
+			100% 0,
+			0 0;
+	}
+	to {
+		background-position:
+			0% 0,
+			0 0;
 	}
 }

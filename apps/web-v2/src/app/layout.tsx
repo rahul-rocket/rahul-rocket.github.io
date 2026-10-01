@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Geist, Geist_Mono } from 'next/font/google'
 import { BackToTop } from '@/components/layout/back-to-top'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { SiteHeader } from '@/components/layout/site-header'
@@ -14,14 +15,19 @@ import '@/styles/globals.css'
 /**
  * Root layout — the shell every page composes. docs/WEBSITE_STRUCTURE.md §3.
  *
- * L-01 is PARTIALLY done here, and the missing half is named rather than
- * quietly skipped: fonts are not wired up. `next/font` needs a typeface to load,
- * and DS-04 — selecting, licensing, and subsetting the display/text/mono faces —
- * is still blocked on a licensing decision (docs/TASK_BACKLOG.md, Phase 2). The
- * type tokens resolve to metric-similar system fallbacks until it lands, which
- * is why headings render correctly proportioned but not yet in the final face.
- * Adding `next/font` before the decision would mean choosing the typeface by
- * accident, in this file, instead of on purpose in DS-04.
+ * DS-04 IS DONE: the faces are Geist and Geist Mono, both SIL OFL 1.1, which
+ * is what unblocked the licensing decision this note used to wait on.
+ *
+ * `next/font/google` rather than a package or a hand-written `@font-face`:
+ * it downloads the files AT BUILD TIME and serves them from this origin, so
+ * there is no request to Google at runtime and no new dependency (TECH_STACK
+ * §2). It also generates a metric-adjusted fallback for each face, which is
+ * what replaced the placeholder "Instrument Fallback" in globals.css — the
+ * swap from fallback to woff2 moves no baseline (CLS budget, PERFORMANCE §3).
+ *
+ * Latin only, and the mono face is not preloaded: it sets dates, labels and
+ * code — never the LCP element — so it should not compete with the text face
+ * on the critical path. Both sit inside the 90 KB font budget for Home.
  *
  * The theme provider (F1-09) has landed. Note there is no React context: the
  * theme is a DOM attribute, the pre-paint script sets it, and the toggle mutates
@@ -37,6 +43,19 @@ import '@/styles/globals.css'
  * a Biome suppression only applies to the line that follows it, and a multi-line
  * element would silently move the flagged prop out from under it.
  */
+const sans = Geist({
+	subsets: ['latin'],
+	variable: '--font-geist',
+	display: 'swap',
+})
+
+const mono = Geist_Mono({
+	subsets: ['latin'],
+	variable: '--font-geist-mono',
+	display: 'swap',
+	preload: false,
+})
+
 const bootScript = `${themeScript}\n${enhancementScript}`
 
 /**
@@ -88,7 +107,11 @@ export default function RootLayout({
 		// first paint when the reader has chosen otherwise. The attribute belongs
 		// on <html> rather than <body> so `color-scheme` reaches the scrollbar and
 		// the form controls.
-		<html lang={site.lang} {...{ [THEME_ATTRIBUTE]: DEFAULT_THEME }}>
+		<html
+			lang={site.lang}
+			className={`${sans.variable} ${mono.variable}`}
+			{...{ [THEME_ATTRIBUTE]: DEFAULT_THEME }}
+		>
 			<head>
 				{/*
 				  Must be here, inline, and blocking — see the long note on

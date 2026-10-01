@@ -8,6 +8,7 @@ import { resolveSkills } from '@/lib/content/data'
 import type { CaseStudy } from '@/lib/content/schemas'
 import { caseStudyTransitionName } from '@/lib/view-transition'
 import { formatPeriod } from './lib/format-period'
+import { MetricList } from './metric-list'
 
 /**
  * P-04 — a case-study entry on `/projects` and on Home.
@@ -76,7 +77,7 @@ export function ProjectCard({
 				 */
 				'u-lift u-hairline transition-colors duration-base ease-out-quint',
 				'hover:border-border-strong hover:bg-surface-hover',
-				featured && 'md:flex-row md:items-start md:gap-10 md:p-8',
+				featured && 'md:p-8',
 				className,
 			)}
 		>
@@ -111,6 +112,13 @@ export function ProjectCard({
 
 				<Text tone="muted">{frontmatter.problem}</Text>
 
+				{/* The feature tile also carries the summary — the case study's own
+				    lede — because it is two rows tall and a problem statement alone
+				    left half of it empty. The narrow tiles stay problem-only. */}
+				{featured ? (
+					<Text className="max-w-reading text-text">{frontmatter.summary}</Text>
+				) : null}
+
 				<Stack direction="row" gap={2} wrap as="ul" className="list-none p-0">
 					{/* Four, not all twelve. A badge row long enough to wrap twice stops
 					    being scannable, and the case study lists the full stack. */}
@@ -127,14 +135,19 @@ export function ProjectCard({
 				</Stack>
 			</div>
 
-			{headline ? (
-				<div
-					className={cn(
-						'flex flex-col gap-1 border-border border-t pt-4',
-						featured &&
-							'md:w-64 md:shrink-0 md:border-t-0 md:border-l md:pt-0 md:pl-8',
-					)}
-				>
+			{featured && frontmatter.metrics.length > 0 ? (
+				// THE FEATURE TILE SHOWS EVERY METRIC, not the headline one. It is two
+				// rows tall in the bento grid; with one figure it was a title, a line
+				// and ~500px of nothing. These are the same structured metrics the
+				// case-study header renders, so tile and page cannot disagree.
+				<div className="border-border border-t pt-6">
+					<MetricList metrics={frontmatter.metrics} />
+				</div>
+			) : headline ? (
+				// Pinned to the bottom of the tile (the content above is `flex-1`),
+				// so in the bento grid every outcome sits on the same line as its
+				// neighbour's.
+				<div className="flex flex-col gap-1 border-border border-t pt-4">
 					<Text size="xs" tone="muted" caps className="font-mono">
 						Outcome
 					</Text>
@@ -179,4 +192,22 @@ export function ProjectCard({
 			/>
 		</article>
 	)
+}
+
+/**
+ * The bento grid both project lists use — Home's "Selected work" and the
+ * `/projects` index — so the two cannot drift into different shapes.
+ *
+ * From `lg`, five columns and two rows: the feature tile takes 3 × 2 and the
+ * next two studies stack in the remaining 2. Fifths rather than thirds because
+ * the side tiles' height is what sets the feature tile's: at a third of the
+ * row their text wrapped so much that the stack beside the feature ran ~350px
+ * taller than its content. Below `lg` it is one column in reading order;
+ * studies past the third flow on two-fifths wide.
+ */
+export const projectGridClass =
+	'grid list-none grid-cols-1 gap-6 p-0 lg:grid-cols-5'
+
+export function projectGridItemClass(featured: boolean): string {
+	return featured ? 'flex lg:col-span-3 lg:row-span-2' : 'flex lg:col-span-2'
 }

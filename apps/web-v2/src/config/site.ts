@@ -68,8 +68,13 @@ export const site = {
 	 * that regex for `mailto:` in source, which is the entire realistic threat
 	 * model for a personal site. `contactEmail()` below is the only reader.
 	 */
-	emailUser: 'hello',
-	emailDomain: 'rahulrocket.dev',
+	//
+	// The address the author actually reads. It was `hello@rahulrocket.dev`,
+	// a domain with no DNS records, so every contact path on the site — the
+	// composer, the mail button, the résumé, the feeds — sent mail that
+	// bounced. It is also the address `apps/web` already publishes.
+	emailUser: 'rahulrathore576',
+	emailDomain: 'gmail.com',
 
 	/**
 	 * This site's own source, which is a different destination from the profile

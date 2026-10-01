@@ -40,36 +40,6 @@
    stylesheet nobody notices is broken until they have printed. */
 @import "./print.css";
 
-/*
- * DS-05 — the metric-matched fallback, built before the face it matches.
- *
- * DS-04 (typeface licensing) is blocked, so every stack in tokens.css currently
- * resolves to a system font. That is fine for proportions, but the day a real
- * woff2 lands the swap would reflow every line of text on the site — and CLS
- * from a font swap must be 0 for the 0.01 CLS target to be reachable at all
- * (PERFORMANCE.md §3).
- *
- * Declaring the override now means the swap is already neutralised: the
- * fallback occupies the same space as the intended face, so `font-display:
- * swap` exchanges glyphs without moving a baseline. DS-05's acceptance is a
- * MEASURED CLS of exactly 0, which this makes achievable rather than proves.
- *
- * THE PERCENTAGES ARE PLACEHOLDERS KEYED TO THE INTENDED FACE AND MUST BE
- * RE-MEASURED THE DAY DS-04 UNBLOCKS. A size-adjust value that nobody
- * re-measures is worse than none: it silently shifts type off its grid while
- * looking deliberate. That is why this warning is here and not in a commit
- * message nobody will read again.
- */
-@font-face {
-	font-family: "Instrument Fallback";
-	src: local("Inter"), local("Helvetica Neue"), local("Arial");
-	size-adjust: 97.5%;
-	ascent-override: 92%;
-	descent-override: 24%;
-	line-gap-override: 0%;
-	font-display: swap;
-}
-
 @theme inline {
 	/* --- Color: the semantic layer only. Primitives are deliberately absent;
 	   `bg-ink-800` must not exist, or DESIGN_SYSTEM §1.3 is unenforceable. --- */
