@@ -37,7 +37,13 @@ export const pageItems: SearchItem[] = [
     href: "/experience",
     label: "Experience",
     description: "Work history and roles",
-    keywords: ["work", "jobs", "career", "resume", "cv", "timeline"],
+    keywords: ["work", "jobs", "career", "timeline"],
+  },
+  {
+    href: "/resume",
+    label: "Résumé",
+    description: "One-page résumé, printable as PDF",
+    keywords: ["resume", "cv", "pdf", "print", "download"],
   },
   {
     href: "/projects",

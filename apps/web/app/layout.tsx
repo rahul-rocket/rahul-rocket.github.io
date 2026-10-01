@@ -180,11 +180,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </a>
 
           <div className="relative flex min-h-screen flex-col">
-            <Navbar posts={postItems} />
+            <div className="no-print"><Navbar posts={postItems} /></div>
             <main id="main-content" className="flex-1" role="main">
               {children}
             </main>
-            <Footer />
+            <div className="no-print"><Footer /></div>
           </div>
         </ThemeProvider>
       </body>
