@@ -112,6 +112,14 @@ export function CommandPalette({ commands }: { commands: readonly Command[] }) {
 		}
 
 		window.addEventListener('keydown', onKeyDown)
+		// "The shortcut works from here on." Set on the trigger in the same
+		// effect that attaches the listener, written to the DOM rather than held
+		// in state (no re-render for an attribute nothing renders from). It
+		// exists for the e2e suite: a ⌘K pressed before hydration is dropped,
+		// and without a signal the specs raced it — 11 of 20 immediate presses
+		// opened nothing. Waiting on this is exact; a timeout would only be a
+		// slower flake.
+		triggerRef.current?.setAttribute('data-palette-ready', '')
 		return () => window.removeEventListener('keydown', onKeyDown)
 	}, [open])
 

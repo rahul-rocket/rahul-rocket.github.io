@@ -96,6 +96,11 @@ for (const theme of themes) {
 		await page.goto('/')
 		await setTheme(page, theme)
 
+		// Hydration first: the trigger is visible before React attaches its
+		// click handler (see gotoReady in command-palette.spec.ts).
+		await page
+			.locator('[data-testid="palette-trigger"][data-palette-ready]')
+			.waitFor({ state: 'attached' })
 		await page.getByTestId('palette-trigger').click()
 		await expect(page.getByTestId('command-palette')).toBeVisible()
 

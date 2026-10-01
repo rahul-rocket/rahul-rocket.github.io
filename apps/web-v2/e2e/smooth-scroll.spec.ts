@@ -41,6 +41,26 @@ async function makeScrollable(page: Page) {
 	})
 }
 
+/**
+ * Waits until the document has STOPPED scrolling: two identical `scrollY`
+ * reads 100ms apart. Lenis animates scrolls, so an input sent while a previous
+ * scroll is still easing can be overridden by that animation's remaining
+ * frames — both flakes in this spec were exactly that race.
+ */
+async function waitForScrollRest(page: Page) {
+	await expect
+		.poll(
+			() =>
+				page.evaluate(async () => {
+					const first = window.scrollY
+					await new Promise((resolve) => setTimeout(resolve, 100))
+					return window.scrollY === first
+				}),
+			{ timeout: 5000 },
+		)
+		.toBe(true)
+}
+
 /** Waits for the dynamic import to land. Lenis is fetched after paint, so no
  *  assertion about it is safe on the synchronous first frame. */
 async function waitForLenis(page: Page) {
@@ -145,6 +165,9 @@ test.describe('smooth scroll — where it is allowed to run', () => {
 		await page.locator('main').click({ position: { x: 5, y: 5 } })
 
 		for (const key of ['PageDown', 'End', 'Home']) {
+			// Each key from rest: End pressed while PageDown was still easing was
+			// overridden by it (stuck at 630, ~1 run in 8).
+			await waitForScrollRest(page)
 			const before = await page.evaluate(() => window.scrollY)
 			await page.keyboard.press(key)
 			await expect
@@ -169,10 +192,17 @@ test.describe('smooth scroll — where it is allowed to run', () => {
 		await makeScrollable(page)
 
 		// Scroll away first, so following the link has somewhere to travel from.
+		//
+		// At rest before following the link: continuing at "past 1000" let the
+		// unfinished `scrollTo` animation run on after the skip link's jump and
+		// pull the page back down (main measured at -1428, ~1 run in 6).
+		// Moving first, then at rest: "at rest" alone is also true for the frames
+		// before Lenis starts the animation, while still at 0.
 		await page.evaluate(() => window.scrollTo(0, 1500))
 		await expect
 			.poll(() => page.evaluate(() => window.scrollY))
 			.toBeGreaterThan(1000)
+		await waitForScrollRest(page)
 
 		await page.keyboard.press('Tab')
 		await page.keyboard.press('Enter')
