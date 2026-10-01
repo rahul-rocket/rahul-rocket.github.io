@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 /*
  * Serve the export the way the base path expects.
  *
@@ -32,9 +33,9 @@
  * Usage:  node scripts/serve-preview.mjs --port 3001
  */
 
+import { spawn } from 'node:child_process'
 import { cpSync, existsSync, mkdirSync, rmSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { spawn } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
