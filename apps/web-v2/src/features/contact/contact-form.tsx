@@ -2,6 +2,7 @@
 
 import { useId, useRef, useState } from 'react'
 import { mailtoHref } from '@/config/site'
+import { relayAccepted } from './lib/relay'
 
 /**
  * C-01/C-02/C-03 — the contact form. docs/WEBSITE_STRUCTURE.md §4.12,
@@ -82,17 +83,21 @@ function validate(values: {
 
 export function ContactForm({
 	endpoint,
+	ajaxEndpoint,
 	fallbackHref,
 	subject,
 }: {
 	/**
-	 * The third-party POST target. Empty or absent puts the form in composer
-	 * mode — see the header. `site.formspreeEndpoint` is the only caller.
+	 * The third-party POST target for the no-JavaScript path. Empty or absent
+	 * puts the form in composer mode — see the header. The contact page passes
+	 * `contactFormEndpoints()` from `config/site.ts`.
 	 */
 	endpoint?: string
+	/** The JSON variant of `endpoint`, fetched by the enhanced form. */
+	ajaxEndpoint?: string
 	/** The `mailto:` used when the endpoint fails. Built in `config/site.ts`. */
 	fallbackHref: string
-	/** Subject line for the composed message in mailto mode. */
+	/** Subject line: of the composed mail, or FormSubmit's `_subject`. */
 	subject: string
 }) {
 	// One name for the branch, read in five places below. A bare `!endpoint`
@@ -166,7 +171,7 @@ export function ContactForm({
 			return
 		}
 
-		const honeypot = new FormData(form).get('website')
+		const honeypot = new FormData(form).get('_honey')
 		const elapsed = (Date.now() - mountedAt.current) / 1000
 
 		// Both anti-spam checks report success to the submitter. Telling a bot
@@ -180,12 +185,13 @@ export function ContactForm({
 		setStatus('sending')
 
 		try {
-			const response = await fetch(endpoint, {
+			const response = await fetch(ajaxEndpoint ?? endpoint, {
 				method: 'POST',
 				headers: { Accept: 'application/json' },
 				body: new FormData(form),
 			})
-			setStatus(response.ok ? 'sent' : 'failed')
+			const payload: unknown = await response.json().catch(() => null)
+			setStatus(relayAccepted(response.ok, payload) ? 'sent' : 'failed')
 		} catch {
 			setStatus('failed')
 		}
@@ -253,11 +259,14 @@ export function ContactForm({
 				aria-hidden="true"
 				className="absolute left-[-9999px] h-px w-px overflow-hidden"
 			>
-				<label htmlFor={`${fieldId}-website`}>
+				{/* `_honey` is FormSubmit's own honeypot name, so the relay also
+				    discards a filled-in submission on the no-JavaScript path,
+				    where the client-side check above never runs. */}
+				<label htmlFor={`${fieldId}-honey`}>
 					Leave this field empty
 					<input
-						id={`${fieldId}-website`}
-						name="website"
+						id={`${fieldId}-honey`}
+						name="_honey"
 						type="text"
 						tabIndex={-1}
 						autoComplete="off"
@@ -271,6 +280,16 @@ export function ContactForm({
 			  open unannounced has been surprised by their own contact form, and the
 			  surprise costs more trust than the convenience gained.
 			*/}
+			{/* FormSubmit's control fields. Sent with every relay submission and
+			    absent in composer mode, where nothing is posted. */}
+			{isComposer ? null : (
+				<>
+					<input type="hidden" name="_subject" value={subject} />
+					<input type="hidden" name="_template" value="table" />
+					<input type="hidden" name="_captcha" value="false" />
+				</>
+			)}
+
 			{isComposer ? (
 				<p className="max-w-reading text-sm text-text-muted">
 					There is no server behind this page, so nothing is submitted here:
