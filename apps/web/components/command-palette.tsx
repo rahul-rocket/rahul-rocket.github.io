@@ -39,6 +39,7 @@ const pageIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   "/about": User,
   "/skills": Wrench,
   "/experience": Briefcase,
+  "/resume": FileText,
   "/projects": FolderGit2,
   "/blog": BookOpen,
   "/contact": Mail,

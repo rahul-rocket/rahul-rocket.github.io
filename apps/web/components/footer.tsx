@@ -92,6 +92,12 @@ export function Footer() {
                 Experience
               </Link>
               <Link
+                href="/resume"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Résumé
+              </Link>
+              <Link
                 href="/blog"
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
