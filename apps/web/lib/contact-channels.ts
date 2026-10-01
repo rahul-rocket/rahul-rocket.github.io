@@ -6,6 +6,9 @@
  * Channels the README deliberately leaves commented out (Discord, GitLab,
  * Stack Overflow, Freelancer) are omitted here too.
  */
+export const LINKEDIN_URL = "https://www.linkedin.com/in/rahul-rocket"
+export const X_URL = "https://x.com/rahulrathore576"
+
 export interface ContactChannel {
   /** lucide/brand icon name resolved by the component. */
   icon:
@@ -36,8 +39,8 @@ export const contactChannels: ContactChannel[] = [
   {
     icon: "linkedin",
     label: "LinkedIn",
-    href: "https://www.linkedin.com/in/rahul-rathore-940380108/",
-    detail: "in/rahul-rathore",
+    href: LINKEDIN_URL,
+    detail: "in/rahul-rocket",
     bestFor: "Roles, introductions, and anything hiring-related",
   },
   {
@@ -50,7 +53,7 @@ export const contactChannels: ContactChannel[] = [
   {
     icon: "x",
     label: "X",
-    href: "https://x.com/rahulrathore576",
+    href: X_URL,
     detail: "@rahulrathore576",
     bestFor: "Short-form updates on what I am building",
   },

@@ -20,6 +20,7 @@ import { Input } from "@portfolio/ui/input"
 import { Textarea } from "@portfolio/ui/textarea"
 import { Label } from "@portfolio/ui/label"
 import { Badge } from "@portfolio/ui/badge"
+import { LINKEDIN_URL, X_URL } from "@/lib/contact-channels"
 import { GITHUB_URL } from "@/lib/github"
 
 // Contact information
@@ -66,16 +67,16 @@ const socialLinks = [
   {
     name: "LinkedIn",
     icon: Linkedin,
-    href: "https://linkedin.com",
+    href: LINKEDIN_URL,
     color: "hover:bg-blue-600 hover:text-white",
-    username: "in/rahul",
+    username: "in/rahul-rocket",
   },
   {
     name: "Twitter",
     icon: Twitter,
-    href: "https://twitter.com",
+    href: X_URL,
     color: "hover:bg-sky-500 hover:text-white",
-    username: "@rahul",
+    username: "@rahulrathore576",
   },
 ]
 
