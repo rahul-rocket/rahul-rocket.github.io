@@ -1038,3 +1038,27 @@ html.lenis body {
 			0 0;
 	}
 }
+
+/*
+ * ==============================================================
+ * HERO MESH — features/home/hero-mesh.tsx.
+ *
+ * One-shot stroke draw on the AI motif's edges. `pathLength="1"` on each line
+ * normalises the dash so one rule fits every edge. Not a loop and not a fade:
+ * the base state is the drawn line, and the keyframe only says where it starts.
+ * ============================================================== */
+@media (prefers-reduced-motion: no-preference) {
+	.u-mesh-draw {
+		stroke-dasharray: 1;
+		animation: u-mesh-draw 900ms var(--ui-ease-out-quint) both;
+	}
+}
+
+@keyframes u-mesh-draw {
+	from {
+		stroke-dashoffset: 1;
+	}
+	to {
+		stroke-dashoffset: 0;
+	}
+}

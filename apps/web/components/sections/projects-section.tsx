@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader } from "@portfolio/ui/card"
 import { Badge } from "@portfolio/ui/badge"
 import { Button } from "@portfolio/ui/button"
 import { Input } from "@portfolio/ui/input"
+import { ProjectCover } from "./project-cover"
 
 // Featured projects with detailed info
 const featuredProjects = [
@@ -24,7 +25,6 @@ const featuredProjects = [
     title: "E-Commerce Platform",
     description: "A full-featured e-commerce platform with real-time inventory management, secure payment processing via Stripe, and an intuitive admin dashboard. Features include product search, filters, cart management, and order tracking.",
     longDescription: "Built a scalable e-commerce solution serving 50,000+ monthly active users with features like real-time inventory sync, multi-payment gateway support, and comprehensive analytics dashboard.",
-    image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=500&fit=crop",
     technologies: ["Next.js", "TypeScript", "Node.js", "PostgreSQL", "Stripe", "Tailwind CSS"],
     category: "Full Stack",
     github: "https://github.com",
@@ -37,7 +37,6 @@ const featuredProjects = [
     title: "TaskFlow - Project Management",
     description: "A collaborative project management tool with real-time updates, drag-and-drop kanban boards, team collaboration features, and automated workflow management.",
     longDescription: "Developed a Trello-like project management application with real-time collaboration, custom workflows, and integrations with Slack and GitHub.",
-    image: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=500&fit=crop",
     technologies: ["React", "Node.js", "Socket.io", "MongoDB", "Redux", "Material-UI"],
     category: "Full Stack",
     github: "https://github.com",
@@ -50,7 +49,6 @@ const featuredProjects = [
     title: "AI Content Studio",
     description: "An AI-powered content generation platform that helps create blog posts, social media content, marketing copy, and product descriptions using advanced language models.",
     longDescription: "Built an AI content platform leveraging OpenAI GPT models for generating high-quality marketing content with tone customization and brand voice settings.",
-    image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=500&fit=crop",
     technologies: ["Next.js", "TypeScript", "OpenAI", "Supabase", "Tailwind CSS", "Vercel"],
     category: "AI/ML",
     github: "https://github.com",
@@ -63,7 +61,6 @@ const featuredProjects = [
     title: "PropertyHub - Real Estate",
     description: "A modern real estate listing platform with advanced search filters, map integration, virtual tours, and mortgage calculator. Features agent dashboards and lead management.",
     longDescription: "Developed a comprehensive real estate platform with Google Maps integration, 3D virtual tours, and AI-powered property recommendations.",
-    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=500&fit=crop",
     technologies: ["React", "Next.js", "Node.js", "PostgreSQL", "Google Maps", "AWS"],
     category: "Full Stack",
     github: "https://github.com",
@@ -181,10 +178,11 @@ const FeaturedProjectCard = ({
       {/* Image */}
       <div className={`relative overflow-hidden ${isEven ? "" : "lg:order-2"}`}>
         <div className="aspect-video lg:aspect-auto lg:h-full relative">
-          <img
-            src={project.image}
-            alt={project.title}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          <ProjectCover
+            title={project.title}
+            category={project.category}
+            technologies={project.technologies}
+            variant={index}
           />
           <div className="absolute inset-0 bg-linear-to-t from-background/90 via-background/20 to-transparent lg:bg-linear-to-r lg:from-transparent lg:via-transparent lg:to-background/90" />
           

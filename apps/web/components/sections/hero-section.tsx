@@ -1,13 +1,12 @@
-"use client"
-
-import { useEffect, useState } from "react"
-import { ArrowRight, Mail, ChevronDown } from "lucide-react"
+import type { CSSProperties } from "react"
+import { ArrowRight, Mail, ChevronDown, Bot, Sparkles, Workflow } from "lucide-react"
 import { Github, Linkedin } from "@/components/brand-icons"
 import { Button } from "@portfolio/ui/button"
 import { Badge } from "@portfolio/ui/badge"
 import Link from "next/link"
 import { LINKEDIN_URL } from "@/lib/contact-channels"
 import { GITHUB_URL } from "@/lib/github"
+import { AiCoreIllustration } from "./ai-core-illustration"
 
 const techStack = [
   { name: "React", color: "bg-spectrum-1/10 text-foreground border-spectrum-1/20" },
@@ -17,13 +16,19 @@ const techStack = [
   { name: "APIs", color: "bg-spectrum-1/10 text-foreground border-spectrum-1/20" },
 ]
 
+/** Stagger slot for the CSS `hero-rise` entrance. */
+const rise = (i: number) => ({ "--i": i }) as CSSProperties
+
+/** Chips orbiting the illustration — AI capabilities, not emoji. */
+const floatingChips = [
+  { label: "LLM apps", Icon: Sparkles, className: "-top-2 -right-6", delay: "0s" },
+  { label: "AI agents", Icon: Bot, className: "top-1/2 -left-20", delay: "1.2s" },
+  { label: "Automation", Icon: Workflow, className: "-bottom-2 right-4", delay: "2.4s" },
+] as const
+
+// A server component: the entrance is pure CSS (`hero-rise` in globals.css),
+// so nothing here waits on hydration to become visible.
 export function HeroSection() {
-  const [isVisible, setIsVisible] = useState(false)
-
-  useEffect(() => {
-    setIsVisible(true)
-  }, [])
-
   return (
     <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Animated background */}
@@ -41,15 +46,12 @@ export function HeroSection() {
         <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
           {/* Left Content */}
           <div
-            className={`space-y-8 text-center lg:text-left transition-all duration-1000 ${
-              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-            }`}
+            className="space-y-8 text-center lg:text-left"
           >
             {/* Status badge */}
             <div
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary border border-border transition-all duration-700 delay-100 ${
-                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
-              }`}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary border border-border hero-rise"
+            style={rise(1)}
             >
               <span className="relative flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
@@ -61,12 +63,10 @@ export function HeroSection() {
             {/* Main heading with animation */}
             <div className="space-y-4">
               <h1
-                className={`text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight transition-all duration-700 delay-200 ${
-                  isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
-                }`}
+                className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight"
               >
                 <span className="block text-foreground">Hi, I'm</span>
-                <span className="block text-gradient">
+                <span className="block text-shine">
                   Rahul
                 </span>
                 <span className="block text-foreground text-3xl sm:text-4xl lg:text-5xl mt-2">
@@ -77,19 +77,17 @@ export function HeroSection() {
 
             {/* Subtitle */}
             <p
-              className={`text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed transition-all duration-700 delay-300 ${
-                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
-              }`}
+              className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed hero-rise"
+            style={rise(3)}
             >
-              Building scalable web applications with modern technologies.
+              Building scalable web applications and AI-powered products with modern technologies.
               Passionate about clean code, great user experiences, and solving complex problems.
             </p>
 
             {/* Tech stack badges */}
             <div
-              className={`flex flex-wrap justify-center lg:justify-start gap-2 transition-all duration-700 delay-400 ${
-                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
-              }`}
+              className="flex flex-wrap justify-center lg:justify-start gap-2 hero-rise"
+            style={rise(4)}
             >
               {techStack.map((tech, index) => (
                 <Badge
@@ -105,9 +103,8 @@ export function HeroSection() {
 
             {/* CTA Buttons */}
             <div
-              className={`flex flex-wrap justify-center lg:justify-start gap-4 pt-4 transition-all duration-700 delay-500 ${
-                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
-              }`}
+              className="flex flex-wrap justify-center lg:justify-start gap-4 pt-4 hero-rise"
+            style={rise(5)}
             >
               <Button size="lg" asChild className="rounded-full px-8 gap-2 group">
                 <Link href="/projects">
@@ -124,9 +121,8 @@ export function HeroSection() {
 
             {/* Social Links */}
             <div
-              className={`flex justify-center lg:justify-start gap-4 pt-4 transition-all duration-700 delay-600 ${
-                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
-              }`}
+              className="flex justify-center lg:justify-start gap-4 pt-4 hero-rise"
+            style={rise(6)}
             >
               <a
                 href={GITHUB_URL}
@@ -156,108 +152,34 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* Right Content - Developer Illustration */}
+          {/* Right Content - AI core illustration */}
           <div
-            className={`relative hidden lg:flex items-center justify-center transition-all duration-1000 delay-300 ${
-              isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10"
-            }`}
+            className="relative hidden lg:flex items-center justify-center hero-rise"
+            style={rise(7)}
           >
             <div className="relative">
-              {/* Decorative circle behind illustration */}
-              <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-spectrum-3/20 rounded-full blur-3xl scale-75" />
+              <div className="absolute inset-0 bg-linear-to-br from-primary/25 to-spectrum-3/25 rounded-full blur-3xl scale-75" />
 
-              {/* Developer illustration/avatar container */}
-              <div className="relative w-80 h-80 xl:w-96 xl:h-96">
-                {/* Animated rings */}
-                <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-pulse" />
-                <div className="absolute inset-4 rounded-full border-2 border-spectrum-2/20 animate-pulse" style={{ animationDelay: "0.5s" }} />
-                <div className="absolute inset-8 rounded-full border-2 border-spectrum-3/20 animate-pulse" style={{ animationDelay: "1s" }} />
+              <AiCoreIllustration className="relative w-80 h-80 xl:w-104 xl:h-104 drop-shadow-xl" />
 
-                {/* Developer illustration SVG */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <svg
-                    viewBox="0 0 400 400"
-                    className="w-full h-full"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    {/* Background circle */}
-                    <circle cx="200" cy="200" r="180" className="fill-secondary" />
-
-                    {/* Laptop */}
-                    <rect x="100" y="200" width="200" height="120" rx="8" className="fill-muted stroke-border" strokeWidth="2" />
-                    <rect x="110" y="210" width="180" height="90" rx="4" className="fill-background" />
-
-                    {/* Code on screen */}
-                    <rect x="125" y="225" width="60" height="8" rx="2" className="fill-primary" />
-                    <rect x="125" y="240" width="100" height="8" rx="2" className="fill-muted-foreground/30" />
-                    <rect x="140" y="255" width="80" height="8" rx="2" className="fill-spectrum-3/50" />
-                    <rect x="140" y="270" width="60" height="8" rx="2" className="fill-spectrum-1/50" />
-                    <rect x="125" y="285" width="70" height="8" rx="2" className="fill-muted-foreground/30" />
-
-                    {/* Keyboard base */}
-                    <ellipse cx="200" cy="330" rx="110" ry="15" className="fill-muted stroke-border" strokeWidth="2" />
-
-                    {/* Person - Head */}
-                    <circle cx="200" cy="120" r="50" className="fill-amber-200 dark:fill-amber-300" />
-
-                    {/* Hair */}
-                    <path d="M150 120 Q150 70 200 70 Q250 70 250 120 Q250 100 230 95 Q200 85 170 95 Q150 100 150 120" className="fill-gray-800 dark:fill-gray-700" />
-
-                    {/* Face */}
-                    <ellipse cx="180" cy="115" rx="5" ry="6" className="fill-gray-800" />
-                    <ellipse cx="220" cy="115" rx="5" ry="6" className="fill-gray-800" />
-                    <path d="M190 135 Q200 145 210 135" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="stroke-gray-800" fill="none" />
-
-                    {/* Body/Shirt */}
-                    <path d="M150 170 Q150 200 170 200 L230 200 Q250 200 250 170 Q250 155 200 155 Q150 155 150 170" className="fill-primary" />
-
-                    {/* Arms */}
-                    <path d="M155 180 Q130 190 120 220" stroke="currentColor" strokeWidth="20" strokeLinecap="round" className="stroke-primary" />
-                    <path d="M245 180 Q270 190 280 220" stroke="currentColor" strokeWidth="20" strokeLinecap="round" className="stroke-primary" />
-
-                    {/* Hands */}
-                    <circle cx="120" cy="225" r="12" className="fill-amber-200 dark:fill-amber-300" />
-                    <circle cx="280" cy="225" r="12" className="fill-amber-200 dark:fill-amber-300" />
-
-                    {/* Floating elements */}
-                    <g className="animate-bounce" style={{ animationDuration: "3s" }}>
-                      <rect x="300" y="100" width="40" height="40" rx="8" className="fill-spectrum-2/20 stroke-spectrum-2" strokeWidth="2" />
-                      <text x="320" y="127" textAnchor="middle" className="fill-spectrum-2 text-xs font-bold">&lt;/&gt;</text>
-                    </g>
-
-                    <g className="animate-bounce" style={{ animationDuration: "2.5s", animationDelay: "0.5s" }}>
-                      <rect x="60" y="150" width="35" height="35" rx="6" className="fill-spectrum-1/20 stroke-spectrum-1" strokeWidth="2" />
-                      <text x="77" y="173" textAnchor="middle" className="fill-spectrum-1 text-xs font-bold">{ }</text>
-                    </g>
-
-                    <g className="animate-bounce" style={{ animationDuration: "2s", animationDelay: "1s" }}>
-                      <circle cx="320" cy="250" r="18" className="fill-spectrum-3/20 stroke-spectrum-3" strokeWidth="2" />
-                      <text x="320" y="255" textAnchor="middle" className="fill-spectrum-3 text-xs font-bold">TS</text>
-                    </g>
-                  </svg>
+              {floatingChips.map(({ label, Icon, className, delay }) => (
+                <div
+                  key={label}
+                  className={`absolute ${className} flex items-center gap-2 rounded-full border border-border bg-card/80 backdrop-blur-md px-3 py-1.5 text-xs font-medium shadow-lg animate-float`}
+                  style={{ animationDelay: delay }}
+                >
+                  <Icon className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                  {label}
                 </div>
-              </div>
-
-              {/* Floating tech icons */}
-              <div className="absolute -top-4 -right-4 p-3 bg-card rounded-xl shadow-lg border border-border animate-bounce" style={{ animationDuration: "3s" }}>
-                <span className="text-2xl">⚛️</span>
-              </div>
-              <div className="absolute -bottom-4 -left-4 p-3 bg-card rounded-xl shadow-lg border border-border animate-bounce" style={{ animationDuration: "2.5s", animationDelay: "0.5s" }}>
-                <span className="text-2xl">🚀</span>
-              </div>
-              <div className="absolute top-1/2 -right-8 p-3 bg-card rounded-xl shadow-lg border border-border animate-bounce" style={{ animationDuration: "2s", animationDelay: "1s" }}>
-                <span className="text-2xl">💻</span>
-              </div>
+              ))}
             </div>
           </div>
         </div>
 
         {/* Scroll indicator */}
         <div
-          className={`absolute bottom-8 left-1/2 -translate-x-1/2 transition-all duration-700 delay-700 ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
-          }`}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 hero-rise"
+          style={rise(8)}
         >
           {/* The landing page continues below the fold, so this scrolls
               rather than navigating. */}

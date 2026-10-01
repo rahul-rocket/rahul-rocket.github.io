@@ -113,3 +113,6 @@ crosses the boundary: both must pin the **same `@types/react`/`@types/react-dom`
   `success: "false"` until its one-time activation email is clicked, so success is read from
   the body. `apps/web-v2` uses the same relay. Do not add a `route.ts` here without also
   removing `output: 'export'`.
+  The one shape the export does support is a build-time GET (`dynamic = 'force-static'` plus
+  `generateStaticParams`), written to `out/` as a plain file — that is how
+  `app/projects/[slug]/cover.png/route.tsx` produces each project's cover/OG image.

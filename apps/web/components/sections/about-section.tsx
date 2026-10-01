@@ -174,7 +174,7 @@ export function AboutSection() {
           <div className={`grid lg:grid-cols-5 gap-12 mb-20 transition-all duration-700 delay-100 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}>
             {/* Text content - 3 columns */}
             <div className="lg:col-span-3 space-y-6">
-              <div className="prose prose-lg dark:prose-invert max-w-none">
+              <div className="space-y-5">
                 <p className="text-lg text-muted-foreground leading-relaxed">
                   Hello! I'm <strong className="text-foreground">Rahul</strong>, a software developer based in{" "}
                   <strong className="text-foreground">Ahmedabad, India</strong>. With over{" "}

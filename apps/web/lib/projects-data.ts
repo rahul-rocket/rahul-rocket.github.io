@@ -2,6 +2,16 @@
 
 import type { Project, ProjectsData } from "./types"
 
+/**
+ * Where a project's generated cover lives. The PNG is rendered at build time
+ * by app/projects/[slug]/cover.png/route.tsx and exported as a static file, so
+ * it is same-origin, cannot 404 on a third-party host, and is a real raster
+ * image — which Open Graph and Twitter cards require (they ignore SVG).
+ */
+export function projectCoverPath(slug: string): string {
+  return `/projects/${slug}/cover.png`
+}
+
 export const projectsData: ProjectsData = {
   "ecommerce-platform": {
     id: "ecommerce-platform",
@@ -19,7 +29,7 @@ export const projectsData: ProjectsData = {
     demo: "https://demo.example.com",
     
     // Images
-    thumbnail: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=500&fit=crop",
+    thumbnail: projectCoverPath("ecommerce-platform"),
     screenshots: [
       {
         url: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200&h=800&fit=crop",
@@ -124,7 +134,7 @@ export const projectsData: ProjectsData = {
     github: "https://github.com",
     demo: "https://demo.example.com",
     
-    thumbnail: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=500&fit=crop",
+    thumbnail: projectCoverPath("task-management-app"),
     screenshots: [
       {
         url: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=1200&h=800&fit=crop",
@@ -208,7 +218,7 @@ export const projectsData: ProjectsData = {
     github: "https://github.com",
     demo: "https://demo.example.com",
     
-    thumbnail: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=500&fit=crop",
+    thumbnail: projectCoverPath("ai-content-generator"),
     screenshots: [
       {
         url: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&h=800&fit=crop",
@@ -292,7 +302,7 @@ export const projectsData: ProjectsData = {
     github: "https://github.com",
     demo: "https://demo.example.com",
     
-    thumbnail: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=500&fit=crop",
+    thumbnail: projectCoverPath("real-estate-portal"),
     screenshots: [
       {
         url: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&h=800&fit=crop",
