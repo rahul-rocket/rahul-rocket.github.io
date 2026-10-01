@@ -62,7 +62,7 @@ export default async function TagArchivePage({ params }: PageProps) {
 	return (
 		<PageContainer
 			tone="writing"
-			width="reading"
+			width="page"
 			breadcrumb={[
 				{ label: 'Home', href: '/' },
 				{ label: 'Writing', href: '/blog/' },

@@ -107,9 +107,12 @@ crosses the boundary: both must pin the **same `@types/react`/`@types/react-dom`
 - `apps/web/.env` is git-ignored; copy `apps/web/.env.example`. With `DATABASE_URL` unset,
   `/blog` falls back to the seeded posts in `lib/posts.ts` and the build still succeeds.
 - **`apps/web` has no API routes.** A static export cannot accept a POST, so `/api/contact`,
-  `/api/posts` and `lib/rate-limit.ts` are gone. The contact form POSTs to a third-party
-  endpoint (`NEXT_PUBLIC_CONTACT_ENDPOINT`) and falls back to a prefilled `mailto:` when that
-  is unset. Do not add a request-time `route.ts` here without also removing `output: 'export'`.
+  `/api/posts` and `lib/rate-limit.ts` are gone. The contact form POSTs to FormSubmit, a
+  form-to-email relay (`lib/contact-relay.ts`), unless `NEXT_PUBLIC_CONTACT_ENDPOINT` names
+  another endpoint or is `mailto` (prefilled mail-client handoff). FormSubmit answers 200 with
+  `success: "false"` until its one-time activation email is clicked, so success is read from
+  the body. `apps/web-v2` uses the same relay. Do not add a `route.ts` here without also
+  removing `output: 'export'`.
   The one shape the export does support is a build-time GET (`dynamic = 'force-static'` plus
   `generateStaticParams`), written to `out/` as a plain file — that is how
   `app/projects/[slug]/cover.png/route.tsx` produces each project's cover/OG image.

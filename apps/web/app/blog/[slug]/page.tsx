@@ -1,3 +1,5 @@
+import { JsonLdScript } from "@/components/json-ld"
+import { blogPostingSchema, graph } from "@/lib/structured-data"
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
@@ -67,6 +69,7 @@ export default async function BlogPostPage({
   return (
     <div className="min-h-screen pt-24 pb-20">
       <div className="container mx-auto px-4">
+        <JsonLdScript data={graph(blogPostingSchema(post))} />
         <article className="max-w-3xl mx-auto">
           <Button variant="ghost" asChild className="mb-8 -ml-4 gap-2 group">
             <Link href="/blog">

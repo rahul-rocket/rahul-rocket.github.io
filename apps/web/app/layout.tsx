@@ -5,20 +5,22 @@ import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { LINKEDIN_URL, X_URL } from '@/lib/contact-channels'
-import { GITHUB_URL } from '@/lib/github'
+import { JsonLdScript } from '@/components/json-ld'
 import { getPublishedPosts } from '@/lib/posts'
 import type { SearchItem } from '@/lib/search-index'
+import { site } from '@/lib/site'
+import { graph, personSchema, websiteSchema } from '@/lib/structured-data'
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://rahul.dev"
+const baseUrl = site.url
+const defaultTitle = `${site.name} | ${site.role}`
 
 export const metadata: Metadata = {
   // Basic metadata
   title: {
-    default: "Rahul | Software Developer - Ahmedabad, India",
-    template: "%s | Rahul - Software Developer",
+    default: defaultTitle,
+    template: `%s | ${site.name}`,
   },
-  description: "Professional Software Developer based in Ahmedabad, India. Specializing in React, Next.js, TypeScript, Node.js, and modern web technologies. View my projects, skills, and experience.",
+  description: site.description,
   keywords: [
     "software developer",
     "web developer",
@@ -32,13 +34,13 @@ export const metadata: Metadata = {
     "backend developer",
     "Ahmedabad",
     "India",
-    "Rahul",
+    site.name,
     "portfolio",
     "freelance developer",
   ],
-  authors: [{ name: "Rahul", url: baseUrl }],
-  creator: "Rahul",
-  publisher: "Rahul",
+  authors: [{ name: site.name, url: baseUrl }],
+  creator: site.name,
+  publisher: site.name,
 
   // Canonical URL
   metadataBase: new URL(baseUrl),
@@ -51,15 +53,15 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
     url: baseUrl,
-    siteName: "Rahul - Software Developer",
-    title: "Rahul | Software Developer - Ahmedabad, India",
-    description: "Professional Software Developer based in Ahmedabad, India. Specializing in React, Next.js, Node.js, and modern web technologies.",
+    siteName: site.name,
+    title: defaultTitle,
+    description: site.description,
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Rahul - Software Developer Portfolio",
+        alt: `${site.name} -- ${site.role}`,
         type: "image/png",
       },
     ],
@@ -68,11 +70,11 @@ export const metadata: Metadata = {
   // Twitter Card
   twitter: {
     card: "summary_large_image",
-    title: "Rahul | Software Developer - Ahmedabad, India",
-    description: "Professional Software Developer based in Ahmedabad, India. Specializing in React, Next.js, Node.js, and modern web technologies.",
+    title: defaultTitle,
+    description: site.description,
     images: ["/og-image.png"],
-    creator: "@rahul",
-    site: "@rahul",
+    creator: site.xHandle,
+    site: site.xHandle,
   },
 
   // Robots
@@ -114,7 +116,7 @@ export const metadata: Metadata = {
   },
 
   // App-specific
-  applicationName: "Rahul - Software Developer",
+  applicationName: site.name,
   category: "technology",
 
   // Other
@@ -134,42 +136,6 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: dark)", color: "#0a0a0f" },
   ],
   colorScheme: "dark light",
-}
-
-// JSON-LD Structured Data
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Person",
-  name: "Rahul",
-  url: baseUrl,
-  image: `${baseUrl}/profile.jpg`,
-  sameAs: [
-    GITHUB_URL,
-    LINKEDIN_URL,
-    X_URL,
-  ],
-  jobTitle: "Software Developer",
-  worksFor: {
-    "@type": "Organization",
-    name: "Freelance / RapidTech Plus",
-  },
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: "Ahmedabad",
-    addressRegion: "Gujarat",
-    addressCountry: "India",
-  },
-  email: "rahulrathore576@gmail.com",
-  telephone: "+91-8264110143",
-  knowsAbout: [
-    "React",
-    "Next.js",
-    "TypeScript",
-    "Node.js",
-    "JavaScript",
-    "Web Development",
-    "Full-Stack Development",
-  ],
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -195,10 +161,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
 
         {/* JSON-LD Structured Data */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        {/* Person + WebSite on every page; pages reference them by @id. */}
+        <JsonLdScript data={graph(personSchema(), websiteSchema())} />
       </head>
       <body className="min-h-screen antialiased">
         <ThemeProvider
@@ -216,11 +180,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </a>
 
           <div className="relative flex min-h-screen flex-col">
-            <Navbar posts={postItems} />
+            <div className="no-print"><Navbar posts={postItems} /></div>
             <main id="main-content" className="flex-1" role="main">
               {children}
             </main>
-            <Footer />
+            <div className="no-print"><Footer /></div>
           </div>
         </ThemeProvider>
       </body>

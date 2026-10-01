@@ -194,7 +194,9 @@ export function Hero() {
 								  the two halves are read as one phrase, and splitting them
 								  would have a screen reader announce the qualifier on its own.
 								*/}
-							<span className="u-gradient-text">{heroHeading.trail}</span>
+							<span className="u-gradient-text u-sheen">
+								{heroHeading.trail}
+							</span>
 						</Heading>
 					</Stack>
 

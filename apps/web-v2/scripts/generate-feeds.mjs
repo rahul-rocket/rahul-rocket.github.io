@@ -63,7 +63,7 @@ const SITE_NAME = 'Rahul Rocket'
 const SITE_TITLE = `${SITE_NAME} — Full Stack Software Engineer & Software Architect`
 const SITE_DESCRIPTION =
 	'Notes on architecture, TypeScript, and the decisions that are expensive to reverse.'
-const AUTHOR_EMAIL = 'hello@rahulrocket.dev'
+const AUTHOR_EMAIL = 'rahulrathore576@gmail.com' // must match contactEmail() in src/config/site.ts
 
 /* ------------------------------------------------------------------ *
  * A tag scanner, not a parser.

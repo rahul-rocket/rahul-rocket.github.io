@@ -138,21 +138,14 @@
    * Typography
    * --------------------------------------------------------------- */
 
-	/* Stacks are placeholders pending the DS-04 licensing decision. Each names
-     the intended face first, then the metric-matched fallback declared in
-     globals.css, then a system stack — so proportions are honest before a
-     woff2 file exists and the eventual swap costs zero layout shift (DS-05).
-
-     The Editorial serif display stack was deleted with direction A. */
-	--ui-font-grotesque:
-		"Neue Haas Grotesk Display", "Instrument Fallback", "Inter Tight", "Inter",
-		ui-sans-serif, system-ui, sans-serif;
-	--ui-font-text:
-		"Inter", "Instrument Fallback", ui-sans-serif, system-ui, -apple-system,
-		sans-serif;
+	/* DS-04: Geist for text and display, Geist Mono for code and labels.
+     `--font-geist*` are set on <html> by next/font in src/app/layout.tsx and
+     already end in a metric-adjusted fallback face, so the system stack after
+     them only matters if the font variables are missing entirely. */
+	--ui-font-grotesque: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+	--ui-font-text: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
 	--ui-font-mono:
-		"Berkeley Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
-		monospace;
+		var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 
 	/* Fluid scale. Ratio ~1.25 at 360px widening to ~1.333 at 1280px.
      clamp() preferred term is in vw so it tracks the viewport continuously —
@@ -206,7 +199,11 @@
 	--space-16: 4rem;
 	--space-24: 6rem;
 
-	--space-section: clamp(4rem, 10vw, 9rem);
+	/* Was clamp(4rem, 10vw, 9rem): 144px a side at 1440px, so ~290px of empty
+	   page between two sections — enough that a section read as the end of the
+	   page rather than the next part of it. ~100px a side at desktop now; the
+	   phone floor barely moves. */
+	--space-section: clamp(3.5rem, 7vw, 6.5rem);
 	--space-gutter: clamp(1.25rem, 5vw, 2.5rem);
 
 	--width-prose: 72ch;

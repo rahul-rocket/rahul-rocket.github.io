@@ -17,5 +17,9 @@ export {
 	periodDuration,
 } from './lib/format-period'
 export { MetricList } from './metric-list'
-export { ProjectCard } from './project-card'
+export {
+	ProjectCard,
+	projectGridClass,
+	projectGridItemClass,
+} from './project-card'
 export { ProjectsIndex } from './projects-index'

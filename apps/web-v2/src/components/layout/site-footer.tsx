@@ -64,7 +64,10 @@ export function SiteFooter() {
 			id="site-footer"
 			className="u-edge relative border-border border-t bg-bg-subtle"
 		>
-			<div className="mx-auto flex max-w-page flex-col gap-12 px-gutter py-16">
+			{/* `pb-24`, not `pb-16`: the back-to-top button is fixed 32px from the
+			    bottom and 44px tall (76px in all), so at the end of the page it sat
+			    on top of the bottom row's GitHub link. */}
+			<div className="mx-auto flex max-w-page flex-col gap-12 px-gutter pt-16 pb-24">
 				<div className="flex flex-col gap-12 md:flex-row md:justify-between">
 					<div className="flex flex-col gap-3">
 						{/* A <p>, not a heading: the footer's wordmark is a signature, not

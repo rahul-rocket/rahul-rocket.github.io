@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import { FORM_RELAY_ENDPOINT, relayAccepted } from "@/lib/contact-relay"
+import { site } from "@/lib/site"
 import {
   Mail,
   MapPin,
@@ -84,24 +86,26 @@ const socialLinks = [
  * Where a submission goes, now that there is no `/api/contact` to receive it.
  *
  * This app is a static export on GitHub Pages (next.config.js), so it cannot
- * accept a POST of its own. Two modes, and which one is live is decided at build
- * time by whether this variable is set in the workflow environment:
+ * accept a POST of its own. Decided at build time from
+ * `NEXT_PUBLIC_CONTACT_ENDPOINT`:
  *
- * - SET — the message is POSTed as JSON to a third-party form service
- *   (Formspree-shaped: it answers 2xx on success, 429 when rate limited, and
- *   422 with a per-field error list). Nothing about the page changes.
- * - UNSET — the form becomes a composer. Submitting hands the finished message
- *   to the reader's own mail client via `mailto:`, prefilled. Nothing is
- *   transmitted by the page, so nothing can be silently dropped by it, and the
- *   button says so rather than claiming to send.
+ * - UNSET OR EMPTY (the default) -- FormSubmit, see lib/contact-relay.ts. Empty
+ *   matters as much as unset: the workflow passes `secrets.CONTACT_ENDPOINT`,
+ *   which is "" when no such secret exists, so `??` would never fall through.
+ * - A URL -- a Formspree-shaped service of your own choosing: it answers 2xx on
+ *   success, 429 when rate limited, and 422 with a per-field error list.
+ * - "mailto" -- the form becomes a composer. Submitting hands the finished
+ *   message to the reader's own mail client, prefilled, and transmits nothing.
  *
  * `NEXT_PUBLIC_` is required: this is read in the browser, and the value is
- * public either way — a form endpoint is a URL anyone can see in the HTML.
+ * public either way -- a form endpoint is a URL anyone can see in the HTML.
  */
-const CONTACT_ENDPOINT = process.env.NEXT_PUBLIC_CONTACT_ENDPOINT ?? ""
+const CONFIGURED_ENDPOINT = process.env.NEXT_PUBLIC_CONTACT_ENDPOINT || ""
+const CONTACT_ENDPOINT =
+  CONFIGURED_ENDPOINT === "mailto" ? "" : CONFIGURED_ENDPOINT || FORM_RELAY_ENDPOINT
 
-/** The one copy of the address the fallback composes to. */
-const CONTACT_EMAIL = "rahulrathore576@gmail.com"
+/** The one copy of the address, from lib/site.ts. */
+const CONTACT_EMAIL = site.email
 
 interface ContactFormData {
   name: string
@@ -262,7 +266,14 @@ export function ContactSection() {
           // this, which a fetch follows opaquely and reports as success.
           Accept: "application/json",
         },
-        body: JSON.stringify(formData),
+        // The `_` fields are FormSubmit's controls; a Formspree-shaped service
+        // receives them as three extra fields and ignores them.
+        body: JSON.stringify({
+          ...formData,
+          _subject: `Portfolio message from ${formData.name}`,
+          _template: "table",
+          _captcha: "false",
+        }),
       })
 
       if (!response.ok) {
@@ -279,6 +290,13 @@ export function ContactSection() {
         if (serverErrors) {
           setErrors(serverErrors)
         }
+        setSubmitStatus("error")
+        return
+      }
+
+      // A 2xx is not delivery -- see relayAccepted.
+      const accepted: unknown = await response.json().catch(() => null)
+      if (!relayAccepted(true, accepted)) {
         setSubmitStatus("error")
         return
       }

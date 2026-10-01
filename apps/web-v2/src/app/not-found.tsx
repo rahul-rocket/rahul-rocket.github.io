@@ -82,7 +82,7 @@ export default function NotFound() {
 						id="not-found-routes"
 						className="font-heading text-text text-xs uppercase tracking-caps"
 					>
-						Where to instead
+						Where to go instead
 					</h2>
 					<ul className="flex flex-col gap-2">
 						{/*
